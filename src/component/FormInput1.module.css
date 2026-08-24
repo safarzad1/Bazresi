@@ -1,0 +1,146 @@
+.field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 4px;
+    font-family:
+        Shabnam,
+        Tahoma,
+        Arial,
+        sans-serif;
+}
+
+.label {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 3px;
+    margin-bottom: 5px;
+    color: #3d5064;
+    font-family:
+        Shabnam,
+        Tahoma,
+        Arial,
+        sans-serif;
+    font-size: 12.5px;
+    font-weight: 400;
+    line-height: 1.65;
+    text-align: right;
+}
+
+.required {
+    color: #dc4d57;
+    font-family:
+        Shabnam,
+        Tahoma,
+        Arial,
+        sans-serif;
+    font-size: 11.5px;
+    font-weight: 400;
+}
+
+.inputWrap {
+    width: 100%;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 0 10px;
+    border: 1px solid #d6dfe7;
+    border-radius: 9px;
+    background: #fff;
+    transition:
+        border-color .16s ease,
+        box-shadow .16s ease,
+        background .16s ease;
+}
+
+.inputWrap:focus-within {
+    border-color: #7095b7;
+    box-shadow:
+        0 0 0 3px
+            rgba(67, 111, 151, .07);
+}
+
+.inputWrapError {
+    border-color: #dc626a;
+}
+
+.inputWrapError:focus-within {
+    border-color: #d6535c;
+    box-shadow:
+        0 0 0 3px
+            rgba(214, 83, 92, .07);
+}
+
+.inputWrapDisabled {
+    background: #f5f7f9;
+    opacity: .72;
+}
+
+.icon {
+    width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 18px;
+    margin-left: 7px;
+    color: #8797a8;
+    pointer-events: none;
+}
+
+.icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.input {
+    min-width: 0;
+    height: 100%;
+    flex: 1;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    color: #25394e;
+    background: transparent;
+    font-family:
+        Shabnam,
+        Tahoma,
+        Arial,
+        sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: right;
+}
+
+.input::placeholder {
+    color: #a8b2bd;
+    font-family:
+        Shabnam,
+        Tahoma,
+        Arial,
+        sans-serif;
+    font-size: 11.5px;
+    font-weight: 400;
+    opacity: 1;
+}
+
+.input:disabled {
+    cursor: not-allowed;
+}
+
+.errorMessage {
+    margin: 4px 1px 0 0;
+    color: #cf4650;
+    font-family:
+        Shabnam,
+        Tahoma,
+        Arial,
+        sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.6;
+    text-align: right;
+}

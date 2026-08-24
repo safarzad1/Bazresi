@@ -1,0 +1,211 @@
+.root,
+.root *,
+.dropdown,
+.dropdown * {
+  box-sizing: border-box;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+}
+
+.root {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  color: #334155;
+  font-size: 12px;
+}
+
+.label {
+  color: #334155;
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+
+.combobox {
+  position: relative;
+  width: 100%;
+  min-width: 235px;
+  height: 42px;
+  padding: 0 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #64748b;
+  background: #ffffff;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.comboboxOpen,
+.combobox:focus-within {
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.12);
+}
+
+.searchIcon {
+  flex: 0 0 auto;
+  color: #64748b;
+}
+
+.searchInput {
+  min-width: 0;
+  height: 100%;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: #172033;
+  background: transparent;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+  font-size: 12px;
+  font-weight: 400 !important;
+  line-height: 1.8;
+  text-align: right;
+}
+
+.searchInput::placeholder {
+  color: #94a3b8;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+  opacity: 1;
+}
+
+.searchInput:disabled {
+  cursor: wait;
+}
+
+.clearButton,
+.chevronButton {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background: transparent;
+  cursor: pointer;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+}
+
+.clearButton:hover {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.chevronButton:hover {
+  color: #075985;
+  background: #f0f9ff;
+}
+
+.chevronButton svg {
+  transition: transform 160ms ease;
+}
+
+.comboboxOpen .chevronButton svg {
+  transform: rotate(180deg);
+}
+
+.selectedHint {
+  color: #0e7490;
+  font-size: 10.5px;
+  line-height: 1.7;
+}
+
+.dropdown {
+  position: fixed;
+  z-index: 2147483647;
+  padding: 7px;
+  border: 1px solid #dbe4ee;
+  border-radius: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: #334155;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
+  scrollbar-width: thin;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+}
+
+.option {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #334155;
+  background: transparent;
+  cursor: pointer;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+  font-size: 12px;
+  font-weight: 400 !important;
+  line-height: 1.8;
+  text-align: right;
+}
+
+.option > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+}
+
+.option:hover {
+  color: #075985;
+  background: #f0f9ff;
+}
+
+.selected {
+  color: #0e7490;
+  background: #ecfeff;
+}
+
+.selected svg {
+  flex: 0 0 auto;
+}
+
+.empty {
+  padding: 18px 10px;
+  color: #64748b;
+  font-family: "Shabnam", Arial, Helvetica, sans-serif !important;
+  font-size: 11.5px;
+  font-weight: 400 !important;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .combobox {
+    min-width: 0;
+  }
+}
+
+.compact {
+  gap: 0;
+}
+
+.compact .label,
+.compact .selectedHint {
+  display: none;
+}
+
+.compact .combobox {
+  min-width: 0;
+  height: 36px;
+  padding-inline: 8px;
+  border-radius: 9px;
+}
+
+.compact .searchInput {
+  font-size: 11.5px;
+}

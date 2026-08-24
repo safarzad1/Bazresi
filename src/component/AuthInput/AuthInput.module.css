@@ -1,0 +1,98 @@
+.field label {
+  display: block;
+  margin: 0 3px 7px;
+  color: #7a3df0;
+  font-family: "ShabnamLogin", Tahoma, Arial, sans-serif;
+  font-size: 13.5px;
+}
+
+.inputWrap {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  height: 46px;
+  padding: 0 44px;
+  border: 1px solid #cfdae1;
+  border-radius: 12px;
+  outline: none;
+  color: #1c2a3c;
+  background: #fff;
+  font-family: "ShabnamLogin", Tahoma, Arial, sans-serif;
+  font-size: 12.5px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.input::placeholder {
+  color: #9dafbd;
+  font-size: 11.5px;
+}
+
+.input:focus {
+  border-color: #1a8a8e;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(26, 138, 142, 0.1);
+}
+
+.input:disabled {
+  color: #8a9aa4;
+  background: #f0f4f6;
+  cursor: not-allowed;
+}
+
+.icon {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 15px;
+  width: 19px;
+  height: 19px;
+  color: #7c90a5;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.action svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.action {
+  position: absolute;
+  top: 50%;
+  left: 11px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  color: #81939f;
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.action:hover,
+.action:focus-visible {
+  color: #176d7b;
+  background: #edf6f7;
+}
+
+.action:focus-visible {
+  outline: 2px solid rgba(38, 141, 153, 0.35);
+  outline-offset: 1px;
+}
