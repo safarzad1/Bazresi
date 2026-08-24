@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { SearchableDropdown } from "@/component/Dropdown";
 import styles from "./Users.module.css";
 
 type UserRow = {
@@ -98,6 +99,22 @@ export default function UsersPage() {
   const [form, setForm] = useState<UserForm>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const sematOptions = useMemo(
+    () => [
+      { value: "", label: "بدون سمت" },
+      ...semats.map((item) => ({ value: String(item.Id), label: item.Title })),
+    ],
+    [semats],
+  );
+
+  const mahalOptions = useMemo(
+    () => [
+      { value: "", label: "بدون محل خدمت" },
+      ...mahals.map((item) => ({ value: String(item.Id), label: item.Title })),
+    ],
+    [mahals],
+  );
 
   const loadUsers = useCallback(async (
     query: string,
@@ -371,8 +388,32 @@ export default function UsersPage() {
                   <label><span>کد ملی <b>*</b></span><input dir="ltr" inputMode="numeric" value={form.nationalCode} onChange={(event) => change("nationalCode", event.target.value)} maxLength={10} required /></label>
                   <label><span>شماره همراه</span><input dir="ltr" inputMode="tel" value={form.telHamrah} onChange={(event) => change("telHamrah", event.target.value)} maxLength={11} placeholder="09xxxxxxxxx" /></label>
                   <label className={styles.fullField}><span>ایمیل</span><input dir="ltr" type="email" value={form.email} onChange={(event) => change("email", event.target.value)} maxLength={256} /></label>
-                  <label><span>سمت</span><select value={form.sematId} onChange={(event) => change("sematId", event.target.value)}><option value="">انتخاب نشده</option>{semats.map((item) => <option key={item.Id} value={item.Id}>{item.Title}</option>)}</select></label>
-                  <label><span>محل خدمت</span><select value={form.mahalId} onChange={(event) => change("mahalId", event.target.value)}><option value="">انتخاب نشده</option>{mahals.map((item) => <option key={item.Id} value={item.Id}>{item.Title}</option>)}</select></label>
+                  <div className={styles.dropdownField}>
+                    <span>سمت</span>
+                    <SearchableDropdown<string>
+                      value={form.sematId}
+                      options={sematOptions}
+                      onChange={(value) => change("sematId", value)}
+                      placeholder="جست‌وجو و انتخاب سمت"
+                      searchPlaceholder="جست‌وجوی سمت..."
+                      noResultText="سمتی پیدا نشد."
+                      emptyText="سمتی برای انتخاب وجود ندارد."
+                      ariaLabel="انتخاب سمت کاربر"
+                    />
+                  </div>
+                  <div className={styles.dropdownField}>
+                    <span>محل خدمت</span>
+                    <SearchableDropdown<string>
+                      value={form.mahalId}
+                      options={mahalOptions}
+                      onChange={(value) => change("mahalId", value)}
+                      placeholder="جست‌وجو و انتخاب محل خدمت"
+                      searchPlaceholder="جست‌وجوی محل خدمت..."
+                      noResultText="محل خدمتی پیدا نشد."
+                      emptyText="محل خدمتی برای انتخاب وجود ندارد."
+                      ariaLabel="انتخاب محل خدمت کاربر"
+                    />
+                  </div>
                   <label className={styles.fullField}><span>{editing ? "رمز عبور جدید" : "رمز عبور *"}</span><input dir="ltr" type="password" autoComplete="new-password" value={form.password} onChange={(event) => change("password", event.target.value)} minLength={6} maxLength={256} required={!editing} placeholder={editing ? "برای حفظ رمز فعلی خالی بگذارید" : "حداقل ۶ نویسه"} /></label>
                 </div>
                 <div className={styles.toggleRow}>

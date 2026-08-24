@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./AdminShell.module.css";
 
 type AdminShellProps = {
@@ -49,6 +49,31 @@ function LogoutIcon() {
   );
 }
 
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7M10 20h4" />
+    </svg>
+  );
+}
+
+function DownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m7 10 5 5 5-5" />
+    </svg>
+  );
+}
+
 const menuItems = [
   { href: "/Admin/Dashboard", title: "داشبورد", icon: DashboardIcon },
   { href: "/Admin/Users", title: "فهرست کاربران", icon: UsersIcon },
@@ -65,10 +90,30 @@ export default function AdminShell({
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const headerActionsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    setMenuOpen(false);
+    setProfileOpen(false);
+    setNotificationOpen(false);
+  }, [pathname]);
 
-  const currentPage = menuItems.find((item) => pathname.startsWith(item.href));
+  useEffect(() => {
+    function closeHeaderMenus(event: MouseEvent) {
+      if (
+        headerActionsRef.current &&
+        !headerActionsRef.current.contains(event.target as Node)
+      ) {
+        setProfileOpen(false);
+        setNotificationOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", closeHeaderMenus);
+    return () => document.removeEventListener("mousedown", closeHeaderMenus);
+  }, []);
 
   async function logout() {
     if (loggingOut) return;
@@ -151,10 +196,83 @@ export default function AdminShell({
             </button>
             <div className={styles.headerTitle}>
               <span>سامانه جامع بازرسی</span>
-              <strong>{currentPage?.title ?? "پنل مدیریت"}</strong>
+              <strong>مرکز کنترل سازمان</strong>
             </div>
           </div>
-          <span className={styles.onlineStatus}><i /> سامانه فعال</span>
+
+          <div className={styles.headerActions} ref={headerActionsRef}>
+            <label className={styles.headerSearch}>
+              <SearchIcon />
+              <input
+                type="search"
+                placeholder="جستجو در سامانه..."
+                aria-label="جستجو در سامانه"
+              />
+            </label>
+
+            <div className={styles.notificationWrap}>
+              <button
+                className={styles.notificationButton}
+                type="button"
+                aria-label="اعلان‌ها"
+                aria-expanded={notificationOpen}
+                onClick={() => {
+                  setProfileOpen(false);
+                  setNotificationOpen((current) => !current);
+                }}
+              >
+                <BellIcon />
+              </button>
+              {notificationOpen && (
+                <div className={styles.notificationPanel}>
+                  <BellIcon />
+                  <strong>اعلان جدیدی ندارید</strong>
+                  <span>اعلان‌های سامانه در این بخش نمایش داده می‌شوند.</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.headerProfileWrap}>
+              <button
+                className={styles.headerProfile}
+                type="button"
+                aria-expanded={profileOpen}
+                onClick={() => {
+                  setNotificationOpen(false);
+                  setProfileOpen((current) => !current);
+                }}
+              >
+                <span className={styles.headerAvatar}>
+                  {displayName.trim().slice(0, 1) || "ک"}
+                </span>
+                <span className={styles.headerProfileText}>
+                  <strong>{displayName}</strong>
+                  <small>{sematTitle || userName}</small>
+                </span>
+                <span className={`${styles.profileArrow} ${profileOpen ? styles.profileArrowOpen : ""}`}>
+                  <DownIcon />
+                </span>
+              </button>
+
+              {profileOpen && (
+                <div className={styles.profileMenu}>
+                  <Link className={styles.profileMenuItem} href="/Admin/Settings">
+                    <SettingsIcon />
+                    تنظیمات
+                  </Link>
+                  <button
+                    className={`${styles.profileMenuItem} ${styles.profileMenuLogout}`}
+                    type="button"
+                    onClick={logout}
+                    disabled={loggingOut}
+                  >
+                    <LogoutIcon />
+                    {loggingOut ? "در حال خروج..." : "خروج از سامانه"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </header>
 
         <div className={styles.content}>{children}</div>
