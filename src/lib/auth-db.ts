@@ -1,4 +1,4 @@
-import { getDbPool, sql } from "@/lib/db";
+import { getDbPool } from "@/lib/db";
 
 export type LoginUserRecord = {
   UserId: string;
@@ -24,7 +24,7 @@ export async function getLoginUser(userName: string) {
   const pool = await getDbPool();
   const result = await pool
     .request()
-    .input("UserName", sql.NVarChar(100), userName)
+    .input("UserName", userName)
     .execute("bz.SP_Login_GetUser");
 
   return (result.recordset?.[0] as LoginUserRecord | undefined) ?? null;
@@ -38,9 +38,9 @@ export async function registerLoginResult(
   const pool = await getDbPool();
   await pool
     .request()
-    .input("UserId", sql.NVarChar(450), userId)
-    .input("IsSuccess", sql.Bit, isSuccess)
-    .input("LoginDateTime", sql.NVarChar(20), loginDateTime)
+    .input("UserId", userId)
+    .input("IsSuccess", isSuccess)
+    .input("LoginDateTime", loginDateTime)
     .execute("bz.SP_Login_RegisterResult");
 }
 

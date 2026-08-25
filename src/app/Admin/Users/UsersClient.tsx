@@ -89,7 +89,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [onlyActive, setOnlyActive] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(15);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(false);

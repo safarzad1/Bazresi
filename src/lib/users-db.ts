@@ -1,4 +1,5 @@
-import { getDbPool, sql } from "@/lib/db";
+import type { Request } from "mssql";
+import { getDbPool } from "@/lib/db";
 
 export type UserListRecord = {
   UserId: string;
@@ -46,13 +47,15 @@ export async function listUsers(
   pageSize: number,
 ) {
   const pool = await getDbPool();
-  const result = await pool
+  const request = pool
     .request()
-    .input("Search", sql.NVarChar, search || null)
-    .input("OnlyActive", sql.Bit, onlyActive)
-    .input("PageNumber", sql.Int, pageNumber)
-    .input("PageSize", sql.Int, pageSize)
-    .execute("bz.SP_UserAdmin_List");
+    .input("OnlyActive", onlyActive)
+    .input("PageNumber", pageNumber)
+    .input("PageSize", pageSize);
+
+  if (search) request.input("Search", search);
+
+  const result = await request.execute("bz.SP_UserAdmin_List");
 
   const summary = (result.recordsets?.[1]?.[0] ?? {}) as {
     TotalCount?: number;
@@ -75,25 +78,25 @@ export async function getUserLookups() {
 }
 
 function bindUserWriteRequest(
-  request: sql.Request,
+  request: Request,
   input: UserWriteInput,
 ) {
   return request
-    .input("UserId", sql.NVarChar, input.userId)
-    .input("UserName", sql.NVarChar, input.userName)
-    .input("FullName", sql.NVarChar, input.fullName)
-    .input("TelHamrah", sql.NVarChar, input.telHamrah)
-    .input("NationalCode", sql.NVarChar, input.nationalCode)
-    .input("Semat", sql.BigInt, input.sematId)
-    .input("MahalId", sql.BigInt, input.mahalId)
-    .input("Email", sql.NVarChar, input.email)
-    .input("PasswordHash", sql.NVarChar, input.passwordHash)
-    .input("SecurityStamp", sql.NVarChar, input.securityStamp)
-    .input("ConcurrencyStamp", sql.NVarChar, input.concurrencyStamp)
-    .input("IsActive", sql.Bit, input.isActive)
-    .input("ChangePassword", sql.Bit, input.changePassword)
-    .input("ActorUserId", sql.NVarChar, input.actorUserId)
-    .input("CreateDateTime", sql.NVarChar, input.createDateTime);
+    .input("UserId", input.userId)
+    .input("UserName", input.userName)
+    .input("FullName", input.fullName)
+    .input("TelHamrah", input.telHamrah)
+    .input("NationalCode", input.nationalCode)
+    .input("Semat", input.sematId)
+    .input("MahalId", input.mahalId)
+    .input("Email", input.email)
+    .input("PasswordHash", input.passwordHash)
+    .input("SecurityStamp", input.securityStamp)
+    .input("ConcurrencyStamp", input.concurrencyStamp)
+    .input("IsActive", input.isActive)
+    .input("ChangePassword", input.changePassword)
+    .input("ActorUserId", input.actorUserId)
+    .input("CreateDateTime", input.createDateTime);
 }
 
 export async function createUser(input: UserWriteInput) {
@@ -120,8 +123,8 @@ export async function deleteUser(
   const pool = await getDbPool();
   await pool
     .request()
-    .input("UserId", sql.NVarChar, userId)
-    .input("ActorUserId", sql.NVarChar, actorUserId)
-    .input("SecurityStamp", sql.NVarChar, securityStamp)
+    .input("UserId", userId)
+    .input("ActorUserId", actorUserId)
+    .input("SecurityStamp", securityStamp)
     .execute("bz.SP_UserAdmin_Delete");
 }

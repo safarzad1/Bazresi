@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
     const search = textValue(request.nextUrl.searchParams.get("search"), 250);
     const onlyActive = request.nextUrl.searchParams.get("onlyActive") === "1";
     const page = boundedInteger(request.nextUrl.searchParams.get("page"), 1, 1, 1_000_000);
-    const pageSize = boundedInteger(request.nextUrl.searchParams.get("pageSize"), 15, 5, 100);
+    const pageSize = boundedInteger(request.nextUrl.searchParams.get("pageSize"), 10, 5, 100);
     const result = await listUsers(search, onlyActive, page, pageSize);
     return NextResponse.json({ ...result, page, pageSize });
   } catch (error) {

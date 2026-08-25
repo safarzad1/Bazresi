@@ -1,0 +1,223 @@
+.page {
+  width: 100%;
+  margin: 0;
+  padding: 0 18px;
+  box-sizing: border-box;
+  color: #304c58;
+}
+
+.page svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.initialLoading,
+.stateBox {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #788b95;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #dcebec;
+  border-top-color: #198a8b;
+  border-radius: 50%;
+  animation: spin 750ms linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pageHeader {
+  min-height: 67px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 12px;
+  border: 1px solid #d8e6e8;
+  border-radius: 14px;
+  background: radial-gradient(circle at 0 100%, rgba(24, 148, 148, .08), transparent 32%), #fff;
+  box-shadow: 0 8px 24px rgba(27, 64, 83, .05);
+}
+
+.heading { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.headingIcon { width: 38px; height: 38px; display: grid; flex: 0 0 38px; place-items: center; border-radius: 10px; color: #147d80; background: #e7f6f5; }
+.headingIcon svg { width: 21px; height: 21px; }
+.heading span { display: block; color: #1a8b88; font-size: 10px; font-weight: 400; }
+.heading h1 { margin: 0; color: #233f51; font-family: PeydaRegular, sans-serif; font-size: 20px; font-weight: 400; line-height: 1.35; }
+.heading p { margin: 0; overflow: hidden; color: #82949e; font-size: 11px; font-weight: 400; line-height: 1.35; white-space: nowrap; text-overflow: ellipsis; }
+
+.headerActions { display: flex; align-items: center; gap: 6px; }
+.headerActions button {
+  min-height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid #d8e4e8;
+  border-radius: 9px;
+  color: #58717e;
+  background: #fff;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.headerActions button:hover:not(:disabled) { color: #147d80; border-color: #9ec9c7; background: #f4fbfa; }
+.headerActions button:disabled { opacity: .5; cursor: wait; }
+.headerActions .refreshButton { color: #fff; border-color: #157f82; background: linear-gradient(135deg, #168b8c, #1d9c93); }
+.headerActions .refreshButton:hover:not(:disabled) { color: #fff; border-color: #126f72; background: linear-gradient(135deg, #147e80, #198d85); }
+.headerActions svg { width: 16px; height: 16px; }
+
+.toolbar {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 5px;
+  padding: 6px 10px;
+  border: 1px solid #dce7ec;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .9);
+}
+
+.searchBox {
+  width: min(520px, 100%);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #d5e1e6;
+  border-radius: 9px;
+  color: #8da0aa;
+  background: #f8fafb;
+}
+
+.searchBox:focus-within { border-color: #64aaa9; box-shadow: 0 0 0 3px rgba(28, 143, 141, .08); background: #fff; }
+.searchBox svg { width: 17px; height: 17px; flex: 0 0 17px; }
+.searchBox input { width: 100%; height: 100%; border: 0; outline: 0; color: #344f5e; background: transparent; font: inherit; font-size: 12px; font-weight: 400; }
+.searchBox input::placeholder { color: #a4b2ba; }
+
+.summary { display: flex; align-items: center; gap: 6px; margin-right: auto; }
+.summary span { min-height: 30px; display: inline-flex; align-items: center; gap: 4px; padding: 0 9px; border-radius: 8px; color: #71858f; background: #f0f5f7; font-size: 10.5px; font-weight: 400; white-space: nowrap; }
+.summary b { color: #247c7d; font-size: 12px; font-weight: 400; }
+
+.treeCard {
+  min-height: 360px;
+  margin-top: 5px;
+  overflow: hidden;
+  border: 1px solid #d9e5e9;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(27, 64, 83, .045);
+}
+
+.treeHeader {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 12px;
+  border-bottom: 1px solid #e1e9ed;
+  background: #f8fbfb;
+}
+
+.treeHeader strong,
+.treeHeader small { display: block; font-weight: 400; }
+.treeHeader strong { color: #3b5968; font-size: 13px; }
+.treeHeader small { margin-top: 1px; color: #8c9da5; font-size: 9px; }
+.treeHeader > span { color: #84969f; font-size: 9.5px; }
+
+.treeScroll { max-height: calc(100vh - 245px); min-height: 300px; overflow: auto; padding: 10px 12px 18px; background: linear-gradient(180deg, #fff, #fbfdfd); }
+.treeRoot,
+.treeBranch { margin: 0; padding: 0; list-style: none; }
+.treeRoot { display: grid; gap: 7px; }
+.treeBranch { position: relative; display: grid; gap: 6px; margin: 6px 26px 0 0; padding-right: 19px; border-right: 1px solid #cbdadd; }
+.treeItem { position: relative; min-width: 0; }
+.treeBranch > .treeItem::before { content: ""; position: absolute; top: 27px; right: -19px; width: 17px; border-top: 1px solid #cbdadd; }
+
+.nodeCard {
+  min-height: 55px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border: 1px solid #d8e4e8;
+  border-right: 3px solid #4a9c98;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(28, 70, 82, .035);
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.nodeCard:hover { border-color: #afcecf; border-right-color: #218987; background: #fbfefe; transform: translateX(-1px); }
+.toggleButton { width: 28px; height: 28px; display: grid; flex: 0 0 28px; place-items: center; padding: 0; border: 1px solid #d6e2e6; border-radius: 8px; color: #66808c; background: #f7fafb; cursor: pointer; }
+.toggleButton:disabled { color: #c1ccd1; border-color: #edf1f3; background: transparent; cursor: default; }
+.toggleButton svg { width: 14px; height: 14px; transition: transform 150ms ease; }
+.toggleOpen svg { transform: rotate(-90deg); }
+.nodeIcon { width: 34px; height: 34px; display: grid; flex: 0 0 34px; place-items: center; border-radius: 9px; color: #287e80; background: #eaf7f6; }
+.nodeIcon svg { width: 17px; height: 17px; }
+
+.nodeMain { min-width: 0; flex: 1; }
+.nodeMain strong { display: block; overflow: hidden; color: #365260; font-size: 12.5px; font-weight: 400; white-space: nowrap; text-overflow: ellipsis; }
+.nodeMain > span { display: flex; align-items: center; gap: 5px; margin-top: 2px; overflow: hidden; color: #8798a0; font-size: 9.5px; font-weight: 400; white-space: nowrap; text-overflow: ellipsis; }
+.nodeMain b { color: #66808b; font-weight: 400; direction: ltr; }
+.nodeMain i { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: #b8c5ca; }
+
+.nodeMeta { display: flex; align-items: center; gap: 5px; }
+.childBadge,
+.userBadge { min-height: 27px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0 8px; border-radius: 8px; font-size: 9.5px; font-weight: 400; white-space: nowrap; }
+.childBadge { color: #617986; background: #eef4f6; }
+.userBadge { color: #8a969d; background: #f3f5f6; }
+.userBadgeActive { color: #28745e; background: #eaf7f1; }
+.userBadge svg { width: 14px; height: 14px; }
+
+.stateBox > svg { width: 35px; height: 35px; margin-bottom: 3px; color: #aac0c8; }
+.stateBox strong { color: #607985; font-size: 12px; font-weight: 400; }
+.stateBox span { color: #8b9aa2; font-size: 10px; }
+.errorState { color: #9f4650; background: #fffafb; }
+.errorState strong { color: #a0444e; }
+.errorState button { min-height: 32px; padding: 0 11px; border: 1px solid #e4bdc1; border-radius: 8px; color: #a0444e; background: #fff; font: inherit; font-size: 10px; cursor: pointer; }
+
+@media (max-width: 900px) {
+  .pageHeader { align-items: flex-start; flex-direction: column; padding: 10px 12px; }
+  .headerActions { width: 100%; }
+  .headerActions button { flex: 1; }
+  .toolbar { align-items: stretch; flex-direction: column; }
+  .searchBox { width: 100%; }
+  .summary { width: 100%; margin-right: 0; }
+  .summary span { flex: 1; justify-content: center; }
+  .treeScroll { max-height: none; }
+}
+
+@media (max-width: 600px) {
+  .page { padding: 0 10px; }
+  .heading p { white-space: normal; }
+  .headerActions { flex-wrap: wrap; }
+  .headerActions button { min-width: calc(50% - 4px); }
+  .summary { flex-wrap: wrap; }
+  .summary span { min-width: calc(50% - 4px); }
+  .treeHeader { align-items: flex-start; flex-direction: column; }
+  .treeBranch { margin-right: 13px; padding-right: 12px; }
+  .treeBranch > .treeItem::before { right: -12px; width: 10px; }
+  .nodeMeta { align-items: flex-end; flex-direction: column; }
+  .childBadge, .userBadge { min-height: 23px; padding: 0 6px; font-size: 8.5px; }
+}

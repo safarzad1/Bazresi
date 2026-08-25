@@ -41,6 +41,27 @@ function UsersIcon() {
   );
 }
 
+function OrganizationIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="9" y="3" width="6" height="5" rx="1.5" />
+      <rect x="3" y="16" width="6" height="5" rx="1.5" />
+      <rect x="15" y="16" width="6" height="5" rx="1.5" />
+      <path d="M12 8v4M6 16v-4h12v4" />
+    </svg>
+  );
+}
+
+function PersonsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20v-1.4A6.6 6.6 0 0 1 11.6 12h.8a6.6 6.6 0 0 1 6.6 6.6V20" />
+      <path d="M4 4h3M4 7h2" />
+    </svg>
+  );
+}
+
 function LogoutIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -77,6 +98,8 @@ function DownIcon() {
 const menuItems = [
   { href: "/Admin/Dashboard", title: "داشبورد", icon: DashboardIcon },
   { href: "/Admin/Users", title: "فهرست کاربران", icon: UsersIcon },
+  { href: "/Admin/Persons", title: "فهرست اشخاص", icon: PersonsIcon },
+  { href: "/Admin/OrganizationStructure", title: "ساختار سازمانی", icon: OrganizationIcon },
   { href: "/Admin/Settings", title: "تنظیمات", icon: SettingsIcon },
 ];
 

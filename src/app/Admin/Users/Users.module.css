@@ -172,29 +172,29 @@
 .tableScroll { overflow-x: auto; }
 .tableCard table { width: 100%; min-width: 1010px; border-collapse: collapse; }
 .tableCard th { height: 40px; padding: 0 12px; border-bottom: 1px solid #dfe8ed; color: #6f838f; background: #f8fafb; font-size: 12px; font-weight: 400; text-align: right; }
-.tableCard td { height: 53px; padding: 5px 12px; border-bottom: 1px solid #edf2f4; color: #3d5666; font-size: 12.5px; font-weight: 400; vertical-align: middle; }
+.tableCard td { height: 42px; padding: 2px 12px; border-bottom: 1px solid #edf2f4; color: #3d5666; font-size: 13.5px; font-weight: 400; vertical-align: middle; }
 .tableCard tbody tr:last-child td { border-bottom: 0; }
 .tableCard tbody tr { transition: background 130ms ease; }
 .tableCard tbody tr:hover { background: #fbfdfd; }
 .actionsColumn { width: 92px; text-align: center !important; }
 
 .personCell { display: flex; align-items: center; gap: 8px; min-width: 165px; }
-.avatar { width: 32px; height: 32px; display: grid; flex: 0 0 32px; place-items: center; border-radius: 9px; color: #147d80; background: #e8f6f5; font-size: 14px; font-weight: 400; }
+.avatar { width: 30px; height: 30px; display: grid; flex: 0 0 30px; place-items: center; border-radius: 8px; color: #147d80; background: #e8f6f5; font-size: 14px; font-weight: 400; }
 .personCell strong, .personCell small, .detailsCell span, .detailsCell small { display: block; }
-.personCell strong { margin-bottom: 1px; color: #2f4b5c; font-size: 12.5px; font-weight: 400; }
-.personCell small, .detailsCell small { color: #84959e; font-size: 10.5px; font-weight: 400; }
+.personCell strong { margin-bottom: 0; color: #2f4b5c; font-size: 13.5px; font-weight: 400; }
+.personCell small, .detailsCell small { color: #84959e; font-size: 11.5px; font-weight: 400; }
 .detailsCell { min-width: 130px; }
-.detailsCell span { margin-bottom: 1px; color: #496371; font-weight: 400; }
-.status { width: fit-content; display: flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 400; }
+.detailsCell span { margin-bottom: 0; color: #496371; font-weight: 400; }
+.status { min-height: 23px; width: fit-content; display: flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 8px; font-size: 11.5px; font-weight: 400; }
 .status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .statusActive { color: #278266; background: #ebf8f3; }
 .statusInactive { color: #a15b64; background: #fff0f1; }
-.passwordFlag { display: block; margin-top: 2px; color: #a16d17; font-size: 9.5px; font-weight: 400; }
-.lastLogin { color: #738791 !important; direction: ltr; text-align: right; font-size: 11px !important; font-weight: 400; }
+.passwordFlag { display: block; margin-top: 0; color: #a16d17; font-size: 10.5px; font-weight: 400; }
+.lastLogin { color: #738791 !important; direction: ltr; text-align: right; font-size: 12px !important; font-weight: 400; }
 
 .rowActions { display: flex; justify-content: center; gap: 5px; }
-.rowActions button { width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 1px solid; border-radius: 8px; background: #fff; cursor: pointer; }
-.rowActions svg { width: 16px; height: 16px; }
+.rowActions button { width: 27px; height: 27px; display: grid; place-items: center; padding: 0; border: 1px solid; border-radius: 8px; background: #fff; cursor: pointer; }
+.rowActions svg { width: 14px; height: 14px; }
 .editAction { color: #247f82; border-color: #cfe4e4 !important; }
 .editAction:hover { background: #edf8f7; }
 .deleteAction { color: #b3535d; border-color: #eed8db !important; }
