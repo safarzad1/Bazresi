@@ -1,9 +1,11 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SearchableDropdown } from "@/component/Dropdown";
+import { normalizeDropdownSearch } from "@/component/Dropdown/dropdownUtils";
 import InputPersianDate from "@/component/InputPersianDatePicker";
 import { PERSON_DFN_PID } from "@/lib/person-dfn";
+import { isValidIranianNationalCode, numericInput } from "@/Utils/nationalCode";
 import styles from "./Persons.module.css";
 
 type PersonRow = {
@@ -54,6 +56,7 @@ type PersonRecord = PersonRow & {
 
 type Definition = { GroupCode: number; Id: number; Title: string };
 type City = { Id: number; Title: string };
+type MainPerson = { CodeMelli: string; FullName: string };
 
 type PersonForm = {
   personId: number;
@@ -223,27 +226,38 @@ async function readJson(response: Response) {
 }
 
 function TextField({
-  label, value, onChange, placeholder, required, type = "text", maxLength, hint,
+  label, value, onChange, placeholder, required, type = "text", maxLength, hint, numeric = false, error = false, largeLabel = false,
 }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string;
-  required?: boolean; type?: string; maxLength?: number; hint?: string;
+  required?: boolean; type?: string; maxLength?: number; hint?: string; numeric?: boolean; error?: boolean; largeLabel?: boolean;
 }) {
   return (
-    <label className={styles.field}>
+    <label className={`${styles.field} ${error ? styles.fieldError : ""} ${largeLabel ? styles.largeFieldLabel : ""}`}>
       <span>{label}{required && <i>*</i>}</span>
-      <input type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} maxLength={maxLength} />
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(numeric ? numericInput(event.target.value, maxLength) : event.target.value)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        inputMode={numeric ? "numeric" : undefined}
+        pattern={numeric ? "[0-9]*" : undefined}
+        aria-invalid={error || undefined}
+      />
       {hint && <small>{hint}</small>}
     </label>
   );
 }
 
-function TextAreaField({ label, value, onChange, placeholder }: {
+function TextAreaField({ label, value, onChange, placeholder, required = false, hint, error = false, largeLabel = false }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string;
+  required?: boolean; hint?: string; error?: boolean; largeLabel?: boolean;
 }) {
   return (
-    <label className={`${styles.field} ${styles.wideField}`}>
-      <span>{label}</span>
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} />
+    <label className={`${styles.field} ${styles.wideField} ${error ? styles.fieldError : ""} ${largeLabel ? styles.largeFieldLabel : ""}`}>
+      <span>{label}{required && <i>*</i>}</span>
+      <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} aria-invalid={error || undefined} />
+      {hint && <small>{hint}</small>}
     </label>
   );
 }
@@ -276,6 +290,10 @@ export default function PersonsClient() {
   const [persons, setPersons] = useState<PersonRow[]>([]);
   const [definitions, setDefinitions] = useState<Definition[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [mainPersons, setMainPersons] = useState<MainPerson[]>([]);
+  const [selectedMainPerson, setSelectedMainPerson] = useState<MainPerson | null>(null);
+  const [mainPersonsSearching, setMainPersonsSearching] = useState(false);
+  const mainPersonRequestId = useRef(0);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -301,6 +319,58 @@ export default function PersonsClient() {
     { value: "", label: "انتخاب نشده" },
     ...cities.map((item) => ({ value: String(item.Id), label: item.Title })),
   ], [cities]);
+  const certificateDescriptionRequired = useMemo(() => {
+    const selected = definitions.find(
+      (item) =>
+        item.GroupCode === PERSON_DFN_PID.descriptionAvailability &&
+        String(item.Id) === form.taghyiratShenasnamehSet,
+    );
+    return normalizeDropdownSearch(selected?.Title) === "دارد";
+  }, [definitions, form.taghyiratShenasnamehSet]);
+  const certificateDescriptionInvalid =
+    certificateDescriptionRequired && form.taghyiratShenasnameh.trim().length <= 5;
+  const mainPersonOptions = useMemo(() => {
+    const availablePersons = [...mainPersons];
+    if (
+      form.codeMelliSarparast &&
+      !availablePersons.some((item) => item.CodeMelli === form.codeMelliSarparast)
+    ) {
+      availablePersons.unshift(selectedMainPerson ?? {
+        CodeMelli: form.codeMelliSarparast,
+        FullName: form.codeMelliSarparast,
+      });
+    }
+
+    return [
+      { value: "", label: "انتخاب نشده" },
+      ...availablePersons.map((item) => ({
+      value: item.CodeMelli,
+      label: item.FullName,
+      description: item.CodeMelli,
+      searchText: `${item.FullName} ${item.CodeMelli}`,
+      })),
+    ];
+  }, [form.codeMelliSarparast, mainPersons, selectedMainPerson]);
+
+  const searchMainPersonOptions = useCallback(async (query: string) => {
+    const requestId = ++mainPersonRequestId.current;
+    setMainPersonsSearching(true);
+
+    try {
+      const params = new URLSearchParams({ mode: "head-lookup" });
+      if (query) params.set("search", query);
+      const data = await readJson(await fetch(`/api/persons?${params}`, { cache: "no-store" }));
+      if (requestId === mainPersonRequestId.current) {
+        setMainPersons((data.mainPersons as MainPerson[] | undefined) ?? []);
+      }
+    } catch (error) {
+      if (requestId === mainPersonRequestId.current) {
+        setNotice({ type: "error", text: error instanceof Error ? error.message : "جست‌وجوی سرپرست انجام نشد." });
+      }
+    } finally {
+      if (requestId === mainPersonRequestId.current) setMainPersonsSearching(false);
+    }
+  }, []);
 
   const loadPersons = useCallback(async (query: string, state: string, requestedPage: number, requestedSize: number) => {
     setLoading(true);
@@ -319,11 +389,16 @@ export default function PersonsClient() {
   }, []);
 
   useEffect(() => {
+    const requestId = ++mainPersonRequestId.current;
     fetch("/api/persons?mode=lookups", { cache: "no-store" })
       .then(readJson)
       .then((data) => {
         setDefinitions((data.definitions as Definition[] | undefined) ?? []);
         setCities((data.cities as City[] | undefined) ?? []);
+        // A slower initial lookup must not overwrite a newer head search.
+        if (requestId === mainPersonRequestId.current) {
+          setMainPersons((data.mainPersons as MainPerson[] | undefined) ?? []);
+        }
       })
       .catch((error: Error) => setNotice({ type: "error", text: error.message }));
   }, []);
@@ -355,6 +430,7 @@ export default function PersonsClient() {
 
   function openCreate() {
     setForm(emptyForm);
+    setSelectedMainPerson(null);
     setStep(0);
     setSelectedImage(null);
     setPreviewUrl("");
@@ -371,7 +447,11 @@ export default function PersonsClient() {
       const data = await readJson(await fetch(`/api/persons?personId=${person.PersonId}`, { cache: "no-store" }));
       const record = data.person as PersonRecord | undefined;
       if (!record) throw new Error("اطلاعات شخص دریافت نشد.");
-      setForm(fromRecord(record));
+      const nextForm = fromRecord(record);
+      setForm(nextForm);
+      setSelectedMainPerson(
+        mainPersons.find((item) => item.CodeMelli === nextForm.codeMelliSarparast) ?? null,
+      );
     } catch (error) {
       setWizardOpen(false);
       setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت اطلاعات انجام نشد." });
@@ -415,9 +495,13 @@ export default function PersonsClient() {
   function stepError(currentStep: number) {
     if (currentStep === 0) {
       if (!/^\d{10}$/.test(form.codeMelli)) return "کد ملی را به‌صورت ۱۰ رقمی وارد کنید.";
+      if (!isValidIranianNationalCode(form.codeMelli)) return "کد ملی واردشده معتبر نیست.";
       if (form.firstName.trim().length < 2 || form.lastName.trim().length < 2 || form.fatherName.trim().length < 2) return "نام، نام خانوادگی و نام پدر را کامل وارد کنید.";
       if (!form.shomareShenasnameh.trim()) return "شماره شناسنامه را وارد کنید.";
       if (!form.life || !form.jensiat) return "وضعیت حیات و جنسیت را انتخاب کنید.";
+    }
+    if (currentStep === 1 && certificateDescriptionInvalid) {
+      return "توضیحات شناسنامه باید بیشتر از ۵ کاراکتر باشد.";
     }
     if (currentStep === 2) {
       if (form.shoghl.trim().length < 2) return "شغل را وارد کنید.";
@@ -435,6 +519,16 @@ export default function PersonsClient() {
     }
     setSaving(true);
     try {
+      if (step === 0) {
+        const validation = await readJson(await fetch(
+          `/api/persons?mode=validate-national-code&nationalCode=${encodeURIComponent(form.codeMelli)}`,
+          { cache: "no-store" },
+        ));
+        if (validation.isValid !== true) {
+          setNotice({ type: "error", text: "کد ملی واردشده معتبر نیست." });
+          return;
+        }
+      }
       if (step === 2 && form.registrationState === 0) await saveDraft(false);
       setStep((current) => Math.min(3, current + 1));
     } catch (errorValue) {
@@ -558,12 +652,12 @@ export default function PersonsClient() {
     ["تاریخ فوت", form.tarikhFoat || "—"],
     ["کد ملی سرپرست", form.codeMelliSarparast || "—"],
     ["نسبت", lookupTitle(PERSON_DFN_PID.relation, form.nesbat)],
-    ["محل تولد", cityTitle(form.mahalTavalod)],
-    ["محل صدور", cityTitle(form.mahalSodor)],
+    ["شهرستان تولد", cityTitle(form.mahalTavalod)],
+    ["شهرستان صدور", cityTitle(form.mahalSodor)],
     ["سریال شناسنامه", [form.serialHarf, form.serialSeri, form.serialCode].filter(Boolean).join(" - ") || "—"],
-    ["المثنی", lookupTitle(PERSON_DFN_PID.yesNo, form.almosana)],
+    ["وضعیت شناسنامه", lookupTitle(PERSON_DFN_PID.certificateStatus, form.almosana)],
     ["نام و نام خانوادگی قبلی", `${form.firstNameOld} ${form.lastNameOld}`.trim() || "—"],
-    ["دارای تغییرات شناسنامه", lookupTitle(PERSON_DFN_PID.yesNo, form.taghyiratShenasnamehSet)],
+    ["توضیحات دارد یا ندارد", lookupTitle(PERSON_DFN_PID.descriptionAvailability, form.taghyiratShenasnamehSet)],
     ["شرح تغییرات شناسنامه", form.taghyiratShenasnameh || "—"],
     ["شغل", form.shoghl || "—"],
     ["وضعیت تأهل", lookupTitle(PERSON_DFN_PID.maritalStatus, form.taahol)],
@@ -672,27 +766,70 @@ export default function PersonsClient() {
                   <TextField label="نام" value={form.firstName} onChange={(value) => change("firstName", value)} required maxLength={150} />
                   <TextField label="نام خانوادگی" value={form.lastName} onChange={(value) => change("lastName", value)} required maxLength={150} />
                   <TextField label="نام پدر" value={form.fatherName} onChange={(value) => change("fatherName", value)} required maxLength={150} />
-                  <TextField label="کد ملی" value={form.codeMelli} onChange={(value) => change("codeMelli", value)} required maxLength={10} placeholder="۱۰ رقم" />
+                  <TextField
+                    label="کد ملی"
+                    value={form.codeMelli}
+                    onChange={(value) => change("codeMelli", value)}
+                    required
+                    numeric
+                    error={form.codeMelli.length === 10 && !isValidIranianNationalCode(form.codeMelli)}
+                    hint={form.codeMelli.length === 10 && !isValidIranianNationalCode(form.codeMelli) ? "کد ملی واردشده معتبر نیست." : undefined}
+                    maxLength={10}
+                    placeholder="۱۰ رقم"
+                  />
                   <TextField label="شماره شناسنامه" value={form.shomareShenasnameh} onChange={(value) => change("shomareShenasnameh", value)} required maxLength={20} />
                   <InputPersianDate label="تاریخ تولد" value={form.tarikhTavalod} onChange={(value) => change("tarikhTavalod", value ?? "")} placeholder="انتخاب تاریخ تولد" />
                   <label className={styles.field}><span>جنسیت<i>*</i></span><SearchableDropdown value={form.jensiat} options={definitionOptions(PERSON_DFN_PID.gender)} onChange={(value) => change("jensiat", value)} compact /></label>
                   <label className={styles.field}><span>وضعیت حیات<i>*</i></span><SearchableDropdown value={form.life} options={definitionOptions(PERSON_DFN_PID.life)} onChange={(value) => change("life", value)} compact /></label>
                   <InputPersianDate label="تاریخ فوت" value={form.tarikhFoat} onChange={(value) => change("tarikhFoat", value ?? "")} placeholder="در صورت نیاز" />
-                  <TextField label="کد ملی سرپرست" value={form.codeMelliSarparast} onChange={(value) => change("codeMelliSarparast", value)} maxLength={10} />
+                  <label className={styles.field}>
+                    <span>کد ملی سرپرست</span>
+                    <SearchableDropdown
+                      value={form.codeMelliSarparast}
+                      options={mainPersonOptions}
+                      onChange={(value) => {
+                        setSelectedMainPerson(
+                          mainPersons.find((item) => item.CodeMelli === value) ?? null,
+                        );
+                        change("codeMelliSarparast", value);
+                        if (!value) change("nesbat", "");
+                      }}
+                      onSearchChange={searchMainPersonOptions}
+                      searchDelayMs={3000}
+                      searching={mainPersonsSearching}
+                      onClear={() => {
+                        setSelectedMainPerson(null);
+                        change("codeMelliSarparast", "");
+                        change("nesbat", "");
+                      }}
+                      clearAriaLabel="حذف سرپرست انتخاب‌شده"
+                      placeholder="انتخاب سرپرست (اختیاری)"
+                      searchPlaceholder="جست‌وجوی نام یا کد ملی..."
+                      ariaLabel="انتخاب کد ملی سرپرست"
+                      compact
+                    />
+                  </label>
                   <label className={styles.field}><span>نسبت با سرپرست</span><SearchableDropdown value={form.nesbat} options={definitionOptions(PERSON_DFN_PID.relation)} onChange={(value) => change("nesbat", value)} compact /></label>
                 </div>}
 
                 {step === 1 && <div className={styles.formGrid}>
-                  <label className={styles.field}><span>محل تولد</span><SearchableDropdown value={form.mahalTavalod} options={cityOptions} onChange={(value) => change("mahalTavalod", value)} searchPlaceholder="جست‌وجوی شهر..." compact /></label>
-                  <label className={styles.field}><span>محل صدور</span><SearchableDropdown value={form.mahalSodor} options={cityOptions} onChange={(value) => change("mahalSodor", value)} searchPlaceholder="جست‌وجوی شهر..." compact /></label>
+                  <label className={styles.field}><span>شهرستان تولد</span><SearchableDropdown value={form.mahalTavalod} options={cityOptions} onChange={(value) => change("mahalTavalod", value)} searchPlaceholder="جست‌وجوی شهرستان..." compact /></label>
+                  <label className={styles.field}><span>شهرستان صدور</span><SearchableDropdown value={form.mahalSodor} options={cityOptions} onChange={(value) => change("mahalSodor", value)} searchPlaceholder="جست‌وجوی شهرستان..." compact /></label>
                   <TextField label="حرف سریال" value={form.serialHarf} onChange={(value) => change("serialHarf", value)} maxLength={3} />
                   <TextField label="سری شناسنامه" value={form.serialSeri} onChange={(value) => change("serialSeri", value)} maxLength={50} />
                   <TextField label="شماره سریال" value={form.serialCode} onChange={(value) => change("serialCode", value)} maxLength={50} />
-                  <label className={styles.field}><span>شناسنامه المثنی</span><SearchableDropdown value={form.almosana} options={definitionOptions(PERSON_DFN_PID.yesNo)} onChange={(value) => change("almosana", value)} compact /></label>
+                  <label className={styles.field}><span>وضعیت شناسنامه</span><SearchableDropdown value={form.almosana} options={definitionOptions(PERSON_DFN_PID.certificateStatus)} onChange={(value) => change("almosana", value)} compact /></label>
                   <TextField label="نام قبلی" value={form.firstNameOld} onChange={(value) => change("firstNameOld", value)} maxLength={250} />
                   <TextField label="نام خانوادگی قبلی" value={form.lastNameOld} onChange={(value) => change("lastNameOld", value)} maxLength={150} />
-                  <label className={styles.field}><span>دارای تغییرات شناسنامه</span><SearchableDropdown value={form.taghyiratShenasnamehSet} options={definitionOptions(PERSON_DFN_PID.yesNo)} onChange={(value) => change("taghyiratShenasnamehSet", value)} compact /></label>
-                  <TextAreaField label="شرح تغییرات شناسنامه" value={form.taghyiratShenasnameh} onChange={(value) => change("taghyiratShenasnameh", value)} />
+                  <label className={styles.field}><span>توضیحات دارد یا ندارد</span><SearchableDropdown value={form.taghyiratShenasnamehSet} options={definitionOptions(PERSON_DFN_PID.descriptionAvailability)} onChange={(value) => change("taghyiratShenasnamehSet", value)} compact /></label>
+                  <TextAreaField
+                    label="توضیحات شناسنامه"
+                    value={form.taghyiratShenasnameh}
+                    onChange={(value) => change("taghyiratShenasnameh", value)}
+                    required={certificateDescriptionRequired}
+                    error={certificateDescriptionInvalid}
+                    hint={certificateDescriptionRequired ? "در صورت انتخاب «دارد»، حداقل ۶ کاراکتر وارد کنید." : undefined}
+                  />
                 </div>}
 
                 {step === 2 && <div className={styles.formGrid}>
@@ -705,10 +842,10 @@ export default function PersonsClient() {
                   <InputPersianDate label="تاریخ پایان خدمت" value={form.tarikhPayan} onChange={(value) => change("tarikhPayan", value ?? "")} placeholder="انتخاب تاریخ پایان" />
                   <label className={styles.field}><span>نوع معافیت</span><SearchableDropdown value={form.noeMoaafiat} options={definitionOptions(PERSON_DFN_PID.exemptionType)} onChange={(value) => change("noeMoaafiat", value)} compact /></label>
                   <InputPersianDate label="تاریخ معافیت" value={form.tarikhMoaafiat} onChange={(value) => change("tarikhMoaafiat", value ?? "")} placeholder="انتخاب تاریخ معافیت" />
-                  <TextField label="شماره همراه" value={form.telHamrah} onChange={(value) => change("telHamrah", value)} placeholder="09xxxxxxxxx" maxLength={11} />
-                  <TextField label="تماس ضروری" value={form.telZaruri} onChange={(value) => change("telZaruri", value)} maxLength={15} />
-                  <TextField label="ایمیل" value={form.email} onChange={(value) => change("email", value)} type="email" maxLength={1500} />
-                  <TextAreaField label="شرح معافیت" value={form.sharhMoaafiat} onChange={(value) => change("sharhMoaafiat", value)} />
+                  <TextField label="تلفن همراه" value={form.telHamrah} onChange={(value) => change("telHamrah", value)} placeholder="09xxxxxxxxx" maxLength={11} numeric largeLabel />
+                  <TextField label="تلفن ضروری" value={form.telZaruri} onChange={(value) => change("telZaruri", value)} maxLength={15} numeric largeLabel />
+                  <TextField label="ایمیل" value={form.email} onChange={(value) => change("email", value)} type="email" maxLength={1500} largeLabel />
+                  <TextAreaField label="شرح معافیت" value={form.sharhMoaafiat} onChange={(value) => change("sharhMoaafiat", value)} largeLabel />
                 </div>}
 
                 {step === 3 && <div className={styles.reviewLayout}>

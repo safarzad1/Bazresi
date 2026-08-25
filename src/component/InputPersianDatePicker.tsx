@@ -44,31 +44,46 @@ export default function InputPersianDate({
                 </label>
             ) : null}
 
-            <DatePicker
-                calendar={persian}
-                locale={persian_fa}
-                value={selected}
-                onChange={(date: DateObject | null) =>
-                    onChange?.(
-                        date
-                            ? date.format("YYYY/MM/DD")
-                            : null,
-                    )
-                }
-                minDate={
-                    allowPastDates
-                        ? undefined
-                        : new DateObject({
-                              calendar: persian,
-                              locale: persian_fa,
-                          })
-                }
-                inputClass={`${styles.input} ${error ? styles.inputError : ""}`}
-                placeholder={placeholder}
-                calendarPosition="bottom-right"
-                portal
-                zIndex={2147483000}
-            />
+            <div className={styles.dateWrap}>
+                <DatePicker
+                    calendar={persian}
+                    locale={persian_fa}
+                    value={selected}
+                    onChange={(date: DateObject | null) =>
+                        onChange?.(
+                            date
+                                ? date.format("YYYY/MM/DD")
+                                : null,
+                        )
+                    }
+                    minDate={
+                        allowPastDates
+                            ? undefined
+                            : new DateObject({
+                                  calendar: persian,
+                                  locale: persian_fa,
+                              })
+                    }
+                    inputClass={`${styles.input} ${value ? styles.inputWithClear : ""} ${error ? styles.inputError : ""}`}
+                    placeholder={placeholder}
+                    calendarPosition="bottom-right"
+                    portal
+                    zIndex={2147483000}
+                />
+
+                {value ? (
+                    <button
+                        type="button"
+                        className={styles.clearButton}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => onChange?.(null)}
+                        aria-label="حذف تاریخ"
+                        title="حذف تاریخ"
+                    >
+                        ×
+                    </button>
+                ) : null}
+            </div>
 
             {error && errorMessage ? (
                 <div className={styles.errorMessage} role="alert">

@@ -31,6 +31,11 @@ export type SearchableDropdownProps<T extends DropdownValue = string> =
         noResultText?: string;
         menuWidth?: number;
         menuClassName?: string;
+        onSearchChange?: (query: string) => void;
+        searchDelayMs?: number;
+        searching?: boolean;
+        onClear?: () => void;
+        clearAriaLabel?: string;
     };
 
 export default function SearchableDropdown<
@@ -53,6 +58,11 @@ export default function SearchableDropdown<
     dropdownZIndex = 2147483000,
     menuWidth,
     menuClassName = "",
+    onSearchChange,
+    searchDelayMs = 300,
+    searching = false,
+    onClear,
+    clearAriaLabel = "پاک‌کردن انتخاب",
 }: SearchableDropdownProps<T>) {
     const generatedId = useId().replace(/:/g, "");
     const listId = `searchable-dropdown-list-${generatedId}`;
@@ -62,6 +72,7 @@ export default function SearchableDropdown<
     const [mounted, setMounted] = useState(false);
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
+    const [waitingForSearch, setWaitingForSearch] = useState(false);
     const [position, setPosition] = useState<DropdownPosition>({
         top: 0,
         left: 0,
@@ -79,8 +90,15 @@ export default function SearchableDropdown<
         () => normalizedOptions.find((option) => option.value === value),
         [normalizedOptions, value],
     );
+    const canClear = Boolean(
+        onClear && value !== "" && value !== null && value !== undefined,
+    );
 
     const filteredOptions = useMemo(() => {
+        // Remote search results are already filtered by the stored procedure.
+        // Filtering them again in the browser can hide valid Persian matches.
+        if (onSearchChange) return normalizedOptions;
+
         const normalizedQuery = normalizeDropdownSearch(query);
         if (!normalizedQuery) return normalizedOptions;
 
@@ -91,7 +109,7 @@ export default function SearchableDropdown<
                 }`,
             ).includes(normalizedQuery),
         );
-    }, [normalizedOptions, query]);
+    }, [normalizedOptions, onSearchChange, query]);
 
     const updatePosition = () => {
         setPosition(getDropdownPosition(rootRef, menuWidth ?? 390));
@@ -100,6 +118,7 @@ export default function SearchableDropdown<
     const closeDropdown = () => {
         setOpen(false);
         setQuery("");
+        setWaitingForSearch(false);
     };
 
     const openDropdown = () => {
@@ -147,6 +166,26 @@ export default function SearchableDropdown<
         if (disabled || loading) closeDropdown();
     }, [disabled, loading]);
 
+    useEffect(() => {
+        if (!open || !onSearchChange) return;
+
+        const normalizedQuery = query.trim();
+        if (!normalizedQuery) {
+            onSearchChange("");
+            return;
+        }
+
+        const timer = window.setTimeout(
+            () => {
+                setWaitingForSearch(false);
+                onSearchChange(normalizedQuery);
+            },
+            Math.max(0, searchDelayMs),
+        );
+
+        return () => window.clearTimeout(timer);
+    }, [onSearchChange, open, query, searchDelayMs]);
+
     const menu =
         open && mounted && !disabled && !loading
             ? createPortal(
@@ -163,11 +202,25 @@ export default function SearchableDropdown<
                       dir="rtl"
                   >
                       <div className={styles.searchBox}>
-                          <Search size={16} aria-hidden="true" />
+                          {searching || waitingForSearch ? (
+                              <LoaderCircle
+                                  size={16}
+                                  className={styles.spin}
+                                  aria-hidden="true"
+                              />
+                          ) : (
+                              <Search size={16} aria-hidden="true" />
+                          )}
                           <input
                               ref={inputRef}
                               value={query}
-                              onChange={(event) => setQuery(event.target.value)}
+                              onChange={(event) => {
+                                  const nextQuery = event.target.value;
+                                  setQuery(nextQuery);
+                                  setWaitingForSearch(
+                                      Boolean(onSearchChange && nextQuery.trim()),
+                                  );
+                              }}
                               placeholder={searchPlaceholder}
                               aria-label={searchPlaceholder}
                           />
@@ -177,6 +230,7 @@ export default function SearchableDropdown<
                                   className={styles.clearButton}
                                   onClick={() => {
                                       setQuery("");
+                                      setWaitingForSearch(false);
                                       inputRef.current?.focus();
                                   }}
                                   aria-label="پاک‌کردن عبارت جست‌وجو"
@@ -187,7 +241,13 @@ export default function SearchableDropdown<
                       </div>
 
                       <div className={styles.optionList}>
-                          {normalizedOptions.length === 0 ? (
+                          {waitingForSearch ? (
+                              <div className={styles.empty}>
+                                  ۳ ثانیه پس از پایان تایپ جست‌وجو می‌شود...
+                              </div>
+                          ) : searching ? (
+                              <div className={styles.empty}>در حال جست‌وجو...</div>
+                          ) : normalizedOptions.length === 0 ? (
                               <div className={styles.empty}>{emptyText}</div>
                           ) : filteredOptions.length === 0 ? (
                               <div className={styles.empty}>{noResultText}</div>
@@ -244,7 +304,7 @@ export default function SearchableDropdown<
         >
             <button
                 type="button"
-                className={`${styles.trigger} ${open ? styles.triggerOpen : ""}`}
+                className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${canClear ? styles.triggerWithClear : ""}`}
                 onClick={() => (open ? closeDropdown() : openDropdown())}
                 disabled={disabled || loading}
                 aria-haspopup="listbox"
@@ -276,6 +336,21 @@ export default function SearchableDropdown<
                     aria-hidden="true"
                 />
             </button>
+            {canClear && !disabled && !loading && (
+                <button
+                    type="button"
+                    className={styles.triggerClear}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        closeDropdown();
+                        onClear?.();
+                    }}
+                    aria-label={clearAriaLabel}
+                    title={clearAriaLabel}
+                >
+                    <X size={15} aria-hidden="true" />
+                </button>
+            )}
             {menu}
         </div>
     );

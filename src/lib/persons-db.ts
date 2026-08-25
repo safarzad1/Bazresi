@@ -28,6 +28,11 @@ export type CityLookupRecord = {
   Title: string;
 };
 
+export type MainPersonLookupRecord = {
+  CodeMelli: string;
+  FullName: string;
+};
+
 type DfnRecord = {
   ID: number;
   PID: number | null;
@@ -122,7 +127,7 @@ export async function listPersons(
   if (search) request.input("Search", search);
   if (state !== null) request.input("State", state);
 
-  const result = await request.execute("bz.SP_PersonAdmin_List");
+  const result = await request.execute("bz.SP_PersonAdmin_ListNormalized");
 
   const summary = (result.recordsets?.[1]?.[0] ?? {}) as {
     TotalCount?: number;
@@ -140,14 +145,18 @@ export async function listPersons(
 
 export async function getPersonLookups() {
   const pool = await getDbPool();
-  const [cityResult, definitionResults] = await Promise.all([
-    pool.request().execute("bz.SP_PersonAdmin_CityLookup"),
+  const [cityResult, mainPersonResult, definitionResults] = await Promise.all([
+    pool
+      .request()
+      .input("CityIdLength", 5)
+      .execute("bz.SP_PersonAdmin_CityLookup"),
+    pool.request().execute("bz.SP_PersonAdmin_HeadLookup"),
     Promise.all(
       PERSON_DFN_PIDS.map(async (pid) => {
         const result = await pool
           .request()
           .input("PID", pid)
-          .execute("dbo.SP_GetDFN");
+          .execute("bz.SP_PersonAdmin_DfnLookup");
         return { pid, rows: (result.recordset ?? []) as DfnRecord[] };
       }),
     ),
@@ -168,7 +177,39 @@ export async function getPersonLookups() {
   return {
     definitions: definitions as PersonLookupRecord[],
     cities: (cityResult.recordset ?? []) as CityLookupRecord[],
+    mainPersons: (mainPersonResult.recordset ?? []) as MainPersonLookupRecord[],
   };
+}
+
+export async function searchMainPersons(search: string) {
+  const pool = await getDbPool();
+  const request = pool.request();
+  if (search) request.input("Search", search);
+  const result = await request.execute("bz.SP_PersonAdmin_HeadLookup");
+
+  return (result.recordset ?? []) as MainPersonLookupRecord[];
+}
+
+export async function validatePersonNationalCode(nationalCode: string) {
+  const pool = await getDbPool();
+  const result = await pool
+    .request()
+    .input("NationalCode", nationalCode)
+    .execute("bz.SP_PersonAdmin_ValidateNationalCode");
+
+  const value = result.recordset?.[0]?.IsValid;
+  return value === true || value === 1;
+}
+
+export async function validatePersonMobileNumber(mobileNumber: string) {
+  const pool = await getDbPool();
+  const result = await pool
+    .request()
+    .input("MobileNumber", mobileNumber)
+    .execute("bz.SP_PersonAdmin_ValidateMobileNumber");
+
+  const value = result.recordset?.[0]?.IsValid;
+  return value === true || value === 1;
 }
 
 export async function getPerson(personId: number) {
@@ -224,7 +265,7 @@ function bindPerson(request: Request, input: PersonWriteInput) {
 export async function savePerson(input: PersonWriteInput) {
   const pool = await getDbPool();
   const result = await bindPerson(pool.request(), input).execute(
-    "bz.SP_PersonAdmin_Save",
+    "bz.SP_PersonAdmin_SaveNormalized",
   );
   return (result.recordset?.[0] as {
     PersonId: number;

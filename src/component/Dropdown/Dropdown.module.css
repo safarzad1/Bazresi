@@ -77,6 +77,33 @@
     transform: rotate(180deg);
 }
 
+.triggerWithClear {
+    padding-left: 66px;
+}
+
+.triggerClear {
+    position: absolute;
+    top: 50%;
+    left: 35px;
+    z-index: 1;
+    width: 27px;
+    height: 27px;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    color: #788891;
+    background: #f2f6f7;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.triggerClear:hover {
+    color: #a33b3b;
+    background: #fff0f1;
+}
+
 .menu,
 .searchMenu {
     position: fixed;
@@ -245,7 +272,7 @@
 }
 
 .compact .triggerText {
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .spin {

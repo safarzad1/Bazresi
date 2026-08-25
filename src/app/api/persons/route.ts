@@ -6,16 +6,17 @@ import {
   getPersonLookups,
   listPersons,
   savePerson,
+  searchMainPersons,
+  validatePersonMobileNumber,
+  validatePersonNationalCode,
   type PersonWriteInput,
 } from "@/lib/persons-db";
+import { toLatinDigits } from "@/Utils/nationalCode";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type PersonBody = Record<string, unknown>;
-
-const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
-const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
 
 function textValue(value: unknown, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -26,9 +27,7 @@ function optionalText(value: unknown, maxLength: number) {
 }
 
 function latinDigits(value: string) {
-  return value
-    .replace(/[۰-۹]/g, (digit) => String(persianDigits.indexOf(digit)))
-    .replace(/[٠-٩]/g, (digit) => String(arabicDigits.indexOf(digit)));
+  return toLatinDigits(value);
 }
 
 function optionalInteger(value: unknown) {
@@ -71,8 +70,8 @@ async function requireSession() {
 }
 
 function parseBody(body: PersonBody, isFinal: boolean, actorUserId: string) {
-  const codeMelli = latinDigits(textValue(body.codeMelli, 10));
-  const codeMelliSarparast = latinDigits(textValue(body.codeMelliSarparast, 10));
+  const codeMelli = latinDigits(textValue(body.codeMelli, 50));
+  const codeMelliSarparast = latinDigits(textValue(body.codeMelliSarparast, 50));
   const telHamrah = latinDigits(textValue(body.telHamrah, 15));
   const telZaruri = latinDigits(textValue(body.telZaruri, 15));
   const email = textValue(body.email, 1500);
@@ -144,6 +143,15 @@ export async function GET(request: NextRequest) {
   try {
     const mode = request.nextUrl.searchParams.get("mode");
     if (mode === "lookups") return NextResponse.json(await getPersonLookups());
+    if (mode === "head-lookup") {
+      const search = textValue(request.nextUrl.searchParams.get("search"), 150);
+      return NextResponse.json({ mainPersons: await searchMainPersons(search) });
+    }
+    if (mode === "validate-national-code") {
+      const nationalCode = latinDigits(textValue(request.nextUrl.searchParams.get("nationalCode"), 10));
+      if (!/^\d{10}$/.test(nationalCode)) return NextResponse.json({ isValid: false });
+      return NextResponse.json({ isValid: await validatePersonNationalCode(nationalCode) });
+    }
 
     const personId = personIdValue(request.nextUrl.searchParams.get("personId"));
     if (personId) {
@@ -172,6 +180,12 @@ export async function POST(request: NextRequest) {
   try {
     const parsed = parseBody((await request.json()) as PersonBody, false, auth.session.userId);
     if (parsed.error || !parsed.value) return NextResponse.json({ message: parsed.error }, { status: 400 });
+    if (parsed.value.codeMelli.length === 10 && !(await validatePersonNationalCode(parsed.value.codeMelli))) {
+      return NextResponse.json({ message: "کد ملی واردشده معتبر نیست." }, { status: 400 });
+    }
+    if (parsed.value.telHamrah && !(await validatePersonMobileNumber(parsed.value.telHamrah))) {
+      return NextResponse.json({ message: "شماره تلفن همراه معتبر نیست." }, { status: 400 });
+    }
     const person = await savePerson(parsed.value);
     return NextResponse.json({ message: "پیش‌نویس با موفقیت ذخیره شد.", person }, { status: 201 });
   } catch (error) {
@@ -187,6 +201,12 @@ export async function PUT(request: NextRequest) {
   try {
     const parsed = parseBody((await request.json()) as PersonBody, true, auth.session.userId);
     if (parsed.error || !parsed.value) return NextResponse.json({ message: parsed.error }, { status: 400 });
+    if (!(await validatePersonNationalCode(parsed.value.codeMelli))) {
+      return NextResponse.json({ message: "کد ملی واردشده معتبر نیست." }, { status: 400 });
+    }
+    if (parsed.value.telHamrah && !(await validatePersonMobileNumber(parsed.value.telHamrah))) {
+      return NextResponse.json({ message: "شماره تلفن همراه معتبر نیست." }, { status: 400 });
+    }
     const person = await savePerson(parsed.value);
     return NextResponse.json({ message: "اطلاعات شخص تأیید و ثبت نهایی شد.", person });
   } catch (error) {

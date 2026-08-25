@@ -15,8 +15,12 @@ export function normalizeDropdownSearch(value: unknown) {
         .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
         .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
         .replace(/ي/g, "ی")
+        .replace(/ى/g, "ی")
         .replace(/ك/g, "ک")
         .replace(/ۀ|ة/g, "ه")
+        .replace(/ہ/g, "ه")
+        .replace(/ـ/g, "")
+        .replace(/\u00a0/g, " ")
         .replace(/[\u064B-\u065F\u0670]/g, "")
         .replace(/\s+/g, " ")
         .trim();
