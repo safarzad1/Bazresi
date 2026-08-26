@@ -98,6 +98,14 @@ type PersonForm = {
   telZaruri: string;
 };
 
+type WorkHistoryRow = {
+  id: number;
+  workplace: string;
+  position: string;
+  fromDate: string;
+  toDate: string;
+};
+
 const emptyForm: PersonForm = {
   personId: 0,
   registrationState: 0,
@@ -144,6 +152,26 @@ const steps = [
   { title: "اطلاعات تکمیلی", subtitle: "شغل، وضعیت و تماس" },
   { title: "تصویر و بازبینی", subtitle: "مرور نهایی اطلاعات" },
 ];
+
+const detailTabs = [
+  { id: "details", title: "مشخصات فردی", isTable: true },
+  { id: "sacrifice", title: "سابقه ایثارگری", isTable: false },
+  { id: "military", title: "وضعیت نظام وظیفه", isTable: false },
+  { id: "education", title: "سوابق تحصیلی", isTable: false },
+  { id: "employment", title: "اطلاعات شغلی", isTable: false },
+  { id: "family", title: "اطلاعات همسر و فرزندان", isTable: true },
+  { id: "relatives", title: "اقوام درجه ۱ و ۲ خارج از کشور", isTable: true },
+  { id: "work-history", title: "سوابق شغلی", isTable: true },
+  { id: "election-supervision", title: "سوابق نظارتی و اجرایی انتخابات", isTable: true },
+  { id: "social-activities", title: "سوابق فعالیت‌های اجتماعی", isTable: true },
+  { id: "training", title: "دوره‌های آموزشی عمومی و تخصصی", isTable: true },
+  { id: "candidacy", title: "سابقه داوطلبی در انتخابات", isTable: true },
+  { id: "computer-skills", title: "مهارت استفاده از رایانه", isTable: false },
+  { id: "health", title: "وضعیت جسمانی", isTable: false },
+  { id: "contact", title: "آدرس و اطلاعات تماس", isTable: false },
+] as const;
+type DetailTabId = typeof detailTabs[number]["id"];
+const tableDetailTabs = detailTabs.filter((tab) => tab.isTable);
 
 type IconName =
   | "persons" | "plus" | "search" | "refresh" | "edit" | "trash"
@@ -303,7 +331,11 @@ export default function PersonsClient() {
   const [saving, setSaving] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [detailTab, setDetailTab] = useState<"details">("details");
+  const [detailTab, setDetailTab] = useState<DetailTabId>("details");
+  const [workHistory, setWorkHistory] = useState<WorkHistoryRow[]>([]);
+  const [workHistoryForm, setWorkHistoryForm] = useState<Omit<WorkHistoryRow, "id">>({ workplace: "", position: "", fromDate: "", toDate: "" });
+  const [editingWorkHistoryId, setEditingWorkHistoryId] = useState<number | null>(null);
+  const [workHistoryModalOpen, setWorkHistoryModalOpen] = useState(false);
   const [sectionEdit, setSectionEdit] = useState<number | null>(null);
   const sectionEditBackup = useRef<PersonForm | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -516,6 +548,36 @@ export default function PersonsClient() {
     setSectionEdit(null);
     sectionEditBackup.current = null;
     setDetailOpen(false);
+  }
+
+  function resetWorkHistoryForm() {
+    setWorkHistoryForm({ workplace: "", position: "", fromDate: "", toDate: "" });
+    setEditingWorkHistoryId(null);
+  }
+
+  function saveWorkHistoryRow() {
+    if (!workHistoryForm.workplace.trim() || !workHistoryForm.position.trim()) {
+      setNotice({ type: "error", text: "محل خدمت و سمت سازمانی را وارد کنید." });
+      return;
+    }
+    if (editingWorkHistoryId === null) {
+      setWorkHistory((current) => [...current, { ...workHistoryForm, id: Date.now() }]);
+    } else {
+      setWorkHistory((current) => current.map((row) => row.id === editingWorkHistoryId ? { ...row, ...workHistoryForm } : row));
+    }
+    resetWorkHistoryForm();
+    setWorkHistoryModalOpen(false);
+  }
+
+  function editWorkHistoryRow(row: WorkHistoryRow) {
+    setWorkHistoryForm({ workplace: row.workplace, position: row.position, fromDate: row.fromDate, toDate: row.toDate });
+    setEditingWorkHistoryId(row.id);
+    setWorkHistoryModalOpen(true);
+  }
+
+  function openWorkHistoryCreate() {
+    resetWorkHistoryForm();
+    setWorkHistoryModalOpen(true);
   }
 
   function openSectionEdit(sectionIndex: number) {
@@ -931,16 +993,35 @@ export default function PersonsClient() {
               </div>
             </header>
 
-            <nav className={styles.detailTabs} aria-label="بخش‌های پرونده">
-              <button
-                type="button"
-                className={`${styles.detailTab} ${detailTab === "details" ? styles.detailTabActive : ""}`}
-                onClick={() => setDetailTab("details")}
-                aria-selected={detailTab === "details"}
-                role="tab"
-              >
-                مشخصات
-              </button>
+            <nav className={styles.detailTabs} aria-label="بخش‌های پرونده" role="tablist">
+              {tableDetailTabs.map((tab) => {
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`${styles.detailTab} ${detailTab === tab.id ? styles.detailTabActive : ""}`}
+                    onClick={() => setDetailTab(tab.id)}
+                    aria-selected={detailTab === tab.id}
+                    role="tab"
+                  >
+                    <span className={styles.detailTabIcon}><Icon name={tab.id === "details" ? "persons" : "file"} /></span>
+                    {tab.title}
+                  </button>
+                );
+              })}
+              <label className={styles.detailTabPicker}>
+                <span>بخش جاری</span>
+                <SearchableDropdown
+                  value={detailTab}
+                  options={detailTabs.map((tab) => ({ value: tab.id, label: tab.title }))}
+                  onChange={(value) => setDetailTab(value as DetailTabId)}
+                  placeholder="انتخاب بخش"
+                  searchPlaceholder="جست‌وجوی عنوان بخش..."
+                  ariaLabel="انتخاب بخش پرونده"
+                  menuWidth={300}
+                  compact
+                />
+              </label>
             </nav>
 
             {loadingDetail ? (
@@ -987,7 +1068,83 @@ export default function PersonsClient() {
                   </section>
                 </div>
               </div>
+            ) : detailTab === "family" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.familyPanel}>
+                  <header className={styles.familyPanelHeader}>
+                    <div><span>اطلاعات خانوادگی</span><h3>همسر و فرزندان</h3></div>
+                    <span>۵ ردیف فرزند</span>
+                  </header>
+                  <div className={styles.familySummary}>
+                    <div><span>نام و نام خانوادگی همسر</span><strong>ثبت نشده</strong></div>
+                    <div><span>شغل همسر</span><strong>ثبت نشده</strong></div>
+                    <div><span>تعداد فرزندان</span><strong>۰</strong></div>
+                  </div>
+                  <div className={styles.familyTableWrap}>
+                    <table className={styles.familyTable}>
+                      <thead><tr><th>ردیف</th><th>نام و نام خانوادگی</th><th>شغل</th><th>نسبت</th></tr></thead>
+                      <tbody>
+                        {[1, 2, 3, 4, 5].map((rowNumber) => (
+                          <tr key={rowNumber}>
+                            <td>{rowNumber.toLocaleString("fa-IR")}</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>فرزند</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : detailTab === "work-history" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div><span>سوابق شغلی</span><h3>محل خدمت و سمت‌های سازمانی</h3></div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openWorkHistoryCreate}><Icon name="plus" />سابقه جدید</button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={styles.workHistoryTable}>
+                      <thead><tr><th>ردیف</th><th>محل خدمت</th><th>سمت (پست سازمانی)</th><th>از تاریخ</th><th>تا تاریخ</th><th>عملیات</th></tr></thead>
+                      <tbody>
+                        {workHistory.map((row, index) => (
+                          <tr key={row.id}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td><td>{row.workplace}</td><td>{row.position}</td><td>{row.fromDate || "—"}</td><td>{row.toDate || "تا اکنون"}</td>
+                            <td><div className={styles.workHistoryActions}><button type="button" className={styles.editAction} onClick={() => editWorkHistoryRow(row)} title="ویرایش"><Icon name="edit" /></button><button type="button" className={styles.deleteAction} onClick={() => setWorkHistory((current) => current.filter((item) => item.id !== row.id))} title="حذف"><Icon name="trash" /></button></div></td>
+                          </tr>
+                        ))}
+                        {workHistory.length === 0 && <tr><td colSpan={6} className={styles.workHistoryEmpty}>هنوز سابقه شغلی ثبت نشده است.</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
             ) : null}
+
+            {workHistoryModalOpen && detailTab === "work-history" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingWorkHistoryId === null ? "افزودن سابقه شغلی" : "ویرایش سابقه شغلی"}>
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="file" /></span>
+                      <div><small>سوابق شغلی</small><h3>{editingWorkHistoryId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                    </div>
+                    <button type="button" onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+                  <div className={styles.workHistoryForm}>
+                    <TextField label="محل خدمت" value={workHistoryForm.workplace} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, workplace: value }))} />
+                    <TextField label="سمت (پست سازمانی)" value={workHistoryForm.position} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, position: value }))} />
+                    <InputPersianDate label="از تاریخ" value={workHistoryForm.fromDate} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, fromDate: value ?? "" }))} placeholder="انتخاب تاریخ شروع" />
+                    <InputPersianDate label="تا تاریخ" value={workHistoryForm.toDate} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, toDate: value ?? "" }))} placeholder="تا اکنون" />
+                  </div>
+                  <footer>
+                    <button type="button" className={styles.workHistoryConfirmButton} onClick={saveWorkHistoryRow}><Icon name="check" />{editingWorkHistoryId === null ? "افزودن سابقه" : "ذخیره ویرایش"}</button>
+                    <button type="button" className={styles.cancelButton} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }}>انصراف</button>
+                  </footer>
+                </section>
+              </div>
+            )}
 
             {sectionEdit !== null && (
               <div className={styles.sectionEditBackdrop}>

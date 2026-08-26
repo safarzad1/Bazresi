@@ -251,10 +251,71 @@
 .detailHeaderActions button svg { width: 15px; height: 15px; }
 .detailCloseButton { width: 34px; padding: 0 !important; }
 
-.detailTabs { min-height: 44px; display: flex; align-items: end; gap: 4px; padding: 0 14px; border-bottom: 1px solid #d9e5e8; background: #fff; direction: rtl; }
-.detailTab { min-width: 100px; min-height: 44px; padding: 0 16px; border: 0; border-bottom: 3px solid transparent; color: #78909a; background: transparent; font-family: PeydaRegular, sans-serif; font-size: 13px; cursor: pointer; }
+.detailTabs { min-height: 50px; display: flex; align-items: end; gap: 4px; overflow-x: auto; flex: 0 0 auto; padding: 0 14px; border-bottom: 1px solid #d9e5e8; background: #fff; direction: rtl; }
+.detailTab { min-width: max-content; min-height: 44px; padding: 0 16px; border: 0; border-bottom: 3px solid transparent; color: #78909a; background: transparent; font-family: PeydaRegular, sans-serif; font-size: 13px; white-space: nowrap; cursor: pointer; }
 .detailTab:hover { color: #247b7d; background: #f5fafa; }
 .detailTabActive { border-bottom-color: #278d8a; color: #247b7d; font-family: PeydaRegular, sans-serif; }
+.detailTabIcon { display: inline-flex; margin-left: 6px; vertical-align: middle; }
+.detailTabIcon svg { width: 16px; height: 16px; }
+.detailTabPicker { display: flex; align-items: center; gap: 6px; min-width: 230px; margin-right: auto; padding: 0 0 7px; color: #81939b; font-family: PeydaRegular, sans-serif; font-size: 11px; white-space: nowrap; }
+.detailTabPicker > div { min-width: 190px; }
+.familyPanel { height: 100%; overflow: auto; border: 1px solid #d9e5e8; border-radius: 12px; background: #fff; box-shadow: 0 5px 18px rgba(28,64,75,.045); }
+.familyPanelHeader { min-height: 55px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 14px; border-bottom: 1px solid #e0e9ec; background: #f8fbfb; font-family: PeydaRegular, sans-serif; }
+.familyPanelHeader span:first-child { display: block; color: #278684; font-size: 10.5px; }
+.familyPanelHeader h3 { margin: 1px 0 0; color: #3b5966; font-size: 16px; }
+.familyPanelHeader > span:last-child { padding: 4px 8px; border-radius: 7px; color: #607985; background: #edf3f5; font-size: 9px; }
+.familySummary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 14px; }
+.familySummary > div { min-height: 58px; padding: 9px 11px; border-radius: 8px; background: #f5f8f9; }
+.familySummary span, .familySummary strong { display: block; }
+.familySummary span { color: #8999a1; font-size: 9px; }
+.familySummary strong { margin-top: 5px; color: #126b75; font-family: Shabnam, Tahoma, Arial, sans-serif; font-size: 12px; font-weight: 400; }
+.familyTableWrap { overflow-x: auto; padding: 0 14px 14px; }
+.familyTable { width: 100%; min-width: 560px; border-collapse: collapse; table-layout: fixed; }
+.familyTable th, .familyTable td { height: 42px; padding: 5px 10px; border: 1px solid #dce7ea; text-align: right; }
+.familyTable th { color: #526f7a; background: #f2f7f7; font-family: PeydaRegular, sans-serif; font-size: 11px; font-weight: 400; }
+.familyTable td { color: #71868f; font-size: 11.5px; }
+.familyTable th:first-child, .familyTable td:first-child { width: 70px; text-align: center; }
+.familyTable th:last-child, .familyTable td:last-child { width: 120px; }
+.workHistoryPanel { height: 100%; overflow: auto; border: 1px solid #d9e5e8; border-radius: 12px; background: #fff; box-shadow: 0 5px 18px rgba(28,64,75,.045); }
+.workHistoryHeader { min-height: 55px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 14px; border-bottom: 1px solid #e0e9ec; background: #f8fbfb; font-family: PeydaRegular, sans-serif; }
+.workHistoryHeader span { display: block; color: #278684; font-size: 10.5px; }
+.workHistoryHeader h3 { margin: 1px 0 0; color: #3b5966; font-size: 16px; }
+.workHistoryAddButton { min-height: 34px; display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; border: 1px solid #b8d7d6; border-radius: 8px; color: #247b7d; background: #edf8f7; font: inherit; font-size: 10.5px; cursor: pointer; }
+.workHistoryAddButton svg { width: 14px; height: 14px; }
+.workHistoryForm { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; align-items: end; padding: 14px; border-bottom: 1px solid #e0e9ec; background: #fff; }
+.workHistoryFormActions { display: flex; gap: 6px; grid-column: 1 / -1; justify-content: flex-start; }
+.workHistoryFormActions button { min-height: 34px; }
+.workHistoryTableWrap { overflow-x: auto; padding: 14px; }
+.workHistoryTable { width: 100%; min-width: 720px; border-collapse: collapse; table-layout: fixed; }
+.workHistoryTable th, .workHistoryTable td { height: 42px; padding: 5px 9px; border: 1px solid #dce7ea; text-align: right; }
+.workHistoryTable th { color: #526f7a; background: #f2f7f7; font-family: PeydaRegular, sans-serif; font-size: 11px; font-weight: 400; }
+.workHistoryTable td { color: #71868f; font-size: 11.5px; }
+.workHistoryTable th:first-child, .workHistoryTable td:first-child { width: 60px; text-align: center; }
+.workHistoryTable th:nth-child(4), .workHistoryTable th:nth-child(5) { width: 115px; }
+.workHistoryTable th:last-child { width: 95px; }
+.workHistoryActions { display: flex; justify-content: center; gap: 5px; }
+.workHistoryActions button { width: 27px; height: 27px; display: grid; place-items: center; padding: 0; border: 1px solid; border-radius: 8px; background: #fff; cursor: pointer; }
+.workHistoryActions svg { width: 14px; height: 14px; }
+.workHistoryEmpty { height: 90px !important; color: #91a1a8 !important; text-align: center !important; }
+.workHistoryModalBackdrop { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 18px; background: rgba(17, 40, 50, .58); backdrop-filter: blur(4px); }
+.workHistoryModal { width: min(760px, 94vw); display: flex; overflow: hidden; flex-direction: column; border: 1px solid #cbdcdf; border-radius: 14px; background: #f5f8f9; box-shadow: 0 28px 85px rgba(17,40,50,.35); }
+.workHistoryModal > header { min-height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 13px; border-bottom: 1px solid #d9e5e8; background: #fff; font-family: PeydaRegular, sans-serif; }
+.workHistoryModalTitle { display: flex; align-items: center; gap: 9px; }
+.workHistoryModalTitle .wizardIcon { width: 38px; height: 38px; flex: 0 0 38px; }
+.workHistoryModalTitle small { display: block; color: #258987; font-size: 9.5px; }
+.workHistoryModalTitle h3 { margin: 1px 0 0; color: #324f5d; font-size: 17px; font-weight: 400; }
+.workHistoryModal > header > button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid #d9e4e7; border-radius: 9px; color: #7a8f98; background: #fff; cursor: pointer; }
+.workHistoryModal > header > button:hover { color: #a0444e; border-color: #e3c0c4; background: #fff6f7; }
+.workHistoryModal > header > button svg { width: 15px; height: 15px; }
+.workHistoryModal > .workHistoryForm { grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 0; }
+.workHistoryModal label { font-size: 12.5px; }
+.workHistoryModal .field > span { font-size: 12.5px; }
+.workHistoryModal > footer { min-height: 64px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 7px 14px; border-top: 1px solid #d9e5e8; background: #fff; direction: ltr; }
+.workHistoryModal > footer button { min-height: 42px; padding: 0 16px; border: 1px solid; border-radius: 9px; font: inherit; font-family: PeydaRegular, sans-serif; font-size: 13.5px; cursor: pointer; }
+.workHistoryConfirmButton { min-width: 150px; color: #fff; border-color: #157f82 !important; background: linear-gradient(135deg, #168b8c, #1d9c93); }
+.workHistoryConfirmButton:hover { background: linear-gradient(135deg, #147e80, #198d85); }
+.workHistoryModal > footer .cancelButton { min-width: 88px; border-color: transparent !important; background: transparent; }
+.workHistoryModal > footer .cancelButton:hover { color: #345f6a; background: #f2f7f8; }
 
 .detailBody { min-height: 0; flex: 1 1 auto; overflow: hidden; padding: 10px 14px 16px; }
 .detailLoading { min-height: 0; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: #7d919a; background: #fff; font-size: 11px; }
