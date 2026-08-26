@@ -11,6 +11,7 @@ type OrganizationNode = {
   MahalId: number | null;
   MahalTitle: string | null;
   TypeSemat: number | null;
+  CurrentPersonName: string | null;
   AssignedUserCount: number;
   AssignedUsers: string | null;
 };
@@ -118,7 +119,12 @@ function TreeItem({
         </button>
         <span className={styles.nodeIcon}><Icon name="position" /></span>
         <div className={styles.nodeMain}>
-          <strong>{node.Title}</strong>
+          <strong>
+            {node.Title}
+            {node.CurrentPersonName ? (
+              <span className={styles.currentPersonName}> - {node.CurrentPersonName}</span>
+            ) : null}
+          </strong>
           <span>
             کد سمت: <b>{node.NodeId}</b>
             {node.MahalTitle ? <><i />{node.MahalTitle}</> : null}
@@ -187,7 +193,7 @@ export default function OrganizationStructureClient() {
     if (!normalizedSearch) return null;
     const visible = new Set<string>();
     for (const node of nodes) {
-      const searchable = normalize(`${node.Title} ${node.NodeId} ${node.MahalTitle ?? ""} ${node.AssignedUsers ?? ""}`);
+      const searchable = normalize(`${node.Title} ${node.CurrentPersonName ?? ""} ${node.NodeId} ${node.MahalTitle ?? ""} ${node.AssignedUsers ?? ""}`);
       if (!searchable.includes(normalizedSearch)) continue;
       visible.add(node.NodeId);
       let parentId = node.ParentId;

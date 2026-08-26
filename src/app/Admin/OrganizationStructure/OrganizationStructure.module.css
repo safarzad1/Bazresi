@@ -178,6 +178,17 @@
 
 .nodeMain { min-width: 0; flex: 1; }
 .nodeMain strong { display: block; overflow: hidden; color: #365260; font-size: 12.5px; font-weight: 400; white-space: nowrap; text-overflow: ellipsis; }
+.currentPersonName {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: #795184;
+  background: #f5eef8;
+  font-family: PeydaRegular, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+}
 .nodeMain > span { display: flex; align-items: center; gap: 5px; margin-top: 2px; overflow: hidden; color: #8798a0; font-size: 9.5px; font-weight: 400; white-space: nowrap; text-overflow: ellipsis; }
 .nodeMain b { color: #66808b; font-weight: 400; direction: ltr; }
 .nodeMain i { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: #b8c5ca; }

@@ -8,6 +8,7 @@ export type OrganizationStructureRecord = {
   MahalId: number | null;
   MahalTitle: string | null;
   TypeSemat: number | null;
+  CurrentPersonName: string | null;
   AssignedUserCount: number;
   AssignedUsers: string | null;
 };

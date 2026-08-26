@@ -302,6 +302,10 @@ export default function PersonsClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailTab, setDetailTab] = useState<"details">("details");
+  const [sectionEdit, setSectionEdit] = useState<number | null>(null);
+  const sectionEditBackup = useRef<PersonForm | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PersonForm>(emptyForm);
@@ -424,11 +428,19 @@ export default function PersonsClient() {
     if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
+  useEffect(() => {
+    if (!detailOpen && !wizardOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [detailOpen, wizardOpen]);
+
   function change<K extends keyof PersonForm>(key: K, value: PersonForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
   function openCreate() {
+    setDetailOpen(false);
     setForm(emptyForm);
     setSelectedMainPerson(null);
     setStep(0);
@@ -437,27 +449,85 @@ export default function PersonsClient() {
     setWizardOpen(true);
   }
 
+  async function loadPersonForm(person: PersonRow | number) {
+    const personId = typeof person === "number" ? person : person.PersonId;
+    const data = await readJson(await fetch(`/api/persons?personId=${personId}`, { cache: "no-store" }));
+    const record = data.person as PersonRecord | undefined;
+    if (!record) throw new Error("اطلاعات شخص دریافت نشد.");
+    const nextForm = fromRecord(record);
+    setForm(nextForm);
+    setSelectedMainPerson(
+      mainPersons.find((item) => item.CodeMelli === nextForm.codeMelliSarparast) ?? null,
+    );
+    return nextForm;
+  }
+
+  async function openDetail(person: PersonRow) {
+    setWizardOpen(false);
+    setSectionEdit(null);
+    sectionEditBackup.current = null;
+    setDetailTab("details");
+    setDetailOpen(true);
+    setLoadingDetail(true);
+    setSelectedImage(null);
+    setPreviewUrl("");
+    setForm({
+      ...emptyForm,
+      personId: Number(person.PersonId),
+      registrationState: Number(person.RegistrationState),
+      imagePath: person.ImagePath ?? "",
+      codeMelli: person.CodeMelli ?? "",
+      firstName: person.FirstName ?? "",
+      lastName: person.LastName ?? "",
+      fatherName: person.FatherName ?? "",
+      jensiat: person.JensiatName ?? "",
+      shoghl: person.Shoghl ?? "",
+      telHamrah: person.TelHamrah ?? "",
+    });
+    try {
+      await loadPersonForm(person);
+    } catch (error) {
+      setDetailOpen(false);
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت اطلاعات انجام نشد." });
+    } finally {
+      setLoadingDetail(false);
+    }
+  }
+
   async function openPerson(person: PersonRow) {
+    setDetailOpen(false);
     setWizardOpen(true);
     setLoadingDetail(true);
     setStep(0);
     setSelectedImage(null);
     setPreviewUrl("");
+    setForm({ ...emptyForm, personId: Number(person.PersonId), registrationState: Number(person.RegistrationState) });
     try {
-      const data = await readJson(await fetch(`/api/persons?personId=${person.PersonId}`, { cache: "no-store" }));
-      const record = data.person as PersonRecord | undefined;
-      if (!record) throw new Error("اطلاعات شخص دریافت نشد.");
-      const nextForm = fromRecord(record);
-      setForm(nextForm);
-      setSelectedMainPerson(
-        mainPersons.find((item) => item.CodeMelli === nextForm.codeMelliSarparast) ?? null,
-      );
+      await loadPersonForm(person);
     } catch (error) {
       setWizardOpen(false);
       setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت اطلاعات انجام نشد." });
     } finally {
       setLoadingDetail(false);
     }
+  }
+
+  function closeDetail() {
+    setSectionEdit(null);
+    sectionEditBackup.current = null;
+    setDetailOpen(false);
+  }
+
+  function openSectionEdit(sectionIndex: number) {
+    sectionEditBackup.current = { ...form };
+    setSectionEdit(sectionIndex);
+  }
+
+  function closeSectionEdit() {
+    if (saving) return;
+    if (sectionEditBackup.current) setForm(sectionEditBackup.current);
+    sectionEditBackup.current = null;
+    setSectionEdit(null);
   }
 
   function closeWizard() {
@@ -509,6 +579,34 @@ export default function PersonsClient() {
       if (form.telHamrah && !/^09\d{9}$/.test(form.telHamrah)) return "شماره همراه معتبر نیست.";
     }
     return "";
+  }
+
+  async function saveDetailSection() {
+    if (sectionEdit === null || saving || !form.personId) return;
+    const validationError = stepError(sectionEdit);
+    if (validationError) {
+      setNotice({ type: "error", text: validationError });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await readJson(await fetch("/api/persons", {
+        method: form.registrationState === 1 ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyFromForm()),
+      }));
+      const editedTitle = steps[sectionEdit].title;
+      await loadPersonForm(form.personId);
+      sectionEditBackup.current = null;
+      setSectionEdit(null);
+      setNotice({ type: "success", text: `بخش «${editedTitle}» با موفقیت به‌روزرسانی شد.` });
+      await loadPersons(search, stateFilter, page, pageSize);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "به‌روزرسانی اطلاعات انجام نشد." });
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function nextStep() {
@@ -681,6 +779,65 @@ export default function PersonsClient() {
     (_, index) => Math.min(Math.max(1, page - 2), Math.max(1, totalPages - 4)) + index,
   );
   const shownImage = previewUrl || (isStoredImageFile(form.imagePath) ? `/api/persons/image?file=${encodeURIComponent(form.imagePath)}` : "");
+  const detailName = `${form.firstName} ${form.lastName}`.trim() || "پیش‌نویس بدون نام";
+  const detailSections: Array<{
+    title: string;
+    subtitle: string;
+    fields: Array<{ label: string; value: string }>;
+  }> = [
+    {
+      title: steps[0].title,
+      subtitle: steps[0].subtitle,
+      fields: [
+        { label: "نام", value: form.firstName },
+        { label: "نام خانوادگی", value: form.lastName },
+        { label: "نام پدر", value: form.fatherName },
+        { label: "کد ملی", value: form.codeMelli },
+        { label: "شماره شناسنامه", value: form.shomareShenasnameh },
+        { label: "تاریخ تولد", value: form.tarikhTavalod },
+        { label: "جنسیت", value: lookupTitle(PERSON_DFN_PID.gender, form.jensiat) },
+        { label: "وضعیت حیات", value: lookupTitle(PERSON_DFN_PID.life, form.life) },
+        { label: "تاریخ فوت", value: form.tarikhFoat },
+        { label: "کد ملی سرپرست", value: form.codeMelliSarparast },
+        { label: "نسبت با سرپرست", value: lookupTitle(PERSON_DFN_PID.relation, form.nesbat) },
+      ],
+    },
+    {
+      title: steps[1].title,
+      subtitle: steps[1].subtitle,
+      fields: [
+        { label: "شهرستان تولد", value: cityTitle(form.mahalTavalod) },
+        { label: "شهرستان صدور", value: cityTitle(form.mahalSodor) },
+        { label: "حرف سریال", value: form.serialHarf },
+        { label: "سری شناسنامه", value: form.serialSeri },
+        { label: "شماره سریال", value: form.serialCode },
+        { label: "وضعیت شناسنامه", value: lookupTitle(PERSON_DFN_PID.certificateStatus, form.almosana) },
+        { label: "نام قبلی", value: form.firstNameOld },
+        { label: "نام خانوادگی قبلی", value: form.lastNameOld },
+        { label: "توضیحات دارد یا ندارد", value: lookupTitle(PERSON_DFN_PID.descriptionAvailability, form.taghyiratShenasnamehSet) },
+        { label: "توضیحات شناسنامه", value: form.taghyiratShenasnameh },
+      ],
+    },
+    {
+      title: steps[2].title,
+      subtitle: steps[2].subtitle,
+      fields: [
+        { label: "شغل", value: form.shoghl },
+        { label: "وضعیت تأهل", value: lookupTitle(PERSON_DFN_PID.maritalStatus, form.taahol) },
+        { label: "دین و مذهب", value: lookupTitle(PERSON_DFN_PID.religionSect, form.dinMazhab) },
+        { label: "وضعیت روحانیت", value: lookupTitle(PERSON_DFN_PID.clergyStatus, form.rohani) },
+        { label: "وضعیت نظام وظیفه", value: lookupTitle(PERSON_DFN_PID.militaryStatus, form.nezamVazifeh) },
+        { label: "تاریخ شروع خدمت", value: form.tarikhShoro },
+        { label: "تاریخ پایان خدمت", value: form.tarikhPayan },
+        { label: "نوع معافیت", value: lookupTitle(PERSON_DFN_PID.exemptionType, form.noeMoaafiat) },
+        { label: "تاریخ معافیت", value: form.tarikhMoaafiat },
+        { label: "تلفن همراه", value: form.telHamrah },
+        { label: "تلفن ضروری", value: form.telZaruri },
+        { label: "ایمیل", value: form.email },
+        { label: "شرح معافیت", value: form.sharhMoaafiat },
+      ],
+    },
+  ];
 
   return (
     <main className={styles.page} dir="rtl">
@@ -715,7 +872,19 @@ export default function PersonsClient() {
             <thead><tr><th>شخص</th><th>اطلاعات هویتی</th><th>شغل و تماس</th><th>وضعیت ثبت</th><th>تاریخ ثبت</th><th className={styles.actionsColumn}>عملیات</th></tr></thead>
             <tbody>
               {!loading && persons.map((person) => (
-                <tr key={person.PersonId}>
+                <tr
+                  key={person.PersonId}
+                  className={styles.clickableRow}
+                  onClick={() => void openDetail(person)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      void openDetail(person);
+                    }
+                  }}
+                  tabIndex={0}
+                  aria-label={`مشاهده مشخصات ${`${person.FirstName} ${person.LastName}`.trim()}`}
+                >
                   <td><div className={styles.personCell}>
                     {isStoredImageFile(person.ImagePath) ? <img src={`/api/persons/image?file=${encodeURIComponent(person.ImagePath || "")}`} alt="" /> : <span className={styles.avatar}>{person.FirstName.trim().slice(0, 1) || "ش"}</span>}
                     <div><strong>{`${person.FirstName} ${person.LastName}`.trim() || "پیش‌نویس بدون نام"}</strong><small>{person.JensiatName || "جنسیت ثبت نشده"}</small></div>
@@ -725,8 +894,8 @@ export default function PersonsClient() {
                   <td><span className={`${styles.status} ${Number(person.RegistrationState) === 1 ? styles.finalStatus : styles.draftStatus}`}><i />{Number(person.RegistrationState) === 1 ? "ثبت نهایی" : "پیش‌نویس"}</span></td>
                   <td className={styles.dateCell}>{person.FinalizedDateTime || person.CreateDateTime || "—"}</td>
                   <td><div className={styles.rowActions}>
-                    <button className={styles.editAction} type="button" onClick={() => void openPerson(person)} title={Number(person.RegistrationState) === 1 ? "مشاهده و ویرایش" : "ادامه تکمیل"}><Icon name="edit" /></button>
-                    <button className={styles.deleteAction} type="button" onClick={() => setDeleteTarget(person)} title="حذف شخص"><Icon name="trash" /></button>
+                    <button className={styles.editAction} type="button" onClick={(event) => { event.stopPropagation(); void openPerson(person); }} title={Number(person.RegistrationState) === 1 ? "ویرایش اطلاعات" : "ادامه تکمیل"}><Icon name="edit" /></button>
+                    <button className={styles.deleteAction} type="button" onClick={(event) => { event.stopPropagation(); setDeleteTarget(person); }} title="حذف شخص"><Icon name="trash" /></button>
                   </div></td>
                 </tr>
               ))}
@@ -746,9 +915,174 @@ export default function PersonsClient() {
         </footer>
       </section>
 
+      {detailOpen && (
+        <div className={styles.detailBackdrop}>
+          <section className={styles.detailModal} role="dialog" aria-modal="true" aria-label={`مشخصات ${detailName}`}>
+            <header className={styles.detailHeader}>
+              <div className={styles.detailPersonTitle}>
+                <div>
+                  <h2>{detailName}</h2>
+                  <span>شماره پرونده {form.personId.toLocaleString("fa-IR")}</span>
+                </div>
+              </div>
+              <div className={styles.detailHeaderActions}>
+                <span className={`${styles.status} ${form.registrationState === 1 ? styles.finalStatus : styles.draftStatus}`}><i />{form.registrationState === 1 ? "ثبت نهایی" : "پیش‌نویس"}</span>
+                <button type="button" className={styles.detailCloseButton} onClick={closeDetail} aria-label="بستن مشخصات"><Icon name="close" /></button>
+              </div>
+            </header>
+
+            <nav className={styles.detailTabs} aria-label="بخش‌های پرونده">
+              <button
+                type="button"
+                className={`${styles.detailTab} ${detailTab === "details" ? styles.detailTabActive : ""}`}
+                onClick={() => setDetailTab("details")}
+                aria-selected={detailTab === "details"}
+                role="tab"
+              >
+                مشخصات
+              </button>
+            </nav>
+
+            {loadingDetail ? (
+              <div className={styles.detailLoading}><span className={styles.spinner} />در حال دریافت مشخصات فرد...</div>
+            ) : detailTab === "details" ? (
+              <div className={styles.detailBody}>
+                <div className={styles.detailLayout}>
+                  <aside className={styles.detailSidebar}>
+                    <div className={styles.detailSidebarTitle}><span>تصویر پرسنلی</span><small>نمایش تصویر ثبت‌شده فرد</small></div>
+                    <div className={styles.detailSidebarPhoto}>
+                      {shownImage ? <img src={shownImage} alt={`تصویر پرسنلی ${detailName}`} /> : <><Icon name="camera" /><strong>تصویر ثبت نشده است</strong></>}
+                    </div>
+                    <div className={styles.detailSidebarInfo}>
+                      <div><span>شماره پرونده</span><strong>{form.personId.toLocaleString("fa-IR")}</strong></div>
+                      <div><span>کد ملی</span><strong>{form.codeMelli || "—"}</strong></div>
+                      <div><span>وضعیت پرونده</span><strong>{form.registrationState === 1 ? "ثبت نهایی" : "پیش‌نویس"}</strong></div>
+                    </div>
+                  </aside>
+
+                  <section className={styles.detailReviewPanel}>
+                    <header>
+                      <div><span>مشاهده اطلاعات ثبت‌شده</span><h3>{detailName}</h3></div>
+                      <span>فقط خواندنی</span>
+                    </header>
+                    <div className={styles.detailReviewContent}>
+                      {detailSections.map((section, sectionIndex) => (
+                        <section className={styles.detailReviewSection} key={section.title}>
+                          <div className={styles.detailReviewSectionTitle}>
+                            <span>{(sectionIndex + 1).toLocaleString("fa-IR")}</span>
+                            <div><h4>{section.title}</h4><p>{section.subtitle}</p></div>
+                            <button type="button" onClick={() => openSectionEdit(sectionIndex)}><Icon name="edit" />ویرایش</button>
+                          </div>
+                          <div className={styles.detailReviewRows}>
+                            {section.fields.map((field) => (
+                              <div className={styles.detailReviewRow} key={field.label}>
+                                <span>{field.label}</span>
+                                <strong>{field.value || "—"}</strong>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+              </div>
+            ) : null}
+
+            {sectionEdit !== null && (
+              <div className={styles.sectionEditBackdrop}>
+                <section className={styles.sectionEditModal} role="dialog" aria-modal="true" aria-label={`ویرایش ${steps[sectionEdit].title}`}>
+                  <header>
+                    <div><span>ویرایش بخش</span><h3>{steps[sectionEdit].title}</h3><p>{steps[sectionEdit].subtitle}</p></div>
+                    <button type="button" onClick={closeSectionEdit} disabled={saving} aria-label="بستن ویرایش"><Icon name="close" /></button>
+                  </header>
+
+                  <div className={styles.sectionEditBody}>
+                    {sectionEdit === 0 && <div className={styles.formGrid}>
+                      <TextField label="نام" value={form.firstName} onChange={(value) => change("firstName", value)} required maxLength={150} />
+                      <TextField label="نام خانوادگی" value={form.lastName} onChange={(value) => change("lastName", value)} required maxLength={150} />
+                      <TextField label="نام پدر" value={form.fatherName} onChange={(value) => change("fatherName", value)} required maxLength={150} />
+                      <TextField label="کد ملی" value={form.codeMelli} onChange={(value) => change("codeMelli", value)} required numeric error={form.codeMelli.length === 10 && !isValidIranianNationalCode(form.codeMelli)} maxLength={10} placeholder="۱۰ رقم" />
+                      <TextField label="شماره شناسنامه" value={form.shomareShenasnameh} onChange={(value) => change("shomareShenasnameh", value)} required maxLength={20} />
+                      <InputPersianDate label="تاریخ تولد" value={form.tarikhTavalod} onChange={(value) => change("tarikhTavalod", value ?? "")} placeholder="انتخاب تاریخ تولد" />
+                      <label className={styles.field}><span>جنسیت<i>*</i></span><SearchableDropdown value={form.jensiat} options={definitionOptions(PERSON_DFN_PID.gender)} onChange={(value) => change("jensiat", value)} compact /></label>
+                      <label className={styles.field}><span>وضعیت حیات<i>*</i></span><SearchableDropdown value={form.life} options={definitionOptions(PERSON_DFN_PID.life)} onChange={(value) => change("life", value)} compact /></label>
+                      <InputPersianDate label="تاریخ فوت" value={form.tarikhFoat} onChange={(value) => change("tarikhFoat", value ?? "")} placeholder="در صورت نیاز" />
+                      <label className={styles.field}>
+                        <span>کد ملی سرپرست</span>
+                        <SearchableDropdown
+                          value={form.codeMelliSarparast}
+                          options={mainPersonOptions}
+                          onChange={(value) => {
+                            setSelectedMainPerson(mainPersons.find((item) => item.CodeMelli === value) ?? null);
+                            change("codeMelliSarparast", value);
+                            if (!value) change("nesbat", "");
+                          }}
+                          onSearchChange={searchMainPersonOptions}
+                          searchDelayMs={3000}
+                          searching={mainPersonsSearching}
+                          onClear={() => {
+                            setSelectedMainPerson(null);
+                            change("codeMelliSarparast", "");
+                            change("nesbat", "");
+                          }}
+                          clearAriaLabel="حذف سرپرست انتخاب‌شده"
+                          placeholder="انتخاب سرپرست (اختیاری)"
+                          searchPlaceholder="جست‌وجوی نام یا کد ملی..."
+                          ariaLabel="انتخاب کد ملی سرپرست"
+                          compact
+                        />
+                      </label>
+                      <label className={styles.field}><span>نسبت با سرپرست</span><SearchableDropdown value={form.nesbat} options={definitionOptions(PERSON_DFN_PID.relation)} onChange={(value) => change("nesbat", value)} compact /></label>
+                    </div>}
+
+                    {sectionEdit === 1 && <div className={styles.formGrid}>
+                      <label className={styles.field}><span>شهرستان تولد</span><SearchableDropdown value={form.mahalTavalod} options={cityOptions} onChange={(value) => change("mahalTavalod", value)} searchPlaceholder="جست‌وجوی شهرستان..." compact /></label>
+                      <label className={styles.field}><span>شهرستان صدور</span><SearchableDropdown value={form.mahalSodor} options={cityOptions} onChange={(value) => change("mahalSodor", value)} searchPlaceholder="جست‌وجوی شهرستان..." compact /></label>
+                      <TextField label="حرف سریال" value={form.serialHarf} onChange={(value) => change("serialHarf", value)} maxLength={3} />
+                      <TextField label="سری شناسنامه" value={form.serialSeri} onChange={(value) => change("serialSeri", value)} maxLength={50} />
+                      <TextField label="شماره سریال" value={form.serialCode} onChange={(value) => change("serialCode", value)} maxLength={50} />
+                      <label className={styles.field}><span>وضعیت شناسنامه</span><SearchableDropdown value={form.almosana} options={definitionOptions(PERSON_DFN_PID.certificateStatus)} onChange={(value) => change("almosana", value)} compact /></label>
+                      <TextField label="نام قبلی" value={form.firstNameOld} onChange={(value) => change("firstNameOld", value)} maxLength={250} />
+                      <TextField label="نام خانوادگی قبلی" value={form.lastNameOld} onChange={(value) => change("lastNameOld", value)} maxLength={150} />
+                      <label className={styles.field}><span>توضیحات دارد یا ندارد</span><SearchableDropdown value={form.taghyiratShenasnamehSet} options={definitionOptions(PERSON_DFN_PID.descriptionAvailability)} onChange={(value) => change("taghyiratShenasnamehSet", value)} compact /></label>
+                      <TextAreaField label="توضیحات شناسنامه" value={form.taghyiratShenasnameh} onChange={(value) => change("taghyiratShenasnameh", value)} required={certificateDescriptionRequired} error={certificateDescriptionInvalid} hint={certificateDescriptionRequired ? "در صورت انتخاب «دارد»، حداقل ۶ کاراکتر وارد کنید." : undefined} />
+                    </div>}
+
+                    {sectionEdit === 2 && <div className={styles.formGrid}>
+                      <TextField label="شغل" value={form.shoghl} onChange={(value) => change("shoghl", value)} required maxLength={50} />
+                      <label className={styles.field}><span>وضعیت تأهل<i>*</i></span><SearchableDropdown value={form.taahol} options={definitionOptions(PERSON_DFN_PID.maritalStatus)} onChange={(value) => change("taahol", value)} compact /></label>
+                      <label className={styles.field}><span>دین و مذهب<i>*</i></span><SearchableDropdown value={form.dinMazhab} options={definitionOptions(PERSON_DFN_PID.religionSect)} onChange={(value) => change("dinMazhab", value)} compact /></label>
+                      <label className={styles.field}><span>وضعیت روحانیت<i>*</i></span><SearchableDropdown value={form.rohani} options={definitionOptions(PERSON_DFN_PID.clergyStatus)} onChange={(value) => change("rohani", value)} compact /></label>
+                      <label className={styles.field}><span>وضعیت نظام وظیفه<i>*</i></span><SearchableDropdown value={form.nezamVazifeh} options={definitionOptions(PERSON_DFN_PID.militaryStatus)} onChange={(value) => change("nezamVazifeh", value)} compact /></label>
+                      <InputPersianDate label="تاریخ شروع خدمت" value={form.tarikhShoro} onChange={(value) => change("tarikhShoro", value ?? "")} placeholder="انتخاب تاریخ شروع" />
+                      <InputPersianDate label="تاریخ پایان خدمت" value={form.tarikhPayan} onChange={(value) => change("tarikhPayan", value ?? "")} placeholder="انتخاب تاریخ پایان" />
+                      <label className={styles.field}><span>نوع معافیت</span><SearchableDropdown value={form.noeMoaafiat} options={definitionOptions(PERSON_DFN_PID.exemptionType)} onChange={(value) => change("noeMoaafiat", value)} compact /></label>
+                      <InputPersianDate label="تاریخ معافیت" value={form.tarikhMoaafiat} onChange={(value) => change("tarikhMoaafiat", value ?? "")} placeholder="انتخاب تاریخ معافیت" />
+                      <TextField label="تلفن همراه" value={form.telHamrah} onChange={(value) => change("telHamrah", value)} placeholder="09xxxxxxxxx" maxLength={11} numeric largeLabel />
+                      <TextField label="تلفن ضروری" value={form.telZaruri} onChange={(value) => change("telZaruri", value)} maxLength={15} numeric largeLabel />
+                      <TextField label="ایمیل" value={form.email} onChange={(value) => change("email", value)} type="email" maxLength={1500} largeLabel />
+                      <TextAreaField label="شرح معافیت" value={form.sharhMoaafiat} onChange={(value) => change("sharhMoaafiat", value)} largeLabel />
+                    </div>}
+                  </div>
+
+                  <footer>
+                    <button type="button" className={styles.cancelButton} onClick={closeSectionEdit} disabled={saving}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} onClick={() => void saveDetailSection()} disabled={saving}>
+                      {saving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      تأیید و به‌روزرسانی
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
       {wizardOpen && (
-        <div className={styles.modalBackdrop}>
-          <section className={styles.wizardModal} role="dialog" aria-modal="true" aria-label="فرم ثبت شخص">
+        <div className={`${styles.modalBackdrop} ${form.personId ? styles.editModalBackdrop : ""}`}>
+          <section className={`${styles.wizardModal} ${form.personId ? styles.wizardEditModal : ""}`} role="dialog" aria-modal="true" aria-label="فرم ثبت شخص">
             <header className={styles.wizardHeader}>
               <div><span className={styles.wizardIcon}><Icon name="file" /></span><div><small>{form.personId ? `شماره پرونده ${form.personId.toLocaleString("fa-IR")}` : "پرونده جدید"}</small><h2>{form.registrationState === 1 ? "ویرایش اطلاعات شخص" : "افزودن شخص جدید"}</h2></div></div>
               <button type="button" onClick={closeWizard} aria-label="بستن فرم"><Icon name="close" /></button>

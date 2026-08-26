@@ -155,6 +155,8 @@
 .tableCard td { height: 42px; padding: 2px 9px; border-bottom: 1px solid #edf2f4; color: #4b6571; font-size: 11.5px; vertical-align: middle; }
 .tableCard tbody tr:hover { background: #fbfefe; }
 .tableCard tbody tr:last-child td { border-bottom: 0; }
+.clickableRow { cursor: pointer; }
+.clickableRow:focus { outline: 2px solid #62aaa8; outline-offset: -2px; background: #f7fcfc; }
 .tableCard th:nth-child(1) { width: 22%; }
 .tableCard th:nth-child(2) { width: 18%; }
 .tableCard th:nth-child(3) { width: 19%; }
@@ -207,6 +209,114 @@
 .pageSize > span { white-space: nowrap; }
 .pageSize > div { flex: 1; }
 
+.detailBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482500;
+  background: #eef3f5;
+}
+
+.detailModal {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  color: #35515e;
+  background: #f4f7f8;
+  font-family: Shabnam, Tahoma, Arial, sans-serif;
+}
+
+.detailHeader {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 14px;
+  color: #fff;
+  background: linear-gradient(125deg, #246f74, #3d7f88 58%, #5a6f91);
+  box-shadow: 0 4px 18px rgba(30, 66, 78, .18);
+  font-family: PeydaRegular, sans-serif;
+}
+
+.detailPersonTitle,
+.detailHeaderActions { display: flex; align-items: center; gap: 9px; }
+.detailPersonTitle h2 { margin: 0; color: #fff; font-family: PeydaRegular, sans-serif; font-size: 17px; line-height: 1.25; }
+.detailPersonTitle > div > span { display: block; margin-top: 1px; color: rgba(255,255,255,.72); font-size: 9px; }
+.detailHeaderActions > .status { color: #e6fff2; background: rgba(16,55,58,.32); }
+.detailHeaderActions button { min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; border: 1px solid rgba(255,255,255,.34); border-radius: 8px; color: #fff; background: rgba(255,255,255,.12); font: inherit; font-size: 10.5px; cursor: pointer; }
+.detailHeaderActions button:hover:not(:disabled) { background: rgba(255,255,255,.22); }
+.detailHeaderActions button:disabled { opacity: .55; cursor: wait; }
+.detailHeaderActions button svg { width: 15px; height: 15px; }
+.detailCloseButton { width: 34px; padding: 0 !important; }
+
+.detailTabs { min-height: 44px; display: flex; align-items: end; gap: 4px; padding: 0 14px; border-bottom: 1px solid #d9e5e8; background: #fff; direction: rtl; }
+.detailTab { min-width: 100px; min-height: 44px; padding: 0 16px; border: 0; border-bottom: 3px solid transparent; color: #78909a; background: transparent; font-family: PeydaRegular, sans-serif; font-size: 13px; cursor: pointer; }
+.detailTab:hover { color: #247b7d; background: #f5fafa; }
+.detailTabActive { border-bottom-color: #278d8a; color: #247b7d; font-family: PeydaRegular, sans-serif; }
+
+.detailBody { min-height: 0; flex: 1 1 auto; overflow: hidden; padding: 10px 14px 16px; }
+.detailLoading { min-height: 0; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: #7d919a; background: #fff; font-size: 11px; }
+.detailLayout { height: 100%; min-height: 0; display: flex; align-items: stretch; gap: 10px; direction: rtl; }
+.detailSidebar { width: 250px; min-height: 0; display: flex; flex: 0 0 250px; overflow-y: auto; flex-direction: column; padding: 10px; border: 1px solid #d9e5e8; border-radius: 12px; background: #fff; box-shadow: 0 5px 18px rgba(28,64,75,.045); }
+.detailSidebarTitle { padding: 2px 2px 8px; border-bottom: 1px solid #e4ebee; font-family: PeydaRegular, sans-serif; }
+.detailSidebarTitle span,
+.detailSidebarTitle small { display: block; }
+.detailSidebarTitle span { color: #355461; font-size: 13.5px; }
+.detailSidebarTitle small { margin-top: 2px; color: #8a9aa2; font-size: 9px; }
+.detailSidebarPhoto { min-height: 285px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 7px; overflow: hidden; margin-top: 9px; border: 1px dashed #b9ced2; border-radius: 10px; color: #78949e; background: linear-gradient(145deg, #f8fbfb, #edf4f5); }
+.detailSidebarPhoto img { width: 100%; height: 285px; object-fit: contain; }
+.detailSidebarPhoto svg { width: 39px; height: 39px; color: #78a0a3; }
+.detailSidebarPhoto strong { font-size: 10.5px; }
+.detailSidebarInfo { display: grid; gap: 6px; margin-top: 9px; }
+.detailSidebarInfo > div { padding: 8px 9px; border-radius: 8px; background: #f5f8f9; }
+.detailSidebarInfo span,
+.detailSidebarInfo strong { display: block; }
+.detailSidebarInfo span { color: #8999a1; font-size: 8.5px; }
+.detailSidebarInfo strong { margin-top: 2px; overflow-wrap: anywhere; color: #126b75; font-family: Shabnam, Tahoma, Arial, sans-serif; font-size: 11.5px; }
+.detailReviewPanel { min-width: 0; min-height: 0; display: flex; flex: 1 1 auto; overflow: hidden; flex-direction: column; border: 1px solid #d9e5e8; border-radius: 12px; background: #fff; box-shadow: 0 5px 18px rgba(28,64,75,.045); }
+.detailReviewPanel > header { min-height: 55px; display: flex; align-items: center; justify-content: space-between; gap: 9px; padding: 7px 12px; border-bottom: 1px solid #e0e9ec; background: #f8fbfb; font-family: PeydaRegular, sans-serif; }
+.detailReviewPanel > header > div > span { display: block; color: #278684; font-size: 10.5px; }
+.detailReviewPanel > header h3 { margin: 1px 0 0; color: #3b5966; font-size: 16px; }
+.detailReviewPanel > header > span { padding: 4px 8px; border-radius: 7px; color: #607985; background: #edf3f5; font-size: 9px; }
+.detailReviewContent { min-height: 0; display: grid; flex: 1 1 auto; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; overflow: hidden; padding: 10px 12px 14px; }
+.detailReviewSection { min-width: 0; overflow-y: auto; padding: 0 0 8px 10px; border-left: 1px solid #d9e5e8; }
+.detailReviewSection:last-child { padding-left: 0; border-left: 0; }
+.detailReviewSectionTitle { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 5px 7px; font-family: PeydaRegular, sans-serif; }
+.detailReviewSectionTitle > span { width: 29px; height: 29px; display: grid; flex: 0 0 29px; place-items: center; border-radius: 8px; color: #fff; background: #328986; font-size: 11px; }
+.detailReviewSectionTitle > div { min-width: 0; flex: 1 1 auto; }
+.detailReviewSectionTitle h4 { margin: 0; color: #365461; font-size: 13.5px; font-weight: 400; }
+.detailReviewSectionTitle p { margin: 1px 0 0; color: #8b9ba2; font-size: 9.5px; }
+.detailReviewSectionTitle > button { min-height: 29px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; flex: 0 0 auto; padding: 0 8px; border: 1px solid #b8d7d6; border-radius: 8px; color: #247b7d; background: #edf8f7; font-family: PeydaRegular, sans-serif; font-size: 10px; cursor: pointer; }
+.detailReviewSectionTitle > button:hover { border-color: #6faaa8; background: #e2f4f2; }
+.detailReviewSectionTitle > button svg { width: 13px; height: 13px; }
+.detailReviewRows { border: 1px solid #e1e9ec; border-radius: 9px; overflow: hidden; }
+.detailReviewRow { min-height: 43px; display: grid; grid-template-columns: minmax(78px, .72fr) minmax(0, 1.28fr); align-items: center; gap: 8px; padding: 5px 9px; border-bottom: 1px solid #edf2f4; }
+.detailReviewRow:nth-child(even) { background: #fbfdfd; }
+.detailReviewRow:last-child { border-bottom: 0; }
+.detailReviewRow > span { color: #71868f; font-size: 12px; }
+.detailReviewRow > strong { overflow-wrap: anywhere; color: #126b75; font-family: Shabnam, Tahoma, Arial, sans-serif; font-size: 13.5px; line-height: 1.75; }
+
+.sectionEditBackdrop { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 18px; background: rgba(17, 40, 50, .58); backdrop-filter: blur(4px); }
+.sectionEditModal { width: min(1050px, 94vw); max-height: 90vh; display: flex; overflow: hidden; flex-direction: column; border: 1px solid #cbdcdf; border-radius: 15px; background: #f5f8f9; box-shadow: 0 28px 85px rgba(17, 40, 50, .35); }
+.sectionEditModal > header { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 13px; border-bottom: 1px solid #d9e5e8; background: #fff; font-family: PeydaRegular, sans-serif; }
+.sectionEditModal > header span { display: block; color: #278684; font-size: 9px; }
+.sectionEditModal > header h3 { margin: 1px 0 0; color: #34515e; font-size: 17px; font-weight: 400; }
+.sectionEditModal > header p { display: inline; margin: 0; color: #8799a1; font-size: 9.5px; }
+.sectionEditModal > header > button { width: 34px; height: 34px; display: grid; flex: 0 0 34px; place-items: center; padding: 0; border: 1px solid #d9e4e7; border-radius: 9px; color: #7a8f98; background: #fff; cursor: pointer; }
+.sectionEditModal > header > button:hover { color: #a0444e; border-color: #e3c0c4; background: #fff6f7; }
+.sectionEditModal > header > button:disabled { opacity: .5; cursor: wait; }
+.sectionEditModal > header > button svg { width: 15px; height: 15px; }
+.sectionEditBody { min-height: 0; flex: 1 1 auto; overflow-y: auto; padding: 10px 12px; }
+.sectionEditBody > .formGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sectionEditModal > footer { min-height: 58px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 7px 12px; border-top: 1px solid #d9e5e8; background: #fff; }
+.sectionEditModal > footer button { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; border: 1px solid; border-radius: 9px; font: inherit; font-size: 11px; cursor: pointer; }
+.sectionEditModal > footer button:disabled { opacity: .55; cursor: wait; }
+.sectionEditModal > footer button svg { width: 15px; height: 15px; }
+.sectionSaveButton { min-width: 165px; color: #fff; border-color: #257d78 !important; background: linear-gradient(135deg, #278b86, #357f89); }
+.sectionSaveButton:hover:not(:disabled) { background: linear-gradient(135deg, #217c78, #2f727b); }
+
 .modalBackdrop,
 .confirmBackdrop {
   position: fixed;
@@ -233,6 +343,8 @@
   background: #f7fafb;
   box-shadow: 0 25px 80px rgba(18, 45, 57, .28);
 }
+.editModalBackdrop { padding: 0; }
+.wizardEditModal { width: 100vw; height: 100vh; max-height: 100vh; border: 0; border-radius: 0; }
 .wizardHeader { min-height: 65px; display: flex; align-items: center; justify-content: space-between; padding: 7px 13px; border-bottom: 1px solid #dbe7ea; background: #fff; }
 .wizardHeader > div { display: flex; align-items: center; gap: 9px; }
 .wizardHeader > div > div small { display: block; color: #258987; font-size: 9.5px; }
@@ -354,6 +466,8 @@
 
 @media (max-width: 1000px) {
   .formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sectionEditBody > .formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detailSidebar { width: 220px; flex-basis: 220px; }
   .reviewLayout { grid-template-columns: 245px minmax(0, 1fr); }
   .stepItem small { display: none; }
   .tableCard { overflow: visible; }
@@ -370,6 +484,26 @@
   .searchBox,
   .filterDropdown { width: 100%; }
   .counter { margin-right: 0; text-align: center; }
+  .detailHeader { min-height: auto; align-items: stretch; flex-direction: column; padding: 7px 9px; }
+  .detailHeaderActions { justify-content: space-between; }
+  .detailEditButton { flex: 1; }
+  .detailBody { overflow-y: auto; padding: 8px; }
+  .detailLayout { height: auto; flex-direction: column; }
+  .detailSidebar { width: auto; min-height: auto; flex: 0 0 auto; overflow: visible; }
+  .detailSidebarPhoto { min-height: 230px; }
+  .detailSidebarPhoto img { height: 230px; }
+  .detailReviewPanel { overflow: visible; }
+  .detailReviewContent { display: block; overflow: visible; padding: 0 7px 10px; }
+  .detailReviewSection { overflow: visible; padding: 12px 0 16px; border-bottom: 2px solid #d9e5e8; border-left: 0; }
+  .detailReviewSection:last-child { padding-bottom: 2px; border-bottom: 0; }
+  .detailReviewRow { grid-template-columns: 120px minmax(0, 1fr); gap: 8px; padding: 5px 8px; }
+  .detailReviewRow > span { font-size: 10.5px; }
+  .detailReviewRow > strong { font-size: 12px; }
+  .sectionEditBackdrop { padding: 0; }
+  .sectionEditModal { width: 100vw; max-height: 100vh; height: 100vh; border: 0; border-radius: 0; }
+  .sectionEditBody { padding: 8px; }
+  .sectionEditBody > .formGrid { grid-template-columns: 1fr; }
+  .sectionEditModal > footer button { flex: 1; }
   .pagination { align-items: stretch; flex-direction: column; }
   .pageButtons { justify-content: center; }
   .pageSize { width: 100%; }
