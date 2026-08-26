@@ -280,22 +280,22 @@
 .workHistoryHeader { min-height: 55px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 14px; border-bottom: 1px solid #e0e9ec; background: #f8fbfb; font-family: PeydaRegular, sans-serif; }
 .workHistoryHeader span { display: block; color: #278684; font-size: 10.5px; }
 .workHistoryHeader h3 { margin: 1px 0 0; color: #3b5966; font-size: 16px; }
-.workHistoryAddButton { min-height: 34px; display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; border: 1px solid #b8d7d6; border-radius: 8px; color: #247b7d; background: #edf8f7; font: inherit; font-size: 10.5px; cursor: pointer; }
-.workHistoryAddButton svg { width: 14px; height: 14px; }
+.workHistoryAddButton { min-height: 38px; display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; border: 1px solid #b8d7d6; border-radius: 8px; color: #247b7d; background: #edf8f7; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.workHistoryAddButton svg { width: 17px; height: 17px; }
 .workHistoryForm { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; align-items: end; padding: 14px; border-bottom: 1px solid #e0e9ec; background: #fff; }
 .workHistoryFormActions { display: flex; gap: 6px; grid-column: 1 / -1; justify-content: flex-start; }
 .workHistoryFormActions button { min-height: 34px; }
 .workHistoryTableWrap { overflow-x: auto; padding: 14px; }
 .workHistoryTable { width: 100%; min-width: 720px; border-collapse: collapse; table-layout: fixed; }
 .workHistoryTable th, .workHistoryTable td { height: 42px; padding: 5px 9px; border: 1px solid #dce7ea; text-align: right; }
-.workHistoryTable th { color: #526f7a; background: #f2f7f7; font-family: PeydaRegular, sans-serif; font-size: 11px; font-weight: 400; }
+.workHistoryTable th { color: #526f7a; background: #f2f7f7; font-family: PeydaRegular, sans-serif; font-size: 14px; font-weight: 600; }
 .workHistoryTable td { color: #71868f; font-size: 11.5px; }
 .workHistoryTable th:first-child, .workHistoryTable td:first-child { width: 60px; text-align: center; }
 .workHistoryTable th:nth-child(4), .workHistoryTable th:nth-child(5) { width: 115px; }
 .workHistoryTable th:last-child { width: 95px; }
 .workHistoryActions { display: flex; justify-content: center; gap: 5px; }
-.workHistoryActions button { width: 27px; height: 27px; display: grid; place-items: center; padding: 0; border: 1px solid; border-radius: 8px; background: #fff; cursor: pointer; }
-.workHistoryActions svg { width: 14px; height: 14px; }
+.workHistoryActions button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid; border-radius: 9px; background: #fff; cursor: pointer; }
+.workHistoryActions svg { width: 19px; height: 19px; stroke-width: 2.2; }
 .workHistoryEmpty { height: 90px !important; color: #91a1a8 !important; text-align: center !important; }
 .workHistoryModalBackdrop { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 18px; background: rgba(17, 40, 50, .58); backdrop-filter: blur(4px); }
 .workHistoryModal { width: min(760px, 94vw); display: flex; overflow: hidden; flex-direction: column; border: 1px solid #cbdcdf; border-radius: 14px; background: #f5f8f9; box-shadow: 0 28px 85px rgba(17,40,50,.35); }
@@ -310,12 +310,10 @@
 .workHistoryModal > .workHistoryForm { grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 0; }
 .workHistoryModal label { font-size: 12.5px; }
 .workHistoryModal .field > span { font-size: 12.5px; }
-.workHistoryModal > footer { min-height: 64px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 7px 14px; border-top: 1px solid #d9e5e8; background: #fff; direction: ltr; }
-.workHistoryModal > footer button { min-height: 42px; padding: 0 16px; border: 1px solid; border-radius: 9px; font: inherit; font-family: PeydaRegular, sans-serif; font-size: 13.5px; cursor: pointer; }
-.workHistoryConfirmButton { min-width: 150px; color: #fff; border-color: #157f82 !important; background: linear-gradient(135deg, #168b8c, #1d9c93); }
-.workHistoryConfirmButton:hover { background: linear-gradient(135deg, #147e80, #198d85); }
-.workHistoryModal > footer .cancelButton { min-width: 88px; border-color: transparent !important; background: transparent; }
-.workHistoryModal > footer .cancelButton:hover { color: #345f6a; background: #f2f7f8; }
+.workHistoryModal > footer { min-height: 58px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 7px 12px; border-top: 1px solid #d9e5e8; background: #fff; }
+.workHistoryModal > footer button { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; border: 1px solid; border-radius: 9px; font: inherit; font-size: 11px; cursor: pointer; }
+.workHistoryModal > footer button:disabled { opacity: .55; cursor: wait; }
+.workHistoryModal > footer button svg { width: 15px; height: 15px; }
 
 .detailBody { min-height: 0; flex: 1 1 auto; overflow: hidden; padding: 10px 14px 16px; }
 .detailLoading { min-height: 0; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: #7d919a; background: #fff; font-size: 11px; }
@@ -565,6 +563,7 @@
   .sectionEditBody { padding: 8px; }
   .sectionEditBody > .formGrid { grid-template-columns: 1fr; }
   .sectionEditModal > footer button { flex: 1; }
+  .workHistoryModal > footer button { flex: 1; }
   .pagination { align-items: stretch; flex-direction: column; }
   .pageButtons { justify-content: center; }
   .pageSize { width: 100%; }
@@ -589,18 +588,17 @@
 .workHistoryHeader small { display: block; margin-top: 2px; color: #899ba3; font-size: 9.5px; }
 .workHistoryAddButton:disabled,
 .workHistoryActions button:disabled { opacity: .5; cursor: wait; }
-.workHistoryRealTable { min-width: 1320px; }
+.workHistoryRealTable { min-width: 760px; }
 .workHistoryRealTable th:first-child,
 .workHistoryRealTable td:first-child { width: 56px; }
-.workHistoryRealTable th:nth-child(2) { width: 145px; }
-.workHistoryRealTable th:nth-child(3) { width: 155px; }
-.workHistoryRealTable th:nth-child(4) { width: 125px; }
-.workHistoryRealTable th:nth-child(5) { width: 125px; }
-.workHistoryRealTable th:nth-child(6) { width: 150px; }
-.workHistoryRealTable th:nth-child(7),
-.workHistoryRealTable th:nth-child(8) { width: 105px; }
-.workHistoryRealTable th:nth-child(9) { width: 120px; }
-.workHistoryRealTable th:last-child { width: 92px; }
+.workHistoryRealTable th:nth-child(2) { width: 27%; }
+.workHistoryRealTable th:nth-child(3) { width: 31%; }
+.workHistoryRealTable th:nth-child(4),
+.workHistoryRealTable th:nth-child(5) { width: 112px; text-align: center; }
+.workHistoryRealTable td:nth-child(4),
+.workHistoryRealTable td:nth-child(5) { text-align: center; direction: ltr; white-space: nowrap; }
+.workHistoryRealTable th:last-child,
+.workHistoryRealTable td:last-child { width: 92px; text-align: center; }
 .workHistoryPrimary { color: #296c75; font-family: PeydaRegular, Shabnam, Tahoma, sans-serif; font-size: 12px; font-weight: 400; }
 .workHistoryFullModal { width: min(1080px, 96vw); max-height: 92vh; }
 .workHistoryModal > .workHistoryFullForm { min-height: 0; overflow-y: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }

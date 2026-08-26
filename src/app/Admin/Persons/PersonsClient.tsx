@@ -101,27 +101,11 @@ type PersonForm = {
 type WorkHistoryRow = {
   ID: number;
   PersonId: number;
-  Vazeyat: number | null;
-  Vazeyat_NameFarsi: string | null;
-  VazeyatShoghl: number | null;
-  VazeyatShoghl_NameFarsi: string | null;
-  NoeSazman: number | null;
-  NoeSazman_NameFarsi: string | null;
-  SathSazmani: number | null;
-  SathSazmani_NameFarsi: string | null;
-  PostSazmani: number | null;
-  PostSazmani_NameFarsi: string | null;
-  NameShoghl: string | null;
-  OnvanMasoliat: string | null;
-  Semat: number | null;
-  Semat_NameFarsi: string | null;
+  Mahal: number | null;
+  MahalName: string | null;
+  SematPostSazmani: string | null;
   AzTarikh: string | null;
   TaTarikh: string | null;
-  Mahal: number | null;
-  Mahal_NameFarsi: string | null;
-  Neshani: string | null;
-  Tel: string | null;
-  Tozihat: string | null;
   CreateUserId: string | null;
   CreateDateTime: string | null;
   EditUserId: string | null;
@@ -130,50 +114,70 @@ type WorkHistoryRow = {
 
 type WorkHistoryForm = {
   id: number;
-  vazeyat: string;
-  vazeyatShoghl: string;
-  noeSazman: string;
-  sathSazmani: string;
-  postSazmani: string;
-  nameShoghl: string;
-  onvanMasoliat: string;
-  semat: string;
+  mahal: string;
+  sematPostSazmani: string;
   azTarikh: string;
   taTarikh: string;
-  mahal: string;
-  neshani: string;
-  tel: string;
-  tozihat: string;
 };
 
-type WorkHistoryLookup = { GroupCode: number; Id: number; Title: string };
-type WorkHistoryCity = { Id: number; Title: string };
+type SabegeNezaratRow = {
+  ID: number;
+  PersonId: number;
+  DoreEntekhabat: string;
+  SematEntekhabat: string;
+  Mahal: number;
+  MahalName: string | null;
+};
 
-const SHOGHL_DFN_PID = {
-  vazeyat: 40401,
-  vazeyatShoghl: 40402,
-  noeSazman: 40403,
-  sathSazmani: 40404,
-  postSazmani: 40405,
-  semat: 40406,
-} as const;
+type SabegeNezaratForm = {
+  id: number;
+  doreEntekhabat: string;
+  sematEntekhabat: string;
+  mahal: string;
+};
+
+type SabegheFaliyatEjtemaiRow = {
+  ID: number;
+  PersonId: number;
+  NameNahadTashakolHezb: string;
+  Mahal: number;
+  MahalName: string | null;
+  AzTarikh: string | null;
+  TaTarikh: string | null;
+  Molahazat: string | null;
+};
+
+type SabegheFaliyatEjtemaiForm = {
+  id: number;
+  nameNahadTashakolHezb: string;
+  mahal: string;
+  azTarikh: string;
+  taTarikh: string;
+  molahazat: string;
+};
 
 const emptyWorkHistoryForm: WorkHistoryForm = {
   id: 0,
-  vazeyat: "",
-  vazeyatShoghl: "",
-  noeSazman: "",
-  sathSazmani: "",
-  postSazmani: "",
-  nameShoghl: "",
-  onvanMasoliat: "",
-  semat: "",
+  mahal: "",
+  sematPostSazmani: "",
   azTarikh: "",
   taTarikh: "",
+};
+
+const emptySabegeNezaratForm: SabegeNezaratForm = {
+  id: 0,
+  doreEntekhabat: "",
+  sematEntekhabat: "",
   mahal: "",
-  neshani: "",
-  tel: "",
-  tozihat: "",
+};
+
+const emptySabegheFaliyatEjtemaiForm: SabegheFaliyatEjtemaiForm = {
+  id: 0,
+  nameNahadTashakolHezb: "",
+  mahal: "",
+  azTarikh: "",
+  taTarikh: "",
+  molahazat: "",
 };
 
 const emptyForm: PersonForm = {
@@ -404,14 +408,25 @@ export default function PersonsClient() {
   const [detailTab, setDetailTab] = useState<DetailTabId>("details");
   const [workHistory, setWorkHistory] = useState<WorkHistoryRow[]>([]);
   const [workHistoryForm, setWorkHistoryForm] = useState<WorkHistoryForm>(emptyWorkHistoryForm);
-  const [workHistoryDefinitions, setWorkHistoryDefinitions] = useState<WorkHistoryLookup[]>([]);
-  const [workHistoryCities, setWorkHistoryCities] = useState<WorkHistoryCity[]>([]);
-  const [workHistoryLookupsLoaded, setWorkHistoryLookupsLoaded] = useState(false);
   const [workHistoryLoading, setWorkHistoryLoading] = useState(false);
   const [workHistorySaving, setWorkHistorySaving] = useState(false);
   const [editingWorkHistoryId, setEditingWorkHistoryId] = useState<number | null>(null);
   const [workHistoryModalOpen, setWorkHistoryModalOpen] = useState(false);
   const [workHistoryDeleteTarget, setWorkHistoryDeleteTarget] = useState<WorkHistoryRow | null>(null);
+  const [sabegeNezarat, setSabegeNezarat] = useState<SabegeNezaratRow[]>([]);
+  const [sabegeNezaratForm, setSabegeNezaratForm] = useState<SabegeNezaratForm>(emptySabegeNezaratForm);
+  const [sabegeNezaratLoading, setSabegeNezaratLoading] = useState(false);
+  const [sabegeNezaratSaving, setSabegeNezaratSaving] = useState(false);
+  const [editingSabegeNezaratId, setEditingSabegeNezaratId] = useState<number | null>(null);
+  const [sabegeNezaratModalOpen, setSabegeNezaratModalOpen] = useState(false);
+  const [sabegeNezaratDeleteTarget, setSabegeNezaratDeleteTarget] = useState<SabegeNezaratRow | null>(null);
+  const [sabegheFaliyatEjtemai, setSabegheFaliyatEjtemai] = useState<SabegheFaliyatEjtemaiRow[]>([]);
+  const [sabegheFaliyatEjtemaiForm, setSabegheFaliyatEjtemaiForm] = useState<SabegheFaliyatEjtemaiForm>(emptySabegheFaliyatEjtemaiForm);
+  const [sabegheFaliyatEjtemaiLoading, setSabegheFaliyatEjtemaiLoading] = useState(false);
+  const [sabegheFaliyatEjtemaiSaving, setSabegheFaliyatEjtemaiSaving] = useState(false);
+  const [editingSabegheFaliyatEjtemaiId, setEditingSabegheFaliyatEjtemaiId] = useState<number | null>(null);
+  const [sabegheFaliyatEjtemaiModalOpen, setSabegheFaliyatEjtemaiModalOpen] = useState(false);
+  const [sabegheFaliyatEjtemaiDeleteTarget, setSabegheFaliyatEjtemaiDeleteTarget] = useState<SabegheFaliyatEjtemaiRow | null>(null);
   const [sectionEdit, setSectionEdit] = useState<number | null>(null);
   const sectionEditBackup = useRef<PersonForm | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -548,6 +563,16 @@ export default function PersonsClient() {
     void loadWorkHistory(form.personId);
   }, [detailOpen, detailTab, form.personId]);
 
+  useEffect(() => {
+    if (!detailOpen || detailTab !== "election-supervision" || form.personId <= 0) return;
+    void loadSabegeNezarat(form.personId);
+  }, [detailOpen, detailTab, form.personId]);
+
+  useEffect(() => {
+    if (!detailOpen || detailTab !== "social-activities" || form.personId <= 0) return;
+    void loadSabegheFaliyatEjtemai(form.personId);
+  }, [detailOpen, detailTab, form.personId]);
+
   function change<K extends keyof PersonForm>(key: K, value: PersonForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
@@ -588,6 +613,14 @@ export default function PersonsClient() {
     setWorkHistoryDeleteTarget(null);
     resetWorkHistoryForm();
     setWorkHistoryModalOpen(false);
+    setSabegeNezarat([]);
+    setSabegeNezaratDeleteTarget(null);
+    resetSabegeNezaratForm();
+    setSabegeNezaratModalOpen(false);
+    setSabegheFaliyatEjtemai([]);
+    setSabegheFaliyatEjtemaiDeleteTarget(null);
+    resetSabegheFaliyatEjtemaiForm();
+    setSabegheFaliyatEjtemaiModalOpen(false);
     setForm({
       ...emptyForm,
       personId: Number(person.PersonId),
@@ -640,20 +673,6 @@ export default function PersonsClient() {
     setEditingWorkHistoryId(null);
   }
 
-  function workHistoryDefinitionOptions(groupCode: number) {
-    return [
-      { value: "", label: "انتخاب نشده" },
-      ...workHistoryDefinitions
-        .filter((item) => item.GroupCode === groupCode)
-        .map((item) => ({ value: String(item.Id), label: item.Title })),
-    ];
-  }
-
-  const workHistoryCityOptions = [
-    { value: "", label: "انتخاب نشده" },
-    ...workHistoryCities.map((item) => ({ value: String(item.Id), label: item.Title })),
-  ];
-
   async function loadWorkHistory(personId: number) {
     if (!personId) return;
     setWorkHistoryLoading(true);
@@ -667,21 +686,14 @@ export default function PersonsClient() {
     }
   }
 
-  async function loadWorkHistoryLookups() {
-    if (workHistoryLookupsLoaded) return;
-    try {
-      const data = await readJson(await fetch("/api/persons/shoghl?mode=lookups", { cache: "no-store" }));
-      setWorkHistoryDefinitions((data.definitions as WorkHistoryLookup[] | undefined) ?? []);
-      setWorkHistoryCities((data.cities as WorkHistoryCity[] | undefined) ?? []);
-      setWorkHistoryLookupsLoaded(true);
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت گزینه‌های فرم شغل انجام نشد." });
-    }
-  }
 
   async function saveWorkHistoryRow() {
-    if (!workHistoryForm.nameShoghl.trim()) {
-      setNotice({ type: "error", text: "نام شغل را وارد کنید." });
+    if (!workHistoryForm.mahal) {
+      setNotice({ type: "error", text: "محل خدمت (شهرستان) را انتخاب کنید." });
+      return;
+    }
+    if (!workHistoryForm.sematPostSazmani.trim()) {
+      setNotice({ type: "error", text: "سمت (پست سازمانی) را وارد کنید." });
       return;
     }
     if (workHistoryForm.azTarikh && workHistoryForm.taTarikh && workHistoryForm.taTarikh < workHistoryForm.azTarikh) {
@@ -717,29 +729,17 @@ export default function PersonsClient() {
   function editWorkHistoryRow(row: WorkHistoryRow) {
     setWorkHistoryForm({
       id: row.ID,
-      vazeyat: row.Vazeyat === null ? "" : String(row.Vazeyat),
-      vazeyatShoghl: row.VazeyatShoghl === null ? "" : String(row.VazeyatShoghl),
-      noeSazman: row.NoeSazman === null ? "" : String(row.NoeSazman),
-      sathSazmani: row.SathSazmani === null ? "" : String(row.SathSazmani),
-      postSazmani: row.PostSazmani === null ? "" : String(row.PostSazmani),
-      nameShoghl: row.NameShoghl ?? "",
-      onvanMasoliat: row.OnvanMasoliat ?? "",
-      semat: row.Semat === null ? "" : String(row.Semat),
+      mahal: row.Mahal === null ? "" : String(row.Mahal),
+      sematPostSazmani: row.SematPostSazmani ?? "",
       azTarikh: row.AzTarikh ?? "",
       taTarikh: row.TaTarikh ?? "",
-      mahal: row.Mahal === null ? "" : String(row.Mahal),
-      neshani: row.Neshani ?? "",
-      tel: row.Tel ?? "",
-      tozihat: row.Tozihat ?? "",
     });
     setEditingWorkHistoryId(row.ID);
-    void loadWorkHistoryLookups();
     setWorkHistoryModalOpen(true);
   }
 
   function openWorkHistoryCreate() {
     resetWorkHistoryForm();
-    void loadWorkHistoryLookups();
     setWorkHistoryModalOpen(true);
   }
 
@@ -759,6 +759,192 @@ export default function PersonsClient() {
       setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف سابقه شغلی انجام نشد." });
     } finally {
       setWorkHistorySaving(false);
+    }
+  }
+
+  function resetSabegeNezaratForm() {
+    setSabegeNezaratForm(emptySabegeNezaratForm);
+    setEditingSabegeNezaratId(null);
+  }
+
+  async function loadSabegeNezarat(personId: number) {
+    if (!personId) return;
+    setSabegeNezaratLoading(true);
+    try {
+      const data = await readJson(await fetch(`/api/persons/sabege-nezarat?personId=${personId}`, { cache: "no-store" }));
+      setSabegeNezarat((data.rows as SabegeNezaratRow[] | undefined) ?? []);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت سوابق نظارتی و اجرایی انجام نشد." });
+    } finally {
+      setSabegeNezaratLoading(false);
+    }
+  }
+
+  function openSabegeNezaratCreate() {
+    resetSabegeNezaratForm();
+    setSabegeNezaratModalOpen(true);
+  }
+
+  function editSabegeNezaratRow(row: SabegeNezaratRow) {
+    setSabegeNezaratForm({
+      id: row.ID,
+      doreEntekhabat: row.DoreEntekhabat ?? "",
+      sematEntekhabat: row.SematEntekhabat ?? "",
+      mahal: row.Mahal ? String(row.Mahal) : "",
+    });
+    setEditingSabegeNezaratId(row.ID);
+    setSabegeNezaratModalOpen(true);
+  }
+
+  async function saveSabegeNezaratRow() {
+    if (!sabegeNezaratForm.doreEntekhabat.trim()) {
+      setNotice({ type: "error", text: "دوره انتخاباتی را وارد کنید." });
+      return;
+    }
+    if (!sabegeNezaratForm.sematEntekhabat.trim()) {
+      setNotice({ type: "error", text: "سمت انتخاباتی را وارد کنید." });
+      return;
+    }
+    if (!sabegeNezaratForm.mahal) {
+      setNotice({ type: "error", text: "محل را انتخاب کنید." });
+      return;
+    }
+
+    setSabegeNezaratSaving(true);
+    try {
+      const method = editingSabegeNezaratId === null ? "POST" : "PUT";
+      const payload = {
+        id: editingSabegeNezaratId ?? 0,
+        personId: form.personId,
+        doreEntekhabat: sabegeNezaratForm.doreEntekhabat,
+        sematEntekhabat: sabegeNezaratForm.sematEntekhabat,
+        mahal: Number(sabegeNezaratForm.mahal),
+      };
+      const data = await readJson(await fetch("/api/persons/sabege-nezarat", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }));
+      resetSabegeNezaratForm();
+      setSabegeNezaratModalOpen(false);
+      await loadSabegeNezarat(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه نظارتی ذخیره شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره سابقه نظارتی انجام نشد." });
+    } finally {
+      setSabegeNezaratSaving(false);
+    }
+  }
+
+  async function confirmDeleteSabegeNezarat() {
+    if (!sabegeNezaratDeleteTarget) return;
+    setSabegeNezaratSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/sabege-nezarat", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: sabegeNezaratDeleteTarget.ID, personId: form.personId }),
+      }));
+      setSabegeNezaratDeleteTarget(null);
+      await loadSabegeNezarat(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه نظارتی حذف شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف سابقه نظارتی انجام نشد." });
+    } finally {
+      setSabegeNezaratSaving(false);
+    }
+  }
+
+  function resetSabegheFaliyatEjtemaiForm() {
+    setSabegheFaliyatEjtemaiForm(emptySabegheFaliyatEjtemaiForm);
+    setEditingSabegheFaliyatEjtemaiId(null);
+  }
+
+  async function loadSabegheFaliyatEjtemai(personId: number) {
+    if (!personId) return;
+    setSabegheFaliyatEjtemaiLoading(true);
+    try {
+      const data = await readJson(await fetch(`/api/persons/sabeghe-faliyat-ejtemai?personId=${personId}`, { cache: "no-store" }));
+      setSabegheFaliyatEjtemai((data.rows as SabegheFaliyatEjtemaiRow[] | undefined) ?? []);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت سوابق فعالیت‌های اجتماعی انجام نشد." });
+    } finally {
+      setSabegheFaliyatEjtemaiLoading(false);
+    }
+  }
+
+  function openSabegheFaliyatEjtemaiCreate() {
+    resetSabegheFaliyatEjtemaiForm();
+    setSabegheFaliyatEjtemaiModalOpen(true);
+  }
+
+  function editSabegheFaliyatEjtemaiRow(row: SabegheFaliyatEjtemaiRow) {
+    setSabegheFaliyatEjtemaiForm({
+      id: row.ID,
+      nameNahadTashakolHezb: row.NameNahadTashakolHezb ?? "",
+      mahal: row.Mahal ? String(row.Mahal) : "",
+      azTarikh: row.AzTarikh ?? "",
+      taTarikh: row.TaTarikh ?? "",
+      molahazat: row.Molahazat ?? "",
+    });
+    setEditingSabegheFaliyatEjtemaiId(row.ID);
+    setSabegheFaliyatEjtemaiModalOpen(true);
+  }
+
+  async function saveSabegheFaliyatEjtemaiRow() {
+    if (!sabegheFaliyatEjtemaiForm.nameNahadTashakolHezb.trim()) {
+      setNotice({ type: "error", text: "نام نهاد، تشکل یا حزب را وارد کنید." });
+      return;
+    }
+    if (!sabegheFaliyatEjtemaiForm.mahal) {
+      setNotice({ type: "error", text: "محل فعالیت را انتخاب کنید." });
+      return;
+    }
+
+    setSabegheFaliyatEjtemaiSaving(true);
+    try {
+      const method = editingSabegheFaliyatEjtemaiId === null ? "POST" : "PUT";
+      const payload = {
+        id: editingSabegheFaliyatEjtemaiId ?? 0,
+        personId: form.personId,
+        nameNahadTashakolHezb: sabegheFaliyatEjtemaiForm.nameNahadTashakolHezb,
+        mahal: Number(sabegheFaliyatEjtemaiForm.mahal),
+        azTarikh: sabegheFaliyatEjtemaiForm.azTarikh,
+        taTarikh: sabegheFaliyatEjtemaiForm.taTarikh,
+        molahazat: sabegheFaliyatEjtemaiForm.molahazat,
+      };
+      const data = await readJson(await fetch("/api/persons/sabeghe-faliyat-ejtemai", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }));
+      resetSabegheFaliyatEjtemaiForm();
+      setSabegheFaliyatEjtemaiModalOpen(false);
+      await loadSabegheFaliyatEjtemai(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه فعالیت اجتماعی ذخیره شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره سابقه فعالیت اجتماعی انجام نشد." });
+    } finally {
+      setSabegheFaliyatEjtemaiSaving(false);
+    }
+  }
+
+  async function confirmDeleteSabegheFaliyatEjtemai() {
+    if (!sabegheFaliyatEjtemaiDeleteTarget) return;
+    setSabegheFaliyatEjtemaiSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/sabeghe-faliyat-ejtemai", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: sabegheFaliyatEjtemaiDeleteTarget.ID, personId: form.personId }),
+      }));
+      setSabegheFaliyatEjtemaiDeleteTarget(null);
+      await loadSabegheFaliyatEjtemai(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه فعالیت اجتماعی حذف شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف سابقه فعالیت اجتماعی انجام نشد." });
+    } finally {
+      setSabegheFaliyatEjtemaiSaving(false);
     }
   }
 
@@ -1285,7 +1471,7 @@ export default function PersonsClient() {
                   <header className={styles.workHistoryHeader}>
                     <div>
                       <span>سوابق شغلی</span>
-                      <h3>مشاغل، سمت‌ها و محل‌های خدمت</h3>
+                      <h3>محل خدمت، سمت و زمان خدمت</h3>
                       <small>{workHistory.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
                     </div>
                     <button type="button" className={styles.workHistoryAddButton} onClick={openWorkHistoryCreate} disabled={workHistorySaving}>
@@ -1297,32 +1483,24 @@ export default function PersonsClient() {
                       <thead>
                         <tr>
                           <th>ردیف</th>
-                          <th>نام شغل</th>
-                          <th>عنوان مسئولیت</th>
-                          <th>سمت</th>
-                          <th>نوع سازمان</th>
                           <th>محل خدمت</th>
+                          <th>سمت (پست سازمانی)</th>
                           <th>از تاریخ</th>
                           <th>تا تاریخ</th>
-                          <th>وضعیت شغلی</th>
                           <th>عملیات</th>
                         </tr>
                       </thead>
                       <tbody>
                         {workHistoryLoading && (
-                          <tr><td colSpan={10} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق شغلی...</td></tr>
+                          <tr><td colSpan={6} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق شغلی...</td></tr>
                         )}
                         {!workHistoryLoading && workHistory.map((row, index) => (
                           <tr key={row.ID}>
                             <td>{(index + 1).toLocaleString("fa-IR")}</td>
-                            <td><strong className={styles.workHistoryPrimary}>{row.NameShoghl || "—"}</strong></td>
-                            <td>{row.OnvanMasoliat || "—"}</td>
-                            <td>{row.Semat_NameFarsi || row.PostSazmani_NameFarsi || "—"}</td>
-                            <td>{row.NoeSazman_NameFarsi || "—"}</td>
-                            <td>{row.Mahal_NameFarsi || "—"}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.MahalName || (row.Mahal ? cityTitle(String(row.Mahal)) : "—")}</strong></td>
+                            <td>{row.SematPostSazmani || "—"}</td>
                             <td>{row.AzTarikh || "—"}</td>
                             <td>{row.TaTarikh || "تا اکنون"}</td>
-                            <td>{row.VazeyatShoghl_NameFarsi || row.Vazeyat_NameFarsi || "—"}</td>
                             <td>
                               <div className={styles.workHistoryActions}>
                                 <button type="button" className={styles.editAction} onClick={() => editWorkHistoryRow(row)} title="ویرایش" disabled={workHistorySaving}><Icon name="edit" /></button>
@@ -1332,7 +1510,111 @@ export default function PersonsClient() {
                           </tr>
                         ))}
                         {!workHistoryLoading && workHistory.length === 0 && (
-                          <tr><td colSpan={10} className={styles.workHistoryEmpty}>هنوز سابقه شغلی ثبت نشده است.</td></tr>
+                          <tr><td colSpan={6} className={styles.workHistoryEmpty}>هنوز سابقه شغلی ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : detailTab === "election-supervision" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>سوابق نظارتی و اجرایی انتخابات</span>
+                      <h3>دوره، سمت انتخاباتی و محل</h3>
+                      <small>{sabegeNezarat.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openSabegeNezaratCreate} disabled={sabegeNezaratSaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>دوره انتخاباتی</th>
+                          <th>سمت انتخاباتی</th>
+                          <th>محل</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sabegeNezaratLoading && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق نظارتی...</td></tr>
+                        )}
+                        {!sabegeNezaratLoading && sabegeNezarat.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.DoreEntekhabat || "—"}</strong></td>
+                            <td>{row.SematEntekhabat || "—"}</td>
+                            <td>{row.MahalName || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editSabegeNezaratRow(row)} title="ویرایش" disabled={sabegeNezaratSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setSabegeNezaratDeleteTarget(row)} title="حذف" disabled={sabegeNezaratSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!sabegeNezaratLoading && sabegeNezarat.length === 0 && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}>هنوز سابقه نظارتی و اجرایی انتخابات ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : detailTab === "social-activities" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>سوابق فعالیت‌های اجتماعی</span>
+                      <h3>نام نهاد، محل فعالیت، مدت فعالیت و ملاحظات</h3>
+                      <small>{sabegheFaliyatEjtemai.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openSabegheFaliyatEjtemaiCreate} disabled={sabegheFaliyatEjtemaiSaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>نام نهاد، تشکل یا حزب</th>
+                          <th>محل فعالیت</th>
+                          <th>از تاریخ</th>
+                          <th>تا تاریخ</th>
+                          <th>ملاحظات</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sabegheFaliyatEjtemaiLoading && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق فعالیت‌های اجتماعی...</td></tr>
+                        )}
+                        {!sabegheFaliyatEjtemaiLoading && sabegheFaliyatEjtemai.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.NameNahadTashakolHezb || "—"}</strong></td>
+                            <td>{row.MahalName || (row.Mahal ? cityTitle(String(row.Mahal)) : "—")}</td>
+                            <td>{row.AzTarikh || "—"}</td>
+                            <td>{row.TaTarikh || "—"}</td>
+                            <td>{row.Molahazat || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editSabegheFaliyatEjtemaiRow(row)} title="ویرایش" disabled={sabegheFaliyatEjtemaiSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setSabegheFaliyatEjtemaiDeleteTarget(row)} title="حذف" disabled={sabegheFaliyatEjtemaiSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!sabegheFaliyatEjtemaiLoading && sabegheFaliyatEjtemai.length === 0 && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}>هنوز سابقه فعالیت اجتماعی ثبت نشده است.</td></tr>
                         )}
                       </tbody>
                     </table>
@@ -1343,7 +1625,7 @@ export default function PersonsClient() {
 
             {workHistoryModalOpen && detailTab === "work-history" && (
               <div className={styles.workHistoryModalBackdrop}>
-                <section className={`${styles.workHistoryModal} ${styles.workHistoryFullModal}`} role="dialog" aria-modal="true" aria-label={editingWorkHistoryId === null ? "افزودن سابقه شغلی" : "ویرایش سابقه شغلی"}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingWorkHistoryId === null ? "افزودن سابقه شغلی" : "ویرایش سابقه شغلی"}>
                   <header>
                     <div className={styles.workHistoryModalTitle}>
                       <span className={styles.wizardIcon}><Icon name="file" /></span>
@@ -1352,53 +1634,36 @@ export default function PersonsClient() {
                     <button type="button" disabled={workHistorySaving} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
                   </header>
 
-                  <div className={`${styles.workHistoryForm} ${styles.workHistoryFullForm}`}>
-                    <label className={styles.field}>
-                      <span>وضعیت</span>
-                      <SearchableDropdown value={workHistoryForm.vazeyat} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.vazeyat)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, vazeyat: value }))} compact />
-                    </label>
-                    <label className={styles.field}>
-                      <span>وضعیت شغلی</span>
-                      <SearchableDropdown value={workHistoryForm.vazeyatShoghl} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.vazeyatShoghl)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, vazeyatShoghl: value }))} compact />
-                    </label>
-                    <label className={styles.field}>
-                      <span>نوع سازمان</span>
-                      <SearchableDropdown value={workHistoryForm.noeSazman} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.noeSazman)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, noeSazman: value }))} compact />
-                    </label>
-                    <label className={styles.field}>
-                      <span>سطح سازمانی</span>
-                      <SearchableDropdown value={workHistoryForm.sathSazmani} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.sathSazmani)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, sathSazmani: value }))} compact />
-                    </label>
-                    <label className={styles.field}>
-                      <span>پست سازمانی</span>
-                      <SearchableDropdown value={workHistoryForm.postSazmani} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.postSazmani)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, postSazmani: value }))} compact />
-                    </label>
-                    <label className={styles.field}>
-                      <span>سمت</span>
-                      <SearchableDropdown value={workHistoryForm.semat} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.semat)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, semat: value }))} compact />
-                    </label>
-
-                    <TextField label="نام شغل" value={workHistoryForm.nameShoghl} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, nameShoghl: value }))} required maxLength={100} />
-                    <TextField label="عنوان مسئولیت" value={workHistoryForm.onvanMasoliat} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, onvanMasoliat: value }))} maxLength={100} />
+                  <div className={styles.workHistoryForm}>
                     <label className={styles.field}>
                       <span>محل خدمت</span>
-                      <SearchableDropdown value={workHistoryForm.mahal} options={workHistoryCityOptions} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, mahal: value }))} searchPlaceholder="جست‌وجوی محل خدمت..." compact />
+                      <SearchableDropdown
+                        value={workHistoryForm.mahal}
+                        options={cityOptions}
+                        onChange={(value) => setWorkHistoryForm((current) => ({ ...current, mahal: value }))}
+                        searchPlaceholder="جست‌وجو و انتخاب شهرستان محل خدمت..."
+                        compact
+                      />
                     </label>
+
+                    <TextField
+                      label="سمت (پست سازمانی)"
+                      value={workHistoryForm.sematPostSazmani}
+                      onChange={(value) => setWorkHistoryForm((current) => ({ ...current, sematPostSazmani: value }))}
+                      required
+                      maxLength={150}
+                    />
 
                     <InputPersianDate label="از تاریخ" value={workHistoryForm.azTarikh} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, azTarikh: value ?? "" }))} placeholder="انتخاب تاریخ شروع" />
                     <InputPersianDate label="تا تاریخ" value={workHistoryForm.taTarikh} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, taTarikh: value ?? "" }))} placeholder="تا اکنون" />
-                    <TextField label="تلفن محل کار" value={workHistoryForm.tel} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, tel: value }))} maxLength={200} />
-
-                    <TextAreaField label="نشانی محل خدمت" value={workHistoryForm.neshani} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, neshani: value }))} />
-                    <TextAreaField label="توضیحات" value={workHistoryForm.tozihat} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, tozihat: value }))} />
                   </div>
 
                   <footer>
-                    <button type="button" className={styles.workHistoryConfirmButton} onClick={() => void saveWorkHistoryRow()} disabled={workHistorySaving}>
-                      {workHistorySaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
-                      {editingWorkHistoryId === null ? "ثبت سابقه" : "ذخیره ویرایش"}
-                    </button>
                     <button type="button" className={styles.cancelButton} disabled={workHistorySaving} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} onClick={() => void saveWorkHistoryRow()} disabled={workHistorySaving}>
+                      {workHistorySaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {editingWorkHistoryId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                    </button>
                   </footer>
                 </section>
               </div>
@@ -1408,11 +1673,134 @@ export default function PersonsClient() {
               <ConfirmDialog
                 tone="danger"
                 title="حذف سابقه شغلی"
-                text={`سابقه شغلی «${workHistoryDeleteTarget.NameShoghl || "انتخاب‌شده"}» حذف شود؟`}
+                text={`سابقه شغلی «${workHistoryDeleteTarget.SematPostSazmani || "انتخاب‌شده"}» حذف شود؟`}
                 confirmText="حذف شود"
                 busy={workHistorySaving}
                 onCancel={() => setWorkHistoryDeleteTarget(null)}
                 onConfirm={() => void confirmDeleteWorkHistory()}
+              />
+            )}
+
+            {sabegeNezaratModalOpen && detailTab === "election-supervision" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingSabegeNezaratId === null ? "افزودن سابقه نظارتی" : "ویرایش سابقه نظارتی"}>
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="file" /></span>
+                      <div><small>سوابق نظارتی و اجرایی انتخابات</small><h3>{editingSabegeNezaratId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                    </div>
+                    <button type="button" disabled={sabegeNezaratSaving} onClick={() => { resetSabegeNezaratForm(); setSabegeNezaratModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+
+                  <div className={styles.workHistoryForm}>
+                    <TextField
+                      label="دوره انتخاباتی"
+                      value={sabegeNezaratForm.doreEntekhabat}
+                      onChange={(value) => setSabegeNezaratForm((current) => ({ ...current, doreEntekhabat: value }))}
+                      required
+                      maxLength={150}
+                    />
+                    <TextField
+                      label="سمت انتخاباتی"
+                      value={sabegeNezaratForm.sematEntekhabat}
+                      onChange={(value) => setSabegeNezaratForm((current) => ({ ...current, sematEntekhabat: value }))}
+                      required
+                      maxLength={150}
+                    />
+                    <label className={styles.field}>
+                      <span>محل<i>*</i></span>
+                      <SearchableDropdown
+                        value={sabegeNezaratForm.mahal}
+                        options={cityOptions}
+                        onChange={(value) => setSabegeNezaratForm((current) => ({ ...current, mahal: value }))}
+                        searchPlaceholder="جست‌وجو و انتخاب محل..."
+                        compact
+                      />
+                    </label>
+                  </div>
+
+                  <footer>
+                    <button type="button" className={styles.cancelButton} disabled={sabegeNezaratSaving} onClick={() => { resetSabegeNezaratForm(); setSabegeNezaratModalOpen(false); }}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} onClick={() => void saveSabegeNezaratRow()} disabled={sabegeNezaratSaving}>
+                      {sabegeNezaratSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {editingSabegeNezaratId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+
+            {sabegeNezaratDeleteTarget && detailTab === "election-supervision" && (
+              <ConfirmDialog
+                tone="danger"
+                title="حذف سابقه نظارتی و اجرایی انتخابات"
+                text={`سابقه «${sabegeNezaratDeleteTarget.DoreEntekhabat || "انتخاب‌شده"}» حذف شود؟`}
+                confirmText="حذف شود"
+                busy={sabegeNezaratSaving}
+                onCancel={() => setSabegeNezaratDeleteTarget(null)}
+                onConfirm={() => void confirmDeleteSabegeNezarat()}
+              />
+            )}
+
+            {sabegheFaliyatEjtemaiModalOpen && detailTab === "social-activities" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingSabegheFaliyatEjtemaiId === null ? "افزودن سابقه فعالیت اجتماعی" : "ویرایش سابقه فعالیت اجتماعی"}>
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="file" /></span>
+                      <div><small>سوابق فعالیت‌های اجتماعی</small><h3>{editingSabegheFaliyatEjtemaiId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                    </div>
+                    <button type="button" disabled={sabegheFaliyatEjtemaiSaving} onClick={() => { resetSabegheFaliyatEjtemaiForm(); setSabegheFaliyatEjtemaiModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+
+                  <div className={styles.workHistoryForm}>
+                    <TextField
+                      label="نام نهاد، تشکل یا حزب"
+                      value={sabegheFaliyatEjtemaiForm.nameNahadTashakolHezb}
+                      onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, nameNahadTashakolHezb: value }))}
+                      required
+                      maxLength={250}
+                    />
+                    <label className={styles.field}>
+                      <span>محل فعالیت (استان و شهرستان)<i>*</i></span>
+                      <SearchableDropdown
+                        value={sabegheFaliyatEjtemaiForm.mahal}
+                        options={cityOptions}
+                        onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, mahal: value }))}
+                        searchPlaceholder="جست‌وجو و انتخاب محل فعالیت..."
+                        compact
+                      />
+                    </label>
+                    <InputPersianDate label="از تاریخ" value={sabegheFaliyatEjtemaiForm.azTarikh} onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, azTarikh: value ?? "" }))} placeholder="انتخاب تاریخ شروع" />
+                    <InputPersianDate label="تا تاریخ" value={sabegheFaliyatEjtemaiForm.taTarikh} onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, taTarikh: value ?? "" }))} placeholder="انتخاب تاریخ پایان" />
+                    <TextField
+                      label="ملاحظات"
+                      value={sabegheFaliyatEjtemaiForm.molahazat}
+                      onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, molahazat: value }))}
+                      maxLength={1000}
+                    />
+                  </div>
+
+                  <footer>
+                    <button type="button" className={styles.cancelButton} disabled={sabegheFaliyatEjtemaiSaving} onClick={() => { resetSabegheFaliyatEjtemaiForm(); setSabegheFaliyatEjtemaiModalOpen(false); }}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} onClick={() => void saveSabegheFaliyatEjtemaiRow()} disabled={sabegheFaliyatEjtemaiSaving}>
+                      {sabegheFaliyatEjtemaiSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {editingSabegheFaliyatEjtemaiId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+
+            {sabegheFaliyatEjtemaiDeleteTarget && detailTab === "social-activities" && (
+              <ConfirmDialog
+                tone="danger"
+                title="حذف سابقه فعالیت اجتماعی"
+                text={`سابقه «${sabegheFaliyatEjtemaiDeleteTarget.NameNahadTashakolHezb || "انتخاب‌شده"}» حذف شود؟`}
+                confirmText="حذف شود"
+                busy={sabegheFaliyatEjtemaiSaving}
+                onCancel={() => setSabegheFaliyatEjtemaiDeleteTarget(null)}
+                onConfirm={() => void confirmDeleteSabegheFaliyatEjtemai()}
               />
             )}
 

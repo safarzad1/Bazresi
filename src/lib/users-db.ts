@@ -1,4 +1,4 @@
-import type { Request } from "mssql";
+import type { IRecordSet, Request } from "mssql";
 import { getDbPool } from "@/lib/db";
 
 export type UserListRecord = {
@@ -56,13 +56,14 @@ export async function listUsers(
   if (search) request.input("Search", search);
 
   const result = await request.execute("bz.SP_UserAdmin_List");
+  const recordsets = result.recordsets as unknown as IRecordSet<any>[];
 
-  const summary = (result.recordsets?.[1]?.[0] ?? {}) as {
+  const summary = (recordsets?.[1]?.[0] ?? {}) as {
     TotalCount?: number;
   };
 
   return {
-    users: (result.recordsets?.[0] ?? []) as UserListRecord[],
+    users: (recordsets?.[0] ?? []) as UserListRecord[],
     totalCount: Number(summary.TotalCount ?? 0),
   };
 }
@@ -70,10 +71,11 @@ export async function listUsers(
 export async function getUserLookups() {
   const pool = await getDbPool();
   const result = await pool.request().execute("bz.SP_UserAdmin_Lookups");
+  const recordsets = result.recordsets as unknown as IRecordSet<any>[];
 
   return {
-    semats: (result.recordsets?.[0] ?? []) as LookupRecord[],
-    mahals: (result.recordsets?.[1] ?? []) as LookupRecord[],
+    semats: (recordsets?.[0] ?? []) as LookupRecord[],
+    mahals: (recordsets?.[1] ?? []) as LookupRecord[],
   };
 }
 

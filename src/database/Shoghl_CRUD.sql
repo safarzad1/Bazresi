@@ -1,83 +1,256 @@
 USE [DBBazresi];
 GO
 
-/*
-    CRUD کامل سوابق شغلی
-    نکته: تمام تاریخ‌ها و تاریخ/ساعت‌ها NVARCHAR(25) هستند.
-    تاریخ/ساعت سیستمی فقط با dbo.FarsiDateTimeNow() ثبت می‌شود.
-*/
-
-SET ANSI_NULLS ON;
-SET QUOTED_IDENTIFIER ON;
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
 GO
 
-/* 1) یکسان‌سازی نوع ستون‌های تاریخ با استاندارد پروژه */
-IF EXISTS
-(
-    SELECT 1
-    FROM [bz].[Shoghl]
-    WHERE LEN(ISNULL([AzTarikh], N'')) > 25
-       OR LEN(ISNULL([TaTarikh], N'')) > 25
-       OR LEN(ISNULL([CreateDateTime], N'')) > 25
-       OR LEN(ISNULL([EditDateTime], N'')) > 25
-)
-    THROW 51000, N'در جدول Shoghl مقدار تاریخ/تاریخ‌وساعتی با طول بیشتر از 25 کاراکتر وجود دارد. ابتدا داده را اصلاح کنید.', 1;
+/* ============================================================
+   پاک‌سازی نهایی جدول سوابق شغلی
+   ساختار نهایی:
+     ID | PersonId | Mahal | SematPostSazmani | AzTarikh | TaTarikh
+     CreateUserId | CreateDateTime | EditUserId | EditDateTime
+
+   تاریخ‌ها و تاریخ/ساعت‌ها: NVARCHAR(25)
+   زمان سیستمی: dbo.FarsiDateTimeNow()
+   ============================================================ */
+
+IF OBJECT_ID(N'[bz].[Shoghl]', N'U') IS NULL
+    THROW 51000, N'جدول [bz].[Shoghl] وجود ندارد.', 1;
+GO
+
+/* Procedureهای قدیمی که ممکن است به ستون‌های حذف‌شونده وابسته باشند */
+DROP PROCEDURE IF EXISTS [bz].[SP_ShoghlAdmin_List];
+DROP PROCEDURE IF EXISTS [bz].[SP_ShoghlAdmin_Get];
+DROP PROCEDURE IF EXISTS [bz].[SP_ShoghlAdmin_Save];
+DROP PROCEDURE IF EXISTS [bz].[SP_ShoghlAdmin_Delete];
+DROP PROCEDURE IF EXISTS [bz].[SP_ShoghlAdmin_Lookups];
+DROP PROCEDURE IF EXISTS [bz].[SP_GetShoghl];
+DROP PROCEDURE IF EXISTS [bz].[SP_GetShoghlById];
+DROP PROCEDURE IF EXISTS [bz].[SP_Delete_Shoghl];
+GO
+
+/* ستون‌های مورد نیاز نسخه نهایی، اگر در دیتابیس قدیمی وجود نداشته باشند */
+IF COL_LENGTH(N'bz.Shoghl', N'PersonId') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [PersonId] BIGINT NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'Mahal') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [Mahal] INT NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'SematPostSazmani') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [SematPostSazmani] NVARCHAR(150) NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'AzTarikh') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [AzTarikh] NVARCHAR(25) NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'TaTarikh') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [TaTarikh] NVARCHAR(25) NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'CreateUserId') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [CreateUserId] NVARCHAR(50) NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'CreateDateTime') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [CreateDateTime] NVARCHAR(25) NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'EditUserId') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [EditUserId] NVARCHAR(50) NULL;
+GO
+IF COL_LENGTH(N'bz.Shoghl', N'EditDateTime') IS NULL
+    ALTER TABLE [bz].[Shoghl] ADD [EditDateTime] NVARCHAR(25) NULL;
+GO
+
+/* اگر داده‌ای از ساختار قدیمی وجود دارد، تا حد ممکن عنوان سمت را منتقل می‌کنیم. */
+DECLARE @MigrationSql NVARCHAR(MAX) = N'';
+
+IF COL_LENGTH(N'bz.Shoghl', N'PostSazmani_NameFarsi') IS NOT NULL
+    SET @MigrationSql += N'NULLIF(LTRIM(RTRIM([PostSazmani_NameFarsi])), N''''),';
+IF COL_LENGTH(N'bz.Shoghl', N'Semat_NameFarsi') IS NOT NULL
+    SET @MigrationSql += N'NULLIF(LTRIM(RTRIM([Semat_NameFarsi])), N''''),';
+IF COL_LENGTH(N'bz.Shoghl', N'OnvanMasoliat') IS NOT NULL
+    SET @MigrationSql += N'NULLIF(LTRIM(RTRIM([OnvanMasoliat])), N''''),';
+IF COL_LENGTH(N'bz.Shoghl', N'NameShoghl') IS NOT NULL
+    SET @MigrationSql += N'NULLIF(LTRIM(RTRIM([NameShoghl])), N''''),';
+
+IF LEN(@MigrationSql) > 0
+BEGIN
+    SET @MigrationSql = N'
+        UPDATE [bz].[Shoghl]
+        SET [SematPostSazmani] = COALESCE(
+            NULLIF(LTRIM(RTRIM([SematPostSazmani])), N''''),
+            ' + LEFT(@MigrationSql, LEN(@MigrationSql) - 1) + N'
+        )
+        WHERE NULLIF(LTRIM(RTRIM([SematPostSazmani])), N'''') IS NULL;';
+    EXEC sys.sp_executesql @MigrationSql;
+END;
+GO
+
+/* استانداردسازی طول تاریخ‌ها */
+UPDATE [bz].[Shoghl] SET [AzTarikh] = LEFT([AzTarikh], 25) WHERE LEN([AzTarikh]) > 25;
+UPDATE [bz].[Shoghl] SET [TaTarikh] = LEFT([TaTarikh], 25) WHERE LEN([TaTarikh]) > 25;
+UPDATE [bz].[Shoghl] SET [CreateDateTime] = LEFT([CreateDateTime], 25) WHERE LEN([CreateDateTime]) > 25;
+UPDATE [bz].[Shoghl] SET [EditDateTime] = LEFT([EditDateTime], 25) WHERE LEN([EditDateTime]) > 25;
 GO
 
 ALTER TABLE [bz].[Shoghl] ALTER COLUMN [AzTarikh] NVARCHAR(25) NULL;
 ALTER TABLE [bz].[Shoghl] ALTER COLUMN [TaTarikh] NVARCHAR(25) NULL;
 ALTER TABLE [bz].[Shoghl] ALTER COLUMN [CreateDateTime] NVARCHAR(25) NULL;
 ALTER TABLE [bz].[Shoghl] ALTER COLUMN [EditDateTime] NVARCHAR(25) NULL;
+ALTER TABLE [bz].[Shoghl] ALTER COLUMN [SematPostSazmani] NVARCHAR(150) NULL;
 GO
 
-/* 2) فهرست سوابق شغلی یک شخص */
+/* ============================================================
+   حذف وابستگی‌های متعلق به ستون‌های قدیمی
+   ============================================================ */
+DECLARE @KeepColumns TABLE ([Name] SYSNAME PRIMARY KEY);
+INSERT INTO @KeepColumns ([Name]) VALUES
+(N'ID'), (N'PersonId'), (N'Mahal'), (N'SematPostSazmani'),
+(N'AzTarikh'), (N'TaTarikh'),
+(N'CreateUserId'), (N'CreateDateTime'), (N'EditUserId'), (N'EditDateTime');
+
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+/* Default constraintهای ستون‌های قدیمی */
+SELECT @sql += N'ALTER TABLE [bz].[Shoghl] DROP CONSTRAINT ' + QUOTENAME(DC.[name]) + N';' + CHAR(13)
+FROM sys.default_constraints AS DC
+INNER JOIN sys.columns AS C
+    ON C.[object_id] = DC.[parent_object_id]
+   AND C.[column_id] = DC.[parent_column_id]
+WHERE DC.[parent_object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+  AND NOT EXISTS (SELECT 1 FROM @KeepColumns K WHERE K.[Name] = C.[name]);
+
+/* Foreign keyهایی که ستون مبدا آنها از ستون‌های قدیمی است */
+SELECT @sql += N'ALTER TABLE [bz].[Shoghl] DROP CONSTRAINT ' + QUOTENAME(FK.[name]) + N';' + CHAR(13)
+FROM sys.foreign_keys AS FK
+WHERE FK.[parent_object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+  AND EXISTS
+  (
+      SELECT 1
+      FROM sys.foreign_key_columns FKC
+      INNER JOIN sys.columns C
+          ON C.[object_id] = FKC.[parent_object_id]
+         AND C.[column_id] = FKC.[parent_column_id]
+      WHERE FKC.[constraint_object_id] = FK.[object_id]
+        AND NOT EXISTS (SELECT 1 FROM @KeepColumns K WHERE K.[Name] = C.[name])
+  );
+
+/* Check constraintهای ستونی مربوط به ستون‌های قدیمی */
+SELECT @sql += N'ALTER TABLE [bz].[Shoghl] DROP CONSTRAINT ' + QUOTENAME(CC.[name]) + N';' + CHAR(13)
+FROM sys.check_constraints CC
+INNER JOIN sys.columns C
+    ON C.[object_id] = CC.[parent_object_id]
+   AND C.[column_id] = CC.[parent_column_id]
+WHERE CC.[parent_object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+  AND CC.[parent_column_id] <> 0
+  AND NOT EXISTS (SELECT 1 FROM @KeepColumns K WHERE K.[Name] = C.[name]);
+
+IF LEN(@sql) > 0 EXEC sys.sp_executesql @sql;
+GO
+
+/* ایندکس‌های غیرکلیدی که از ستون‌های قدیمی استفاده می‌کنند */
+DECLARE @DropIndexes NVARCHAR(MAX) = N'';
+DECLARE @KeepColumns2 TABLE ([Name] SYSNAME PRIMARY KEY);
+INSERT INTO @KeepColumns2 ([Name]) VALUES
+(N'ID'), (N'PersonId'), (N'Mahal'), (N'SematPostSazmani'),
+(N'AzTarikh'), (N'TaTarikh'),
+(N'CreateUserId'), (N'CreateDateTime'), (N'EditUserId'), (N'EditDateTime');
+
+SELECT DISTINCT @DropIndexes += N'DROP INDEX ' + QUOTENAME(I.[name]) + N' ON [bz].[Shoghl];' + CHAR(13)
+FROM sys.indexes I
+INNER JOIN sys.index_columns IC ON IC.[object_id] = I.[object_id] AND IC.[index_id] = I.[index_id]
+INNER JOIN sys.columns C ON C.[object_id] = IC.[object_id] AND C.[column_id] = IC.[column_id]
+WHERE I.[object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+  AND I.[is_primary_key] = 0
+  AND I.[is_unique_constraint] = 0
+  AND NOT EXISTS (SELECT 1 FROM @KeepColumns2 K WHERE K.[Name] = C.[name]);
+
+IF LEN(@DropIndexes) > 0 EXEC sys.sp_executesql @DropIndexes;
+GO
+
+/* Unique constraintهای احتمالی روی ستون‌های قدیمی */
+DECLARE @DropKeys NVARCHAR(MAX) = N'';
+DECLARE @KeepColumns3 TABLE ([Name] SYSNAME PRIMARY KEY);
+INSERT INTO @KeepColumns3 ([Name]) VALUES
+(N'ID'), (N'PersonId'), (N'Mahal'), (N'SematPostSazmani'),
+(N'AzTarikh'), (N'TaTarikh'),
+(N'CreateUserId'), (N'CreateDateTime'), (N'EditUserId'), (N'EditDateTime');
+
+SELECT DISTINCT @DropKeys += N'ALTER TABLE [bz].[Shoghl] DROP CONSTRAINT ' + QUOTENAME(KC.[name]) + N';' + CHAR(13)
+FROM sys.key_constraints KC
+INNER JOIN sys.index_columns IC
+    ON IC.[object_id] = KC.[parent_object_id]
+   AND IC.[index_id] = KC.[unique_index_id]
+INNER JOIN sys.columns C
+    ON C.[object_id] = IC.[object_id]
+   AND C.[column_id] = IC.[column_id]
+WHERE KC.[parent_object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+  AND KC.[type] = N'UQ'
+  AND NOT EXISTS (SELECT 1 FROM @KeepColumns3 K WHERE K.[Name] = C.[name]);
+
+IF LEN(@DropKeys) > 0 EXEC sys.sp_executesql @DropKeys;
+GO
+
+/* حذف همه ستون‌های اضافه */
+DECLARE @DropColumns NVARCHAR(MAX);
+SELECT @DropColumns = STRING_AGG(QUOTENAME(C.[name]), N', ')
+FROM sys.columns C
+WHERE C.[object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+  AND C.[name] NOT IN
+  (
+      N'ID', N'PersonId', N'Mahal', N'SematPostSazmani',
+      N'AzTarikh', N'TaTarikh',
+      N'CreateUserId', N'CreateDateTime', N'EditUserId', N'EditDateTime'
+  );
+
+IF NULLIF(@DropColumns, N'') IS NOT NULL
+    EXEC(N'ALTER TABLE [bz].[Shoghl] DROP COLUMN ' + @DropColumns + N';');
+GO
+
+/* ایندکس مورد نیاز */
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE [object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+      AND [name] = N'IX_Shoghl_PersonId'
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_Shoghl_PersonId]
+        ON [bz].[Shoghl]([PersonId], [ID]);
+END;
+GO
+
+/* ============================================================
+   CRUD نهایی
+   ============================================================ */
 CREATE OR ALTER PROCEDURE [bz].[SP_ShoghlAdmin_List]
     @PersonId BIGINT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF ISNULL(@PersonId, 0) <= 0
-        THROW 51000, N'شناسه شخص معتبر نیست.', 1;
-
     SELECT
         S.[ID],
         S.[PersonId],
-        S.[Vazeyat],
-        S.[Vazeyat_NameFarsi],
-        S.[VazeyatShoghl],
-        S.[VazeyatShoghl_NameFarsi],
-        S.[NoeSazman],
-        S.[NoeSazman_NameFarsi],
-        S.[SathSazmani],
-        S.[SathSazmani_NameFarsi],
-        S.[PostSazmani],
-        S.[PostSazmani_NameFarsi],
-        S.[NameShoghl],
-        S.[OnvanMasoliat],
-        S.[Semat],
-        S.[Semat_NameFarsi],
-        S.[AzTarikh],
-        S.[TaTarikh],
         S.[Mahal],
-        S.[Mahal_NameFarsi],
-        S.[Neshani],
-        S.[Tel],
-        S.[Tozihat],
-        S.[CreateUserId],
-        S.[CreateDateTime],
-        S.[EditUserId],
-        S.[EditDateTime]
-    FROM [bz].[Shoghl] AS S
+        COALESCE(
+            NULLIF(LTRIM(RTRIM(C.[FullName])), N''),
+            NULLIF(LTRIM(RTRIM(C.[Name])), N''),
+            CONVERT(NVARCHAR(20), S.[Mahal])
+        ) AS [MahalName],
+        S.[SematPostSazmani],
+        S.[AzTarikh],
+        S.[TaTarikh]
+    FROM [bz].[Shoghl] S
+    LEFT JOIN [bz].[Citys] C ON C.[CityId] = S.[Mahal]
     WHERE S.[PersonId] = @PersonId
     ORDER BY
         CASE WHEN NULLIF(LTRIM(RTRIM(S.[TaTarikh])), N'') IS NULL THEN 0 ELSE 1 END,
+        S.[TaTarikh] DESC,
         S.[AzTarikh] DESC,
         S.[ID] DESC;
 END;
 GO
 
-/* 3) دریافت یک سابقه شغلی */
 CREATE OR ALTER PROCEDURE [bz].[SP_ShoghlAdmin_Get]
     @ID BIGINT,
     @PersonId BIGINT
@@ -88,254 +261,128 @@ BEGIN
     SELECT
         S.[ID],
         S.[PersonId],
-        S.[Vazeyat],
-        S.[Vazeyat_NameFarsi],
-        S.[VazeyatShoghl],
-        S.[VazeyatShoghl_NameFarsi],
-        S.[NoeSazman],
-        S.[NoeSazman_NameFarsi],
-        S.[SathSazmani],
-        S.[SathSazmani_NameFarsi],
-        S.[PostSazmani],
-        S.[PostSazmani_NameFarsi],
-        S.[NameShoghl],
-        S.[OnvanMasoliat],
-        S.[Semat],
-        S.[Semat_NameFarsi],
-        S.[AzTarikh],
-        S.[TaTarikh],
         S.[Mahal],
-        S.[Mahal_NameFarsi],
-        S.[Neshani],
-        S.[Tel],
-        S.[Tozihat],
-        S.[CreateUserId],
-        S.[CreateDateTime],
-        S.[EditUserId],
-        S.[EditDateTime]
-    FROM [bz].[Shoghl] AS S
+        COALESCE(
+            NULLIF(LTRIM(RTRIM(C.[FullName])), N''),
+            NULLIF(LTRIM(RTRIM(C.[Name])), N''),
+            CONVERT(NVARCHAR(20), S.[Mahal])
+        ) AS [MahalName],
+        S.[SematPostSazmani],
+        S.[AzTarikh],
+        S.[TaTarikh]
+    FROM [bz].[Shoghl] S
+    LEFT JOIN [bz].[Citys] C ON C.[CityId] = S.[Mahal]
     WHERE S.[ID] = @ID
       AND S.[PersonId] = @PersonId;
 END;
 GO
 
-/* 4) Lookupهای فرم شغل */
-CREATE OR ALTER PROCEDURE [bz].[SP_ShoghlAdmin_Lookups]
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT
-        CONVERT(INT, D.[PID]) AS [GroupCode],
-        CONVERT(INT, D.[Value]) AS [Id],
-        LTRIM(RTRIM(ISNULL(D.[NameFarsi], N''))) AS [Title]
-    FROM [bz].[DFN] AS D
-    WHERE D.[PID] IN (40401, 40402, 40403, 40404, 40405, 40406)
-      AND D.[Value] IS NOT NULL
-    ORDER BY D.[PID], D.[Value], D.[ID];
-
-    SELECT
-        C.[CityId] AS [Id],
-        COALESCE(
-            NULLIF(LTRIM(RTRIM(C.[FullName])), N''),
-            NULLIF(LTRIM(RTRIM(C.[Name])), N''),
-            CONVERT(NVARCHAR(20), C.[CityId])
-        ) AS [Title]
-    FROM [bz].[Citys] AS C
-    WHERE LEN(CONVERT(VARCHAR(20), ABS(C.[CityId]))) = 5
-    ORDER BY [Title], C.[CityId];
-END;
-GO
-
-/* 5) Insert / Update */
 CREATE OR ALTER PROCEDURE [bz].[SP_ShoghlAdmin_Save]
     @ID BIGINT = 0,
     @PersonId BIGINT,
-    @Vazeyat INT = NULL,
-    @VazeyatShoghl INT = NULL,
-    @NoeSazman INT = NULL,
-    @SathSazmani INT = NULL,
-    @PostSazmani INT = NULL,
-    @NameShoghl NVARCHAR(100) = NULL,
-    @OnvanMasoliat NVARCHAR(100) = NULL,
-    @Semat INT = NULL,
+    @Mahal INT,
+    @SematPostSazmani NVARCHAR(150),
     @AzTarikh NVARCHAR(25) = NULL,
     @TaTarikh NVARCHAR(25) = NULL,
-    @Mahal INT = NULL,
-    @Neshani NVARCHAR(2500) = NULL,
-    @Tel NVARCHAR(200) = NULL,
-    @Tozihat NVARCHAR(2500) = NULL,
     @ActorUserId NVARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    SELECT
-        @NameShoghl = NULLIF(LTRIM(RTRIM(@NameShoghl)), N''),
-        @OnvanMasoliat = NULLIF(LTRIM(RTRIM(@OnvanMasoliat)), N''),
-        @AzTarikh = NULLIF(LTRIM(RTRIM(@AzTarikh)), N''),
-        @TaTarikh = NULLIF(LTRIM(RTRIM(@TaTarikh)), N''),
-        @Neshani = NULLIF(LTRIM(RTRIM(@Neshani)), N''),
-        @Tel = NULLIF(LTRIM(RTRIM(@Tel)), N''),
-        @Tozihat = NULLIF(LTRIM(RTRIM(@Tozihat)), N''),
-        @ActorUserId = NULLIF(LTRIM(RTRIM(@ActorUserId)), N'');
+    SET @SematPostSazmani = NULLIF(LTRIM(RTRIM(@SematPostSazmani)), N'');
+    SET @AzTarikh = NULLIF(LTRIM(RTRIM(@AzTarikh)), N'');
+    SET @TaTarikh = NULLIF(LTRIM(RTRIM(@TaTarikh)), N'');
 
     IF ISNULL(@PersonId, 0) <= 0
         THROW 51000, N'شناسه شخص معتبر نیست.', 1;
 
-    IF NOT EXISTS
-    (
-        SELECT 1
-        FROM [bz].[Person] AS P
-        WHERE P.[PersonId] = @PersonId
-          AND ISNULL(P.[IsDelete], 0) = 0
-    )
-        THROW 51000, N'شخص موردنظر پیدا نشد.', 1;
+    IF ISNULL(@Mahal, 0) <= 0
+        THROW 51000, N'محل خدمت را انتخاب کنید.', 1;
 
-    IF @ActorUserId IS NULL
-        THROW 51000, N'شناسه کاربر ثبت‌کننده معتبر نیست.', 1;
+    IF LEN(CONVERT(VARCHAR(20), ABS(@Mahal))) <> 5
+        THROW 51000, N'محل خدمت باید تا سطح شهرستان انتخاب شود.', 1;
 
-    IF @NameShoghl IS NULL
-        THROW 51000, N'نام شغل را وارد کنید.', 1;
+    IF NOT EXISTS (SELECT 1 FROM [bz].[Citys] WHERE [CityId] = @Mahal)
+        THROW 51000, N'شهرستان محل خدمت معتبر نیست.', 1;
 
-    IF @AzTarikh IS NOT NULL AND @AzTarikh NOT LIKE N'[0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9]'
-        THROW 51000, N'تاریخ شروع باید به شکل 1405/01/01 باشد.', 1;
+    IF @SematPostSazmani IS NULL
+        THROW 51000, N'سمت (پست سازمانی) را وارد کنید.', 1;
 
-    IF @TaTarikh IS NOT NULL AND @TaTarikh NOT LIKE N'[0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9]'
-        THROW 51000, N'تاریخ پایان باید به شکل 1405/01/01 باشد.', 1;
+    IF @AzTarikh IS NOT NULL
+       AND @AzTarikh NOT LIKE N'[0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9]'
+        THROW 51000, N'فرمت «از تاریخ» معتبر نیست.', 1;
+
+    IF @TaTarikh IS NOT NULL
+       AND @TaTarikh NOT LIKE N'[0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9]'
+        THROW 51000, N'فرمت «تا تاریخ» معتبر نیست.', 1;
 
     IF @AzTarikh IS NOT NULL AND @TaTarikh IS NOT NULL AND @TaTarikh < @AzTarikh
         THROW 51000, N'تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد.', 1;
-
-    IF @Vazeyat IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [bz].[DFN] WHERE [PID] = 40401 AND [Value] = @Vazeyat)
-        THROW 51000, N'وضعیت انتخاب‌شده معتبر نیست.', 1;
-    IF @VazeyatShoghl IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [bz].[DFN] WHERE [PID] = 40402 AND [Value] = @VazeyatShoghl)
-        THROW 51000, N'وضعیت شغلی انتخاب‌شده معتبر نیست.', 1;
-    IF @NoeSazman IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [bz].[DFN] WHERE [PID] = 40403 AND [Value] = @NoeSazman)
-        THROW 51000, N'نوع سازمان انتخاب‌شده معتبر نیست.', 1;
-    IF @SathSazmani IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [bz].[DFN] WHERE [PID] = 40404 AND [Value] = @SathSazmani)
-        THROW 51000, N'سطح سازمانی انتخاب‌شده معتبر نیست.', 1;
-    IF @PostSazmani IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [bz].[DFN] WHERE [PID] = 40405 AND [Value] = @PostSazmani)
-        THROW 51000, N'پست سازمانی انتخاب‌شده معتبر نیست.', 1;
-    IF @Semat IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [bz].[DFN] WHERE [PID] = 40406 AND [Value] = @Semat)
-        THROW 51000, N'سمت انتخاب‌شده معتبر نیست.', 1;
-    IF @Mahal IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [bz].[Citys] WHERE [CityId] = @Mahal)
-        THROW 51000, N'محل خدمت انتخاب‌شده معتبر نیست.', 1;
-
-    DECLARE
-        @Vazeyat_NameFarsi NVARCHAR(50) = NULL,
-        @VazeyatShoghl_NameFarsi NVARCHAR(50) = NULL,
-        @NoeSazman_NameFarsi NVARCHAR(50) = NULL,
-        @SathSazmani_NameFarsi NVARCHAR(50) = NULL,
-        @PostSazmani_NameFarsi NVARCHAR(50) = NULL,
-        @Semat_NameFarsi NVARCHAR(50) = NULL,
-        @Mahal_NameFarsi NVARCHAR(50) = NULL;
-
-    SELECT @Vazeyat_NameFarsi = LEFT([NameFarsi], 50) FROM [bz].[DFN] WHERE [PID] = 40401 AND [Value] = @Vazeyat;
-    SELECT @VazeyatShoghl_NameFarsi = LEFT([NameFarsi], 50) FROM [bz].[DFN] WHERE [PID] = 40402 AND [Value] = @VazeyatShoghl;
-    SELECT @NoeSazman_NameFarsi = LEFT([NameFarsi], 50) FROM [bz].[DFN] WHERE [PID] = 40403 AND [Value] = @NoeSazman;
-    SELECT @SathSazmani_NameFarsi = LEFT([NameFarsi], 50) FROM [bz].[DFN] WHERE [PID] = 40404 AND [Value] = @SathSazmani;
-    SELECT @PostSazmani_NameFarsi = LEFT([NameFarsi], 50) FROM [bz].[DFN] WHERE [PID] = 40405 AND [Value] = @PostSazmani;
-    SELECT @Semat_NameFarsi = LEFT([NameFarsi], 50) FROM [bz].[DFN] WHERE [PID] = 40406 AND [Value] = @Semat;
-    SELECT @Mahal_NameFarsi = LEFT(COALESCE(NULLIF(LTRIM(RTRIM([FullName])), N''), [Name]), 50) FROM [bz].[Citys] WHERE [CityId] = @Mahal;
 
     IF ISNULL(@ID, 0) = 0
     BEGIN
         INSERT INTO [bz].[Shoghl]
         (
-            [PersonId],
-            [Vazeyat], [Vazeyat_NameFarsi],
-            [VazeyatShoghl], [VazeyatShoghl_NameFarsi],
-            [NoeSazman], [NoeSazman_NameFarsi],
-            [SathSazmani], [SathSazmani_NameFarsi],
-            [PostSazmani], [PostSazmani_NameFarsi],
-            [NameShoghl], [OnvanMasoliat],
-            [Semat], [Semat_NameFarsi],
-            [AzTarikh], [TaTarikh],
-            [Mahal], [Mahal_NameFarsi],
-            [Neshani], [Tel], [Tozihat],
-            [CreateUserId], [CreateDateTime],
-            [EditUserId], [EditDateTime]
+            [PersonId], [Mahal], [SematPostSazmani], [AzTarikh], [TaTarikh],
+            [CreateUserId], [CreateDateTime], [EditUserId], [EditDateTime]
         )
         VALUES
         (
-            @PersonId,
-            @Vazeyat, @Vazeyat_NameFarsi,
-            @VazeyatShoghl, @VazeyatShoghl_NameFarsi,
-            @NoeSazman, @NoeSazman_NameFarsi,
-            @SathSazmani, @SathSazmani_NameFarsi,
-            @PostSazmani, @PostSazmani_NameFarsi,
-            @NameShoghl, @OnvanMasoliat,
-            @Semat, @Semat_NameFarsi,
-            @AzTarikh, @TaTarikh,
-            @Mahal, @Mahal_NameFarsi,
-            @Neshani, @Tel, @Tozihat,
-            @ActorUserId, CONVERT(NVARCHAR(25), [dbo].[FarsiDateTimeNow]()),
-            NULL, NULL
+            @PersonId, @Mahal, @SematPostSazmani, @AzTarikh, @TaTarikh,
+            @ActorUserId, [dbo].[FarsiDateTimeNow](), NULL, NULL
         );
 
         SET @ID = CONVERT(BIGINT, SCOPE_IDENTITY());
     END
     ELSE
     BEGIN
-        UPDATE S
-        SET
-            S.[Vazeyat] = @Vazeyat,
-            S.[Vazeyat_NameFarsi] = @Vazeyat_NameFarsi,
-            S.[VazeyatShoghl] = @VazeyatShoghl,
-            S.[VazeyatShoghl_NameFarsi] = @VazeyatShoghl_NameFarsi,
-            S.[NoeSazman] = @NoeSazman,
-            S.[NoeSazman_NameFarsi] = @NoeSazman_NameFarsi,
-            S.[SathSazmani] = @SathSazmani,
-            S.[SathSazmani_NameFarsi] = @SathSazmani_NameFarsi,
-            S.[PostSazmani] = @PostSazmani,
-            S.[PostSazmani_NameFarsi] = @PostSazmani_NameFarsi,
-            S.[NameShoghl] = @NameShoghl,
-            S.[OnvanMasoliat] = @OnvanMasoliat,
-            S.[Semat] = @Semat,
-            S.[Semat_NameFarsi] = @Semat_NameFarsi,
-            S.[AzTarikh] = @AzTarikh,
-            S.[TaTarikh] = @TaTarikh,
-            S.[Mahal] = @Mahal,
-            S.[Mahal_NameFarsi] = @Mahal_NameFarsi,
-            S.[Neshani] = @Neshani,
-            S.[Tel] = @Tel,
-            S.[Tozihat] = @Tozihat,
-            S.[EditUserId] = @ActorUserId,
-            S.[EditDateTime] = CONVERT(NVARCHAR(25), [dbo].[FarsiDateTimeNow]())
-        FROM [bz].[Shoghl] AS S
-        WHERE S.[ID] = @ID
-          AND S.[PersonId] = @PersonId;
+        UPDATE [bz].[Shoghl]
+        SET [Mahal] = @Mahal,
+            [SematPostSazmani] = @SematPostSazmani,
+            [AzTarikh] = @AzTarikh,
+            [TaTarikh] = @TaTarikh,
+            [EditUserId] = @ActorUserId,
+            [EditDateTime] = [dbo].[FarsiDateTimeNow]()
+        WHERE [ID] = @ID
+          AND [PersonId] = @PersonId;
 
         IF @@ROWCOUNT = 0
             THROW 51000, N'سابقه شغلی موردنظر پیدا نشد.', 1;
     END;
 
-    EXEC [bz].[SP_ShoghlAdmin_Get]
-        @ID = @ID,
-        @PersonId = @PersonId;
+    EXEC [bz].[SP_ShoghlAdmin_Get] @ID = @ID, @PersonId = @PersonId;
 END;
 GO
 
-/* 6) Delete */
 CREATE OR ALTER PROCEDURE [bz].[SP_ShoghlAdmin_Delete]
     @ID BIGINT,
-    @PersonId BIGINT,
-    @ActorUserId NVARCHAR(50) = NULL
+    @PersonId BIGINT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SET XACT_ABORT ON;
 
-    -- جدول Shoghl ستون IsDelete ندارد؛ حذف در این بخش Hard Delete است.
     DELETE FROM [bz].[Shoghl]
     WHERE [ID] = @ID
       AND [PersonId] = @PersonId;
 
     IF @@ROWCOUNT = 0
         THROW 51000, N'سابقه شغلی موردنظر پیدا نشد.', 1;
-
-    SELECT @ID AS [ID], @PersonId AS [PersonId];
 END;
+GO
+
+/* ============================================================
+   کنترل نهایی: فقط همین ستون‌ها باید دیده شوند
+   ============================================================ */
+SELECT
+    C.[column_id] AS [ColumnOrder],
+    C.[name] AS [ColumnName],
+    TYPE_NAME(C.[user_type_id]) AS [DataType],
+    CASE
+        WHEN TYPE_NAME(C.[user_type_id]) IN (N'nvarchar', N'nchar') THEN C.[max_length] / 2
+        ELSE C.[max_length]
+    END AS [MaxLength]
+FROM sys.columns C
+WHERE C.[object_id] = OBJECT_ID(N'[bz].[Shoghl]')
+ORDER BY C.[column_id];
 GO

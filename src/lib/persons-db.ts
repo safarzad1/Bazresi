@@ -1,4 +1,4 @@
-import type { Request } from "mssql";
+import type { IRecordSet, Request } from "mssql";
 import { getDbPool } from "@/lib/db";
 import { PERSON_DFN_PIDS } from "@/lib/person-dfn";
 
@@ -128,15 +128,16 @@ export async function listPersons(
   if (state !== null) request.input("State", state);
 
   const result = await request.execute("bz.SP_PersonAdmin_ListNormalized");
+  const recordsets = result.recordsets as unknown as IRecordSet<any>[];
 
-  const summary = (result.recordsets?.[1]?.[0] ?? {}) as {
+  const summary = (recordsets?.[1]?.[0] ?? {}) as {
     TotalCount?: number;
     DraftCount?: number;
     FinalCount?: number;
   };
 
   return {
-    persons: (result.recordsets?.[0] ?? []) as PersonListRecord[],
+    persons: (recordsets?.[0] ?? []) as PersonListRecord[],
     totalCount: Number(summary.TotalCount ?? 0),
     draftCount: Number(summary.DraftCount ?? 0),
     finalCount: Number(summary.FinalCount ?? 0),
