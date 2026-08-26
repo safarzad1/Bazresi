@@ -99,11 +99,81 @@ type PersonForm = {
 };
 
 type WorkHistoryRow = {
+  ID: number;
+  PersonId: number;
+  Vazeyat: number | null;
+  Vazeyat_NameFarsi: string | null;
+  VazeyatShoghl: number | null;
+  VazeyatShoghl_NameFarsi: string | null;
+  NoeSazman: number | null;
+  NoeSazman_NameFarsi: string | null;
+  SathSazmani: number | null;
+  SathSazmani_NameFarsi: string | null;
+  PostSazmani: number | null;
+  PostSazmani_NameFarsi: string | null;
+  NameShoghl: string | null;
+  OnvanMasoliat: string | null;
+  Semat: number | null;
+  Semat_NameFarsi: string | null;
+  AzTarikh: string | null;
+  TaTarikh: string | null;
+  Mahal: number | null;
+  Mahal_NameFarsi: string | null;
+  Neshani: string | null;
+  Tel: string | null;
+  Tozihat: string | null;
+  CreateUserId: string | null;
+  CreateDateTime: string | null;
+  EditUserId: string | null;
+  EditDateTime: string | null;
+};
+
+type WorkHistoryForm = {
   id: number;
-  workplace: string;
-  position: string;
-  fromDate: string;
-  toDate: string;
+  vazeyat: string;
+  vazeyatShoghl: string;
+  noeSazman: string;
+  sathSazmani: string;
+  postSazmani: string;
+  nameShoghl: string;
+  onvanMasoliat: string;
+  semat: string;
+  azTarikh: string;
+  taTarikh: string;
+  mahal: string;
+  neshani: string;
+  tel: string;
+  tozihat: string;
+};
+
+type WorkHistoryLookup = { GroupCode: number; Id: number; Title: string };
+type WorkHistoryCity = { Id: number; Title: string };
+
+const SHOGHL_DFN_PID = {
+  vazeyat: 40401,
+  vazeyatShoghl: 40402,
+  noeSazman: 40403,
+  sathSazmani: 40404,
+  postSazmani: 40405,
+  semat: 40406,
+} as const;
+
+const emptyWorkHistoryForm: WorkHistoryForm = {
+  id: 0,
+  vazeyat: "",
+  vazeyatShoghl: "",
+  noeSazman: "",
+  sathSazmani: "",
+  postSazmani: "",
+  nameShoghl: "",
+  onvanMasoliat: "",
+  semat: "",
+  azTarikh: "",
+  taTarikh: "",
+  mahal: "",
+  neshani: "",
+  tel: "",
+  tozihat: "",
 };
 
 const emptyForm: PersonForm = {
@@ -333,9 +403,15 @@ export default function PersonsClient() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailTab, setDetailTab] = useState<DetailTabId>("details");
   const [workHistory, setWorkHistory] = useState<WorkHistoryRow[]>([]);
-  const [workHistoryForm, setWorkHistoryForm] = useState<Omit<WorkHistoryRow, "id">>({ workplace: "", position: "", fromDate: "", toDate: "" });
+  const [workHistoryForm, setWorkHistoryForm] = useState<WorkHistoryForm>(emptyWorkHistoryForm);
+  const [workHistoryDefinitions, setWorkHistoryDefinitions] = useState<WorkHistoryLookup[]>([]);
+  const [workHistoryCities, setWorkHistoryCities] = useState<WorkHistoryCity[]>([]);
+  const [workHistoryLookupsLoaded, setWorkHistoryLookupsLoaded] = useState(false);
+  const [workHistoryLoading, setWorkHistoryLoading] = useState(false);
+  const [workHistorySaving, setWorkHistorySaving] = useState(false);
   const [editingWorkHistoryId, setEditingWorkHistoryId] = useState<number | null>(null);
   const [workHistoryModalOpen, setWorkHistoryModalOpen] = useState(false);
+  const [workHistoryDeleteTarget, setWorkHistoryDeleteTarget] = useState<WorkHistoryRow | null>(null);
   const [sectionEdit, setSectionEdit] = useState<number | null>(null);
   const sectionEditBackup = useRef<PersonForm | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -467,6 +543,11 @@ export default function PersonsClient() {
     return () => { document.body.style.overflow = previousOverflow; };
   }, [detailOpen, wizardOpen]);
 
+  useEffect(() => {
+    if (!detailOpen || detailTab !== "work-history" || form.personId <= 0) return;
+    void loadWorkHistory(form.personId);
+  }, [detailOpen, detailTab, form.personId]);
+
   function change<K extends keyof PersonForm>(key: K, value: PersonForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
@@ -503,6 +584,10 @@ export default function PersonsClient() {
     setLoadingDetail(true);
     setSelectedImage(null);
     setPreviewUrl("");
+    setWorkHistory([]);
+    setWorkHistoryDeleteTarget(null);
+    resetWorkHistoryForm();
+    setWorkHistoryModalOpen(false);
     setForm({
       ...emptyForm,
       personId: Number(person.PersonId),
@@ -551,33 +636,130 @@ export default function PersonsClient() {
   }
 
   function resetWorkHistoryForm() {
-    setWorkHistoryForm({ workplace: "", position: "", fromDate: "", toDate: "" });
+    setWorkHistoryForm(emptyWorkHistoryForm);
     setEditingWorkHistoryId(null);
   }
 
-  function saveWorkHistoryRow() {
-    if (!workHistoryForm.workplace.trim() || !workHistoryForm.position.trim()) {
-      setNotice({ type: "error", text: "محل خدمت و سمت سازمانی را وارد کنید." });
+  function workHistoryDefinitionOptions(groupCode: number) {
+    return [
+      { value: "", label: "انتخاب نشده" },
+      ...workHistoryDefinitions
+        .filter((item) => item.GroupCode === groupCode)
+        .map((item) => ({ value: String(item.Id), label: item.Title })),
+    ];
+  }
+
+  const workHistoryCityOptions = [
+    { value: "", label: "انتخاب نشده" },
+    ...workHistoryCities.map((item) => ({ value: String(item.Id), label: item.Title })),
+  ];
+
+  async function loadWorkHistory(personId: number) {
+    if (!personId) return;
+    setWorkHistoryLoading(true);
+    try {
+      const data = await readJson(await fetch(`/api/persons/shoghl?personId=${personId}`, { cache: "no-store" }));
+      setWorkHistory((data.rows as WorkHistoryRow[] | undefined) ?? []);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت سوابق شغلی انجام نشد." });
+    } finally {
+      setWorkHistoryLoading(false);
+    }
+  }
+
+  async function loadWorkHistoryLookups() {
+    if (workHistoryLookupsLoaded) return;
+    try {
+      const data = await readJson(await fetch("/api/persons/shoghl?mode=lookups", { cache: "no-store" }));
+      setWorkHistoryDefinitions((data.definitions as WorkHistoryLookup[] | undefined) ?? []);
+      setWorkHistoryCities((data.cities as WorkHistoryCity[] | undefined) ?? []);
+      setWorkHistoryLookupsLoaded(true);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت گزینه‌های فرم شغل انجام نشد." });
+    }
+  }
+
+  async function saveWorkHistoryRow() {
+    if (!workHistoryForm.nameShoghl.trim()) {
+      setNotice({ type: "error", text: "نام شغل را وارد کنید." });
       return;
     }
-    if (editingWorkHistoryId === null) {
-      setWorkHistory((current) => [...current, { ...workHistoryForm, id: Date.now() }]);
-    } else {
-      setWorkHistory((current) => current.map((row) => row.id === editingWorkHistoryId ? { ...row, ...workHistoryForm } : row));
+    if (workHistoryForm.azTarikh && workHistoryForm.taTarikh && workHistoryForm.taTarikh < workHistoryForm.azTarikh) {
+      setNotice({ type: "error", text: "تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد." });
+      return;
     }
-    resetWorkHistoryForm();
-    setWorkHistoryModalOpen(false);
+
+    setWorkHistorySaving(true);
+    try {
+      const method = editingWorkHistoryId === null ? "POST" : "PUT";
+      const payload = {
+        ...workHistoryForm,
+        id: editingWorkHistoryId ?? 0,
+        personId: form.personId,
+      };
+      const data = await readJson(await fetch("/api/persons/shoghl", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }));
+
+      resetWorkHistoryForm();
+      setWorkHistoryModalOpen(false);
+      await loadWorkHistory(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه شغلی ذخیره شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره سابقه شغلی انجام نشد." });
+    } finally {
+      setWorkHistorySaving(false);
+    }
   }
 
   function editWorkHistoryRow(row: WorkHistoryRow) {
-    setWorkHistoryForm({ workplace: row.workplace, position: row.position, fromDate: row.fromDate, toDate: row.toDate });
-    setEditingWorkHistoryId(row.id);
+    setWorkHistoryForm({
+      id: row.ID,
+      vazeyat: row.Vazeyat === null ? "" : String(row.Vazeyat),
+      vazeyatShoghl: row.VazeyatShoghl === null ? "" : String(row.VazeyatShoghl),
+      noeSazman: row.NoeSazman === null ? "" : String(row.NoeSazman),
+      sathSazmani: row.SathSazmani === null ? "" : String(row.SathSazmani),
+      postSazmani: row.PostSazmani === null ? "" : String(row.PostSazmani),
+      nameShoghl: row.NameShoghl ?? "",
+      onvanMasoliat: row.OnvanMasoliat ?? "",
+      semat: row.Semat === null ? "" : String(row.Semat),
+      azTarikh: row.AzTarikh ?? "",
+      taTarikh: row.TaTarikh ?? "",
+      mahal: row.Mahal === null ? "" : String(row.Mahal),
+      neshani: row.Neshani ?? "",
+      tel: row.Tel ?? "",
+      tozihat: row.Tozihat ?? "",
+    });
+    setEditingWorkHistoryId(row.ID);
+    void loadWorkHistoryLookups();
     setWorkHistoryModalOpen(true);
   }
 
   function openWorkHistoryCreate() {
     resetWorkHistoryForm();
+    void loadWorkHistoryLookups();
     setWorkHistoryModalOpen(true);
+  }
+
+  async function confirmDeleteWorkHistory() {
+    if (!workHistoryDeleteTarget) return;
+    setWorkHistorySaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/shoghl", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: workHistoryDeleteTarget.ID, personId: form.personId }),
+      }));
+      setWorkHistoryDeleteTarget(null);
+      await loadWorkHistory(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه شغلی حذف شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف سابقه شغلی انجام نشد." });
+    } finally {
+      setWorkHistorySaving(false);
+    }
   }
 
   function openSectionEdit(sectionIndex: number) {
@@ -1101,20 +1283,57 @@ export default function PersonsClient() {
               <div className={styles.detailBody}>
                 <section className={styles.workHistoryPanel}>
                   <header className={styles.workHistoryHeader}>
-                    <div><span>سوابق شغلی</span><h3>محل خدمت و سمت‌های سازمانی</h3></div>
-                    <button type="button" className={styles.workHistoryAddButton} onClick={openWorkHistoryCreate}><Icon name="plus" />سابقه جدید</button>
+                    <div>
+                      <span>سوابق شغلی</span>
+                      <h3>مشاغل، سمت‌ها و محل‌های خدمت</h3>
+                      <small>{workHistory.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openWorkHistoryCreate} disabled={workHistorySaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
                   </header>
                   <div className={styles.workHistoryTableWrap}>
-                    <table className={styles.workHistoryTable}>
-                      <thead><tr><th>ردیف</th><th>محل خدمت</th><th>سمت (پست سازمانی)</th><th>از تاریخ</th><th>تا تاریخ</th><th>عملیات</th></tr></thead>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>نام شغل</th>
+                          <th>عنوان مسئولیت</th>
+                          <th>سمت</th>
+                          <th>نوع سازمان</th>
+                          <th>محل خدمت</th>
+                          <th>از تاریخ</th>
+                          <th>تا تاریخ</th>
+                          <th>وضعیت شغلی</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
                       <tbody>
-                        {workHistory.map((row, index) => (
-                          <tr key={row.id}>
-                            <td>{(index + 1).toLocaleString("fa-IR")}</td><td>{row.workplace}</td><td>{row.position}</td><td>{row.fromDate || "—"}</td><td>{row.toDate || "تا اکنون"}</td>
-                            <td><div className={styles.workHistoryActions}><button type="button" className={styles.editAction} onClick={() => editWorkHistoryRow(row)} title="ویرایش"><Icon name="edit" /></button><button type="button" className={styles.deleteAction} onClick={() => setWorkHistory((current) => current.filter((item) => item.id !== row.id))} title="حذف"><Icon name="trash" /></button></div></td>
+                        {workHistoryLoading && (
+                          <tr><td colSpan={10} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق شغلی...</td></tr>
+                        )}
+                        {!workHistoryLoading && workHistory.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.NameShoghl || "—"}</strong></td>
+                            <td>{row.OnvanMasoliat || "—"}</td>
+                            <td>{row.Semat_NameFarsi || row.PostSazmani_NameFarsi || "—"}</td>
+                            <td>{row.NoeSazman_NameFarsi || "—"}</td>
+                            <td>{row.Mahal_NameFarsi || "—"}</td>
+                            <td>{row.AzTarikh || "—"}</td>
+                            <td>{row.TaTarikh || "تا اکنون"}</td>
+                            <td>{row.VazeyatShoghl_NameFarsi || row.Vazeyat_NameFarsi || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editWorkHistoryRow(row)} title="ویرایش" disabled={workHistorySaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setWorkHistoryDeleteTarget(row)} title="حذف" disabled={workHistorySaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
                           </tr>
                         ))}
-                        {workHistory.length === 0 && <tr><td colSpan={6} className={styles.workHistoryEmpty}>هنوز سابقه شغلی ثبت نشده است.</td></tr>}
+                        {!workHistoryLoading && workHistory.length === 0 && (
+                          <tr><td colSpan={10} className={styles.workHistoryEmpty}>هنوز سابقه شغلی ثبت نشده است.</td></tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -1124,26 +1343,77 @@ export default function PersonsClient() {
 
             {workHistoryModalOpen && detailTab === "work-history" && (
               <div className={styles.workHistoryModalBackdrop}>
-                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingWorkHistoryId === null ? "افزودن سابقه شغلی" : "ویرایش سابقه شغلی"}>
+                <section className={`${styles.workHistoryModal} ${styles.workHistoryFullModal}`} role="dialog" aria-modal="true" aria-label={editingWorkHistoryId === null ? "افزودن سابقه شغلی" : "ویرایش سابقه شغلی"}>
                   <header>
                     <div className={styles.workHistoryModalTitle}>
                       <span className={styles.wizardIcon}><Icon name="file" /></span>
-                      <div><small>سوابق شغلی</small><h3>{editingWorkHistoryId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                      <div><small>سوابق شغلی</small><h3>{editingWorkHistoryId === null ? "افزودن سابقه جدید" : "ویرایش سابقه شغلی"}</h3></div>
                     </div>
-                    <button type="button" onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                    <button type="button" disabled={workHistorySaving} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
                   </header>
-                  <div className={styles.workHistoryForm}>
-                    <TextField label="محل خدمت" value={workHistoryForm.workplace} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, workplace: value }))} />
-                    <TextField label="سمت (پست سازمانی)" value={workHistoryForm.position} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, position: value }))} />
-                    <InputPersianDate label="از تاریخ" value={workHistoryForm.fromDate} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, fromDate: value ?? "" }))} placeholder="انتخاب تاریخ شروع" />
-                    <InputPersianDate label="تا تاریخ" value={workHistoryForm.toDate} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, toDate: value ?? "" }))} placeholder="تا اکنون" />
+
+                  <div className={`${styles.workHistoryForm} ${styles.workHistoryFullForm}`}>
+                    <label className={styles.field}>
+                      <span>وضعیت</span>
+                      <SearchableDropdown value={workHistoryForm.vazeyat} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.vazeyat)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, vazeyat: value }))} compact />
+                    </label>
+                    <label className={styles.field}>
+                      <span>وضعیت شغلی</span>
+                      <SearchableDropdown value={workHistoryForm.vazeyatShoghl} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.vazeyatShoghl)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, vazeyatShoghl: value }))} compact />
+                    </label>
+                    <label className={styles.field}>
+                      <span>نوع سازمان</span>
+                      <SearchableDropdown value={workHistoryForm.noeSazman} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.noeSazman)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, noeSazman: value }))} compact />
+                    </label>
+                    <label className={styles.field}>
+                      <span>سطح سازمانی</span>
+                      <SearchableDropdown value={workHistoryForm.sathSazmani} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.sathSazmani)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, sathSazmani: value }))} compact />
+                    </label>
+                    <label className={styles.field}>
+                      <span>پست سازمانی</span>
+                      <SearchableDropdown value={workHistoryForm.postSazmani} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.postSazmani)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, postSazmani: value }))} compact />
+                    </label>
+                    <label className={styles.field}>
+                      <span>سمت</span>
+                      <SearchableDropdown value={workHistoryForm.semat} options={workHistoryDefinitionOptions(SHOGHL_DFN_PID.semat)} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, semat: value }))} compact />
+                    </label>
+
+                    <TextField label="نام شغل" value={workHistoryForm.nameShoghl} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, nameShoghl: value }))} required maxLength={100} />
+                    <TextField label="عنوان مسئولیت" value={workHistoryForm.onvanMasoliat} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, onvanMasoliat: value }))} maxLength={100} />
+                    <label className={styles.field}>
+                      <span>محل خدمت</span>
+                      <SearchableDropdown value={workHistoryForm.mahal} options={workHistoryCityOptions} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, mahal: value }))} searchPlaceholder="جست‌وجوی محل خدمت..." compact />
+                    </label>
+
+                    <InputPersianDate label="از تاریخ" value={workHistoryForm.azTarikh} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, azTarikh: value ?? "" }))} placeholder="انتخاب تاریخ شروع" />
+                    <InputPersianDate label="تا تاریخ" value={workHistoryForm.taTarikh} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, taTarikh: value ?? "" }))} placeholder="تا اکنون" />
+                    <TextField label="تلفن محل کار" value={workHistoryForm.tel} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, tel: value }))} maxLength={200} />
+
+                    <TextAreaField label="نشانی محل خدمت" value={workHistoryForm.neshani} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, neshani: value }))} />
+                    <TextAreaField label="توضیحات" value={workHistoryForm.tozihat} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, tozihat: value }))} />
                   </div>
+
                   <footer>
-                    <button type="button" className={styles.workHistoryConfirmButton} onClick={saveWorkHistoryRow}><Icon name="check" />{editingWorkHistoryId === null ? "افزودن سابقه" : "ذخیره ویرایش"}</button>
-                    <button type="button" className={styles.cancelButton} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }}>انصراف</button>
+                    <button type="button" className={styles.workHistoryConfirmButton} onClick={() => void saveWorkHistoryRow()} disabled={workHistorySaving}>
+                      {workHistorySaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {editingWorkHistoryId === null ? "ثبت سابقه" : "ذخیره ویرایش"}
+                    </button>
+                    <button type="button" className={styles.cancelButton} disabled={workHistorySaving} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }}>انصراف</button>
                   </footer>
                 </section>
               </div>
+            )}
+
+            {workHistoryDeleteTarget && detailTab === "work-history" && (
+              <ConfirmDialog
+                tone="danger"
+                title="حذف سابقه شغلی"
+                text={`سابقه شغلی «${workHistoryDeleteTarget.NameShoghl || "انتخاب‌شده"}» حذف شود؟`}
+                confirmText="حذف شود"
+                busy={workHistorySaving}
+                onCancel={() => setWorkHistoryDeleteTarget(null)}
+                onConfirm={() => void confirmDeleteWorkHistory()}
+              />
             )}
 
             {sectionEdit !== null && (

@@ -584,3 +584,36 @@
   .wizardFooter > div > small { display: none; }
   .draftButton { width: 100%; }
 }
+
+/* --- سوابق شغلی واقعی متصل به bz.Shoghl --- */
+.workHistoryHeader small { display: block; margin-top: 2px; color: #899ba3; font-size: 9.5px; }
+.workHistoryAddButton:disabled,
+.workHistoryActions button:disabled { opacity: .5; cursor: wait; }
+.workHistoryRealTable { min-width: 1320px; }
+.workHistoryRealTable th:first-child,
+.workHistoryRealTable td:first-child { width: 56px; }
+.workHistoryRealTable th:nth-child(2) { width: 145px; }
+.workHistoryRealTable th:nth-child(3) { width: 155px; }
+.workHistoryRealTable th:nth-child(4) { width: 125px; }
+.workHistoryRealTable th:nth-child(5) { width: 125px; }
+.workHistoryRealTable th:nth-child(6) { width: 150px; }
+.workHistoryRealTable th:nth-child(7),
+.workHistoryRealTable th:nth-child(8) { width: 105px; }
+.workHistoryRealTable th:nth-child(9) { width: 120px; }
+.workHistoryRealTable th:last-child { width: 92px; }
+.workHistoryPrimary { color: #296c75; font-family: PeydaRegular, Shabnam, Tahoma, sans-serif; font-size: 12px; font-weight: 400; }
+.workHistoryFullModal { width: min(1080px, 96vw); max-height: 92vh; }
+.workHistoryModal > .workHistoryFullForm { min-height: 0; overflow-y: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+.workHistoryFullForm .wideField { grid-column: 1 / -1; }
+.workHistoryFullModal > header > button:disabled,
+.workHistoryFullModal > footer button:disabled { opacity: .55; cursor: wait; }
+
+@media (max-width: 900px) {
+  .workHistoryModal > .workHistoryFullForm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workHistoryFullForm .wideField { grid-column: 1 / -1; }
+}
+
+@media (max-width: 620px) {
+  .workHistoryModal > .workHistoryFullForm { grid-template-columns: 1fr; }
+  .workHistoryFullForm .wideField { grid-column: auto; }
+}
