@@ -70,6 +70,29 @@ export type PersonRecord = PersonListRecord & {
   SharhMoaafiat: string | null;
   Email: string | null;
   TelZaruri: string | null;
+  MaharatRayaneh: string | null;
+  VazeyatJesmani: string | null;
+  AddressManzel: string | null;
+  TelSabet: string | null;
+  CodeShahrestan: number | null;
+  AddressKar: string | null;
+  TelKar: string | null;
+
+  NoeTahsil: string | null;
+  SathTahsilHozavi: string | null;
+  HamtarazTahsil: string | null;
+  MahalTahsil: string | null;
+  BalatarinMadrakTahsil: string | null;
+  MahalAkhzMadrak: string | null;
+  TarikhAkhzMadrak: string | null;
+
+  VazeyatEshteghal: string | null;
+  MahalKhedmatFeli: number | null;
+  OnvanPostSazmani: string | null;
+  TarikhEntesab: string | null;
+  AkharinMahalKhedmat: number | null;
+  AkharinPostSazmani: string | null;
+  ModdatEntesab: string | null;
 };
 
 export type PersonWriteInput = {
@@ -109,6 +132,30 @@ export type PersonWriteInput = {
   email: string | null;
   telHamrah: string | null;
   telZaruri: string | null;
+  maharatRayaneh: string | null;
+  vazeyatJesmani: string | null;
+  addressManzel: string | null;
+  telSabet: string | null;
+  codeShahrestan: number | null;
+  addressKar: string | null;
+  telKar: string | null;
+
+  noeTahsil: string | null;
+  sathTahsilHozavi: string | null;
+  hamtarazTahsil: string | null;
+  mahalTahsil: string | null;
+  balatarinMadrakTahsil: string | null;
+  mahalAkhzMadrak: string | null;
+  tarikhAkhzMadrak: string | null;
+
+  vazeyatEshteghal: string | null;
+  mahalKhedmatFeli: number | null;
+  onvanPostSazmani: string | null;
+  tarikhEntesab: string | null;
+  akharinMahalKhedmat: number | null;
+  akharinPostSazmani: string | null;
+  moddatEntesab: string | null;
+
   actorUserId: string;
 };
 
@@ -260,6 +307,30 @@ function bindPerson(request: Request, input: PersonWriteInput) {
     .input("Email", input.email)
     .input("TelHamrah", input.telHamrah)
     .input("TelZaruri", input.telZaruri)
+    .input("MaharatRayaneh", input.maharatRayaneh)
+    .input("VazeyatJesmani", input.vazeyatJesmani)
+    .input("AddressManzel", input.addressManzel)
+    .input("TelSabet", input.telSabet)
+    .input("CodeShahrestan", input.codeShahrestan)
+    .input("AddressKar", input.addressKar)
+    .input("TelKar", input.telKar)
+
+    .input("NoeTahsil", input.noeTahsil)
+    .input("SathTahsilHozavi", input.sathTahsilHozavi)
+    .input("HamtarazTahsil", input.hamtarazTahsil)
+    .input("MahalTahsil", input.mahalTahsil)
+    .input("BalatarinMadrakTahsil", input.balatarinMadrakTahsil)
+    .input("MahalAkhzMadrak", input.mahalAkhzMadrak)
+    .input("TarikhAkhzMadrak", input.tarikhAkhzMadrak)
+
+    .input("VazeyatEshteghal", input.vazeyatEshteghal)
+    .input("MahalKhedmatFeli", input.mahalKhedmatFeli)
+    .input("OnvanPostSazmani", input.onvanPostSazmani)
+    .input("TarikhEntesab", input.tarikhEntesab)
+    .input("AkharinMahalKhedmat", input.akharinMahalKhedmat)
+    .input("AkharinPostSazmani", input.akharinPostSazmani)
+    .input("ModdatEntesab", input.moddatEntesab)
+
     .input("ActorUserId", input.actorUserId);
 }
 

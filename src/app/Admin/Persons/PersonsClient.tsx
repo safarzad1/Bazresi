@@ -52,6 +52,29 @@ type PersonRecord = PersonRow & {
   SharhMoaafiat: string | null;
   Email: string | null;
   TelZaruri: string | null;
+  MaharatRayaneh: string | null;
+  VazeyatJesmani: string | null;
+  AddressManzel: string | null;
+  TelSabet: string | null;
+  CodeShahrestan: number | null;
+  AddressKar: string | null;
+  TelKar: string | null;
+
+  NoeTahsil: string | null;
+  SathTahsilHozavi: string | null;
+  HamtarazTahsil: string | null;
+  MahalTahsil: string | null;
+  BalatarinMadrakTahsil: string | null;
+  MahalAkhzMadrak: string | null;
+  TarikhAkhzMadrak: string | null;
+
+  VazeyatEshteghal: string | null;
+  MahalKhedmatFeli: number | null;
+  OnvanPostSazmani: string | null;
+  TarikhEntesab: string | null;
+  AkharinMahalKhedmat: number | null;
+  AkharinPostSazmani: string | null;
+  ModdatEntesab: string | null;
 };
 
 type Definition = { GroupCode: number; Id: number; Title: string };
@@ -96,6 +119,71 @@ type PersonForm = {
   email: string;
   telHamrah: string;
   telZaruri: string;
+  maharatRayaneh: string;
+  vazeyatJesmani: string;
+  addressManzel: string;
+  telSabet: string;
+  codeShahrestan: string;
+  addressKar: string;
+  telKar: string;
+
+  noeTahsil: string;
+  sathTahsilHozavi: string;
+  hamtarazTahsil: string;
+  mahalTahsil: string;
+  balatarinMadrakTahsil: string;
+  mahalAkhzMadrak: string;
+  tarikhAkhzMadrak: string;
+
+  vazeyatEshteghal: string;
+  mahalKhedmatFeli: string;
+  onvanPostSazmani: string;
+  tarikhEntesab: string;
+  akharinMahalKhedmat: string;
+  akharinPostSazmani: string;
+  moddatEntesab: string;
+};
+
+type IsargariRow = {
+  ID: number;
+  PersonId: number;
+  JebheSal: number | null; JebheMah: number | null; JebheRoz: number | null;
+  Janbaz: boolean; DarsadJanbazi: number | null; MarjaTaeid: string | null;
+  Azadeh: boolean; AsaratSal: number | null; AsaratMah: number | null; AsaratRoz: number | null;
+  KhanevadeShahid: boolean; NameShahid: string | null; TarikhMahalShahadat: string | null; NesbatBaShahid: string | null;
+};
+
+type IsargariForm = {
+  id: number; jebheSal: string; jebheMah: string; jebheRoz: string;
+  janbaz: boolean; darsadJanbazi: string; marjaTaeid: string;
+  azadeh: boolean; asaratSal: string; asaratMah: string; asaratRoz: string;
+  khanevadeShahid: boolean; nameShahid: string; tarikhMahalShahadat: string; nesbatBaShahid: string;
+};
+
+
+type HamsarRow = {
+  ID: number;
+  PersonId: number;
+  NameHamsar: string;
+  ShoghlHamsar: string | null;
+};
+
+type HamsarForm = {
+  nameHamsar: string;
+  shoghlHamsar: string;
+};
+
+type FarzandRow = {
+  ID: number;
+  PersonId: number;
+  NameFarzand: string;
+  ShoghlFarzand: string | null;
+};
+
+type FarzandForm = {
+  id: number;
+  nameFarzand: string;
+  shoghlFarzand: string;
 };
 
 type WorkHistoryRow = {
@@ -156,6 +244,61 @@ type SabegheFaliyatEjtemaiForm = {
   molahazat: string;
 };
 
+
+type SabegheEntekhabatRow = {
+  ID: number;
+  PersonId: number;
+  NoeEntekhabat: string;
+  HozeEntekhabieh: string;
+  Natijeh: string | null;
+};
+
+type SabegheEntekhabatForm = {
+  id: number;
+  noeEntekhabat: string;
+  hozeEntekhabieh: string;
+  natijeh: string;
+};
+
+type DoreAmozeshiRow = {
+  ID: number;
+  PersonId: number;
+  NameDore: string;
+  ModatSaat: number;
+  NameMarkazMahalAmozesh: string;
+  NoeMadrak: number;
+  NoeMadrakName: string | null;
+  TarikhAkhzMadrak: string | null;
+};
+
+type DoreAmozeshiForm = {
+  id: number;
+  nameDore: string;
+  modatSaat: string;
+  nameMarkazMahalAmozesh: string;
+  noeMadrak: string;
+  tarikhAkhzMadrak: string;
+};
+
+const emptyIsargariForm: IsargariForm = {
+  id: 0, jebheSal: "", jebheMah: "", jebheRoz: "",
+  janbaz: false, darsadJanbazi: "", marjaTaeid: "",
+  azadeh: false, asaratSal: "", asaratMah: "", asaratRoz: "",
+  khanevadeShahid: false, nameShahid: "", tarikhMahalShahadat: "", nesbatBaShahid: "",
+};
+
+
+const emptyHamsarForm: HamsarForm = {
+  nameHamsar: "",
+  shoghlHamsar: "",
+};
+
+const emptyFarzandForm: FarzandForm = {
+  id: 0,
+  nameFarzand: "",
+  shoghlFarzand: "",
+};
+
 const emptyWorkHistoryForm: WorkHistoryForm = {
   id: 0,
   mahal: "",
@@ -178,6 +321,23 @@ const emptySabegheFaliyatEjtemaiForm: SabegheFaliyatEjtemaiForm = {
   azTarikh: "",
   taTarikh: "",
   molahazat: "",
+};
+
+
+const emptySabegheEntekhabatForm: SabegheEntekhabatForm = {
+  id: 0,
+  noeEntekhabat: "",
+  hozeEntekhabieh: "",
+  natijeh: "",
+};
+
+const emptyDoreAmozeshiForm: DoreAmozeshiForm = {
+  id: 0,
+  nameDore: "",
+  modatSaat: "",
+  nameMarkazMahalAmozesh: "",
+  noeMadrak: "",
+  tarikhAkhzMadrak: "",
 };
 
 const emptyForm: PersonForm = {
@@ -218,18 +378,42 @@ const emptyForm: PersonForm = {
   email: "",
   telHamrah: "",
   telZaruri: "",
+  maharatRayaneh: "",
+  vazeyatJesmani: "",
+  addressManzel: "",
+  telSabet: "",
+  codeShahrestan: "",
+  addressKar: "",
+  telKar: "",
+
+  noeTahsil: "",
+  sathTahsilHozavi: "",
+  hamtarazTahsil: "",
+  mahalTahsil: "",
+  balatarinMadrakTahsil: "",
+  mahalAkhzMadrak: "",
+  tarikhAkhzMadrak: "",
+
+  vazeyatEshteghal: "",
+  mahalKhedmatFeli: "",
+  onvanPostSazmani: "",
+  tarikhEntesab: "",
+  akharinMahalKhedmat: "",
+  akharinPostSazmani: "",
+  moddatEntesab: "",
 };
 
 const steps = [
-  { title: "اطلاعات هویتی", subtitle: "مشخصات اصلی و شناسنامه" },
-  { title: "جزئیات شناسنامه", subtitle: "محل، سریال و تغییرات" },
-  { title: "اطلاعات تکمیلی", subtitle: "شغل، وضعیت و تماس" },
-  { title: "تصویر و بازبینی", subtitle: "مرور نهایی اطلاعات" },
+  { title: "مشخصات فردی", subtitle: "اطلاعات اصلی و هویتی" },
+  { title: "جزئیات شناسنامه", subtitle: "محل، سریال و تغییرات شناسنامه" },
+  { title: "خدمت، تحصیل و اشتغال", subtitle: "نظام وظیفه، سوابق تحصیلی و وضعیت شغلی" },
+  { title: "وضعیت عمومی", subtitle: "تأهل، مذهب، روحانیت و شغل" },
+  { title: "اطلاعات تکمیلی", subtitle: "تماس، نشانی، رایانه و وضعیت جسمانی" },
 ];
 
 const detailTabs = [
   { id: "details", title: "مشخصات فردی", isTable: true },
-  { id: "sacrifice", title: "سابقه ایثارگری", isTable: false },
+  { id: "sacrifice", title: "سابقه ایثارگری", isTable: true },
   { id: "military", title: "وضعیت نظام وظیفه", isTable: false },
   { id: "education", title: "سوابق تحصیلی", isTable: false },
   { id: "employment", title: "اطلاعات شغلی", isTable: false },
@@ -245,7 +429,15 @@ const detailTabs = [
   { id: "contact", title: "آدرس و اطلاعات تماس", isTable: false },
 ] as const;
 type DetailTabId = typeof detailTabs[number]["id"];
-const tableDetailTabs = detailTabs.filter((tab) => tab.isTable);
+const wizardRemainingSections: Array<{ id: DetailTabId; title: string; subtitle: string }> = [
+  { id: "sacrifice", title: "سابقه ایثارگری", subtitle: "جبهه، جانبازی، آزادگی و خانواده شهید" },
+  { id: "family", title: "همسر و فرزندان", subtitle: "اطلاعات همسر و جدول فرزندان" },
+  { id: "work-history", title: "سوابق شغلی", subtitle: "محل خدمت، سمت و تاریخ‌ها" },
+  { id: "election-supervision", title: "سوابق نظارتی انتخابات", subtitle: "دوره، سمت انتخاباتی و محل" },
+  { id: "social-activities", title: "فعالیت‌های اجتماعی", subtitle: "نهاد، محل فعالیت و مدت فعالیت" },
+  { id: "training", title: "دوره‌های آموزشی", subtitle: "دوره‌های عمومی و تخصصی" },
+  { id: "candidacy", title: "داوطلبی در انتخابات", subtitle: "نوع انتخابات، حوزه و نتیجه" },
+];
 
 type IconName =
   | "persons" | "plus" | "search" | "refresh" | "edit" | "trash"
@@ -314,6 +506,29 @@ function fromRecord(person: PersonRecord): PersonForm {
     email: person.Email ?? "",
     telHamrah: person.TelHamrah ?? "",
     telZaruri: person.TelZaruri ?? "",
+    maharatRayaneh: person.MaharatRayaneh ?? "",
+    vazeyatJesmani: person.VazeyatJesmani ?? "",
+    addressManzel: person.AddressManzel ?? "",
+    telSabet: person.TelSabet ?? "",
+    codeShahrestan: value(person.CodeShahrestan),
+    addressKar: person.AddressKar ?? "",
+    telKar: person.TelKar ?? "",
+
+    noeTahsil: person.NoeTahsil ?? "",
+    sathTahsilHozavi: person.SathTahsilHozavi ?? "",
+    hamtarazTahsil: person.HamtarazTahsil ?? "",
+    mahalTahsil: person.MahalTahsil ?? "",
+    balatarinMadrakTahsil: person.BalatarinMadrakTahsil ?? "",
+    mahalAkhzMadrak: person.MahalAkhzMadrak ?? "",
+    tarikhAkhzMadrak: person.TarikhAkhzMadrak ?? "",
+
+    vazeyatEshteghal: person.VazeyatEshteghal ?? "",
+    mahalKhedmatFeli: value(person.MahalKhedmatFeli),
+    onvanPostSazmani: person.OnvanPostSazmani ?? "",
+    tarikhEntesab: person.TarikhEntesab ?? "",
+    akharinMahalKhedmat: value(person.AkharinMahalKhedmat),
+    akharinPostSazmani: person.AkharinPostSazmani ?? "",
+    moddatEntesab: person.ModdatEntesab ?? "",
   };
 }
 
@@ -406,6 +621,26 @@ export default function PersonsClient() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailTab, setDetailTab] = useState<DetailTabId>("details");
+  const [wizardDetailSection, setWizardDetailSection] = useState<DetailTabId | null>(null);
+  const [hamsar, setHamsar] = useState<HamsarRow | null>(null);
+  const [hamsarForm, setHamsarForm] = useState<HamsarForm>(emptyHamsarForm);
+  const [hamsarLoading, setHamsarLoading] = useState(false);
+  const [hamsarSaving, setHamsarSaving] = useState(false);
+  const [hamsarModalOpen, setHamsarModalOpen] = useState(false);
+  const [hamsarDeleteOpen, setHamsarDeleteOpen] = useState(false);
+
+  const [farzandan, setFarzandan] = useState<FarzandRow[]>([]);
+  const [farzandForm, setFarzandForm] = useState<FarzandForm>(emptyFarzandForm);
+  const [farzandLoading, setFarzandLoading] = useState(false);
+  const [farzandSaving, setFarzandSaving] = useState(false);
+  const [farzandModalOpen, setFarzandModalOpen] = useState(false);
+  const [farzandDeleteTarget, setFarzandDeleteTarget] = useState<FarzandRow | null>(null);
+  const [isargari, setIsargari] = useState<IsargariRow | null>(null);
+  const [isargariForm, setIsargariForm] = useState<IsargariForm>(emptyIsargariForm);
+  const [isargariLoading, setIsargariLoading] = useState(false);
+  const [isargariSaving, setIsargariSaving] = useState(false);
+  const [isargariModalOpen, setIsargariModalOpen] = useState(false);
+  const [isargariDeleteOpen, setIsargariDeleteOpen] = useState(false);
   const [workHistory, setWorkHistory] = useState<WorkHistoryRow[]>([]);
   const [workHistoryForm, setWorkHistoryForm] = useState<WorkHistoryForm>(emptyWorkHistoryForm);
   const [workHistoryLoading, setWorkHistoryLoading] = useState(false);
@@ -427,6 +662,20 @@ export default function PersonsClient() {
   const [editingSabegheFaliyatEjtemaiId, setEditingSabegheFaliyatEjtemaiId] = useState<number | null>(null);
   const [sabegheFaliyatEjtemaiModalOpen, setSabegheFaliyatEjtemaiModalOpen] = useState(false);
   const [sabegheFaliyatEjtemaiDeleteTarget, setSabegheFaliyatEjtemaiDeleteTarget] = useState<SabegheFaliyatEjtemaiRow | null>(null);
+  const [doreAmozeshi, setDoreAmozeshi] = useState<DoreAmozeshiRow[]>([]);
+  const [doreAmozeshiForm, setDoreAmozeshiForm] = useState<DoreAmozeshiForm>(emptyDoreAmozeshiForm);
+  const [doreAmozeshiLoading, setDoreAmozeshiLoading] = useState(false);
+  const [doreAmozeshiSaving, setDoreAmozeshiSaving] = useState(false);
+  const [editingDoreAmozeshiId, setEditingDoreAmozeshiId] = useState<number | null>(null);
+  const [doreAmozeshiModalOpen, setDoreAmozeshiModalOpen] = useState(false);
+  const [doreAmozeshiDeleteTarget, setDoreAmozeshiDeleteTarget] = useState<DoreAmozeshiRow | null>(null);
+  const [sabegheEntekhabat, setSabegheEntekhabat] = useState<SabegheEntekhabatRow[]>([]);
+  const [sabegheEntekhabatForm, setSabegheEntekhabatForm] = useState<SabegheEntekhabatForm>(emptySabegheEntekhabatForm);
+  const [sabegheEntekhabatLoading, setSabegheEntekhabatLoading] = useState(false);
+  const [sabegheEntekhabatSaving, setSabegheEntekhabatSaving] = useState(false);
+  const [editingSabegheEntekhabatId, setEditingSabegheEntekhabatId] = useState<number | null>(null);
+  const [sabegheEntekhabatModalOpen, setSabegheEntekhabatModalOpen] = useState(false);
+  const [sabegheEntekhabatDeleteTarget, setSabegheEntekhabatDeleteTarget] = useState<SabegheEntekhabatRow | null>(null);
   const [sectionEdit, setSectionEdit] = useState<number | null>(null);
   const sectionEditBackup = useRef<PersonForm | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -559,19 +808,39 @@ export default function PersonsClient() {
   }, [detailOpen, wizardOpen]);
 
   useEffect(() => {
-    if (!detailOpen || detailTab !== "work-history" || form.personId <= 0) return;
+    if (!(detailOpen || wizardOpen) || detailTab !== "work-history" || form.personId <= 0) return;
     void loadWorkHistory(form.personId);
-  }, [detailOpen, detailTab, form.personId]);
+  }, [detailOpen, wizardOpen, detailTab, form.personId]);
 
   useEffect(() => {
-    if (!detailOpen || detailTab !== "election-supervision" || form.personId <= 0) return;
+    if (!(detailOpen || wizardOpen) || detailTab !== "election-supervision" || form.personId <= 0) return;
     void loadSabegeNezarat(form.personId);
-  }, [detailOpen, detailTab, form.personId]);
+  }, [detailOpen, wizardOpen, detailTab, form.personId]);
 
   useEffect(() => {
-    if (!detailOpen || detailTab !== "social-activities" || form.personId <= 0) return;
+    if (!(detailOpen || wizardOpen) || detailTab !== "social-activities" || form.personId <= 0) return;
     void loadSabegheFaliyatEjtemai(form.personId);
-  }, [detailOpen, detailTab, form.personId]);
+  }, [detailOpen, wizardOpen, detailTab, form.personId]);
+
+  useEffect(() => {
+    if (!(detailOpen || wizardOpen) || detailTab !== "sacrifice" || form.personId <= 0) return;
+    void loadIsargari(form.personId);
+  }, [detailOpen, wizardOpen, detailTab, form.personId]);
+
+  useEffect(() => {
+    if (!(detailOpen || wizardOpen) || detailTab !== "family" || form.personId <= 0) return;
+    void loadFamily(form.personId);
+  }, [detailOpen, wizardOpen, detailTab, form.personId]);
+
+  useEffect(() => {
+    if (!(detailOpen || wizardOpen) || detailTab !== "training" || form.personId <= 0) return;
+    void loadDoreAmozeshi(form.personId);
+  }, [detailOpen, wizardOpen, detailTab, form.personId]);
+
+  useEffect(() => {
+    if (!(detailOpen || wizardOpen) || detailTab !== "candidacy" || form.personId <= 0) return;
+    void loadSabegheEntekhabat(form.personId);
+  }, [detailOpen, wizardOpen, detailTab, form.personId]);
 
   function change<K extends keyof PersonForm>(key: K, value: PersonForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -579,6 +848,8 @@ export default function PersonsClient() {
 
   function openCreate() {
     setDetailOpen(false);
+    setWizardDetailSection(null);
+    setDetailTab("details");
     setForm(emptyForm);
     setSelectedMainPerson(null);
     setStep(0);
@@ -621,6 +892,14 @@ export default function PersonsClient() {
     setSabegheFaliyatEjtemaiDeleteTarget(null);
     resetSabegheFaliyatEjtemaiForm();
     setSabegheFaliyatEjtemaiModalOpen(false);
+    setDoreAmozeshi([]);
+    setDoreAmozeshiDeleteTarget(null);
+    resetDoreAmozeshiForm();
+    setDoreAmozeshiModalOpen(false);
+    setSabegheEntekhabat([]);
+    setSabegheEntekhabatDeleteTarget(null);
+    resetSabegheEntekhabatForm();
+    setSabegheEntekhabatModalOpen(false);
     setForm({
       ...emptyForm,
       personId: Number(person.PersonId),
@@ -646,6 +925,8 @@ export default function PersonsClient() {
 
   async function openPerson(person: PersonRow) {
     setDetailOpen(false);
+    setWizardDetailSection(null);
+    setDetailTab("details");
     setWizardOpen(true);
     setLoadingDetail(true);
     setStep(0);
@@ -666,6 +947,200 @@ export default function PersonsClient() {
     setSectionEdit(null);
     sectionEditBackup.current = null;
     setDetailOpen(false);
+  }
+
+  function resetIsargariForm(row: IsargariRow | null = null) {
+    if (!row) { setIsargariForm(emptyIsargariForm); return; }
+    setIsargariForm({
+      id: row.ID,
+      jebheSal: row.JebheSal == null ? "" : String(row.JebheSal),
+      jebheMah: row.JebheMah == null ? "" : String(row.JebheMah),
+      jebheRoz: row.JebheRoz == null ? "" : String(row.JebheRoz),
+      janbaz: Boolean(row.Janbaz), darsadJanbazi: row.DarsadJanbazi == null ? "" : String(row.DarsadJanbazi), marjaTaeid: row.MarjaTaeid ?? "",
+      azadeh: Boolean(row.Azadeh), asaratSal: row.AsaratSal == null ? "" : String(row.AsaratSal), asaratMah: row.AsaratMah == null ? "" : String(row.AsaratMah), asaratRoz: row.AsaratRoz == null ? "" : String(row.AsaratRoz),
+      khanevadeShahid: Boolean(row.KhanevadeShahid), nameShahid: row.NameShahid ?? "", tarikhMahalShahadat: row.TarikhMahalShahadat ?? "", nesbatBaShahid: row.NesbatBaShahid ?? "",
+    });
+  }
+
+  async function loadFamily(personId: number) {
+    if (!personId) return;
+    setHamsarLoading(true);
+    setFarzandLoading(true);
+    try {
+      const [hamsarData, farzandData] = await Promise.all([
+        readJson(await fetch(`/api/persons/hamsar?personId=${personId}`, { cache: "no-store" })),
+        readJson(await fetch(`/api/persons/farzand?personId=${personId}`, { cache: "no-store" })),
+      ]);
+      setHamsar((hamsarData.row as HamsarRow | null | undefined) ?? null);
+      setFarzandan((farzandData.rows as FarzandRow[] | undefined) ?? []);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت اطلاعات همسر و فرزندان انجام نشد." });
+    } finally {
+      setHamsarLoading(false);
+      setFarzandLoading(false);
+    }
+  }
+
+  function openHamsarForm() {
+    setHamsarForm({
+      nameHamsar: hamsar?.NameHamsar ?? "",
+      shoghlHamsar: hamsar?.ShoghlHamsar ?? "",
+    });
+    setHamsarModalOpen(true);
+  }
+
+  async function saveHamsarRow() {
+    if (!hamsarForm.nameHamsar.trim()) {
+      setNotice({ type: "error", text: "نام و نام خانوادگی همسر را وارد کنید." });
+      return;
+    }
+    setHamsarSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/hamsar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          personId: form.personId,
+          nameHamsar: hamsarForm.nameHamsar,
+          shoghlHamsar: hamsarForm.shoghlHamsar,
+        }),
+      }));
+      setHamsar((data.row as HamsarRow | null | undefined) ?? null);
+      setHamsarModalOpen(false);
+      setNotice({ type: "success", text: String(data.message ?? "اطلاعات همسر ذخیره شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره اطلاعات همسر انجام نشد." });
+    } finally {
+      setHamsarSaving(false);
+    }
+  }
+
+  async function deleteHamsarRow() {
+    if (!hamsar) return;
+    setHamsarSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/hamsar", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ personId: form.personId }),
+      }));
+      setHamsar(null);
+      setHamsarForm(emptyHamsarForm);
+      setHamsarDeleteOpen(false);
+      setNotice({ type: "success", text: String(data.message ?? "اطلاعات همسر حذف شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف اطلاعات همسر انجام نشد." });
+    } finally {
+      setHamsarSaving(false);
+    }
+  }
+
+  function openFarzandCreate() {
+    if (farzandan.length >= 5) {
+      setNotice({ type: "error", text: "حداکثر ۵ فرزند مطابق فرم قابل ثبت است." });
+      return;
+    }
+    setFarzandForm(emptyFarzandForm);
+    setFarzandModalOpen(true);
+  }
+
+  function editFarzandRow(row: FarzandRow) {
+    setFarzandForm({
+      id: row.ID,
+      nameFarzand: row.NameFarzand ?? "",
+      shoghlFarzand: row.ShoghlFarzand ?? "",
+    });
+    setFarzandModalOpen(true);
+  }
+
+  async function saveFarzandRow() {
+    if (!farzandForm.nameFarzand.trim()) {
+      setNotice({ type: "error", text: "نام و نام خانوادگی فرزند را وارد کنید." });
+      return;
+    }
+    setFarzandSaving(true);
+    try {
+      const method = farzandForm.id > 0 ? "PUT" : "POST";
+      const data = await readJson(await fetch("/api/persons/farzand", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: farzandForm.id,
+          personId: form.personId,
+          nameFarzand: farzandForm.nameFarzand,
+          shoghlFarzand: farzandForm.shoghlFarzand,
+        }),
+      }));
+      setFarzandModalOpen(false);
+      setFarzandForm(emptyFarzandForm);
+      await loadFamily(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "اطلاعات فرزند ذخیره شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره اطلاعات فرزند انجام نشد." });
+    } finally {
+      setFarzandSaving(false);
+    }
+  }
+
+  async function deleteFarzandRow() {
+    if (!farzandDeleteTarget) return;
+    setFarzandSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/farzand", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: farzandDeleteTarget.ID, personId: form.personId }),
+      }));
+      setFarzandDeleteTarget(null);
+      await loadFamily(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "اطلاعات فرزند حذف شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف اطلاعات فرزند انجام نشد." });
+    } finally {
+      setFarzandSaving(false);
+    }
+  }
+
+  async function loadIsargari(personId: number) {
+    setIsargariLoading(true);
+    try {
+      const data = await readJson(await fetch(`/api/persons/isargari?personId=${personId}`, { cache: "no-store" }));
+      setIsargari((data.row as IsargariRow | null | undefined) ?? null);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت اطلاعات ایثارگری انجام نشد." });
+    } finally { setIsargariLoading(false); }
+  }
+
+  function openIsargariEditor() { resetIsargariForm(isargari); setIsargariModalOpen(true); }
+
+  async function saveIsargariRow() {
+    if (!form.personId || isargariSaving) return;
+    if (isargariForm.janbaz) {
+      const p = Number(isargariForm.darsadJanbazi);
+      if (!Number.isInteger(p) || p < 1 || p > 100) { setNotice({ type: "error", text: "درصد جانبازی باید بین ۱ تا ۱۰۰ باشد." }); return; }
+    }
+    setIsargariSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/isargari", {
+        method: isargari ? "PUT" : "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...isargariForm, personId: form.personId }),
+      }));
+      setIsargari((data.row as IsargariRow | null | undefined) ?? null);
+      setIsargariModalOpen(false);
+      setNotice({ type: "success", text: String(data.message ?? "اطلاعات ایثارگری ذخیره شد.") });
+    } catch (error) { setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره اطلاعات ایثارگری انجام نشد." }); }
+    finally { setIsargariSaving(false); }
+  }
+
+  async function confirmDeleteIsargari() {
+    if (!form.personId || isargariSaving) return;
+    setIsargariSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/isargari", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ personId: form.personId }) }));
+      setIsargari(null); setIsargariDeleteOpen(false); resetIsargariForm();
+      setNotice({ type: "success", text: String(data.message ?? "اطلاعات ایثارگری حذف شد.") });
+    } catch (error) { setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف اطلاعات ایثارگری انجام نشد." }); }
+    finally { setIsargariSaving(false); }
   }
 
   function resetWorkHistoryForm() {
@@ -948,6 +1423,198 @@ export default function PersonsClient() {
     }
   }
 
+  function resetDoreAmozeshiForm() {
+    setDoreAmozeshiForm(emptyDoreAmozeshiForm);
+    setEditingDoreAmozeshiId(null);
+  }
+
+  async function loadDoreAmozeshi(personId: number) {
+    if (!personId) return;
+    setDoreAmozeshiLoading(true);
+    try {
+      const data = await readJson(await fetch(`/api/persons/dore-amoozeshi?personId=${personId}`, { cache: "no-store" }));
+      setDoreAmozeshi((data.rows as DoreAmozeshiRow[] | undefined) ?? []);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت دوره‌های آموزشی انجام نشد." });
+    } finally {
+      setDoreAmozeshiLoading(false);
+    }
+  }
+
+  function openDoreAmozeshiCreate() {
+    resetDoreAmozeshiForm();
+    setDoreAmozeshiModalOpen(true);
+  }
+
+  function editDoreAmozeshiRow(row: DoreAmozeshiRow) {
+    setDoreAmozeshiForm({
+      id: row.ID,
+      nameDore: row.NameDore ?? "",
+      modatSaat: row.ModatSaat ? String(row.ModatSaat) : "",
+      nameMarkazMahalAmozesh: row.NameMarkazMahalAmozesh ?? "",
+      noeMadrak: row.NoeMadrak ? String(row.NoeMadrak) : "",
+      tarikhAkhzMadrak: row.TarikhAkhzMadrak ?? "",
+    });
+    setEditingDoreAmozeshiId(row.ID);
+    setDoreAmozeshiModalOpen(true);
+  }
+
+  async function saveDoreAmozeshiRow() {
+    if (!doreAmozeshiForm.nameDore.trim()) {
+      setNotice({ type: "error", text: "نام دوره را وارد کنید." });
+      return;
+    }
+    const hours = Number(doreAmozeshiForm.modatSaat.replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))));
+    if (!Number.isFinite(hours) || hours <= 0) {
+      setNotice({ type: "error", text: "مدت دوره به ساعت را صحیح وارد کنید." });
+      return;
+    }
+    if (!doreAmozeshiForm.nameMarkazMahalAmozesh.trim()) {
+      setNotice({ type: "error", text: "نام مرکز و محل آموزش را وارد کنید." });
+      return;
+    }
+    if (!doreAmozeshiForm.noeMadrak) {
+      setNotice({ type: "error", text: "نوع مدرک را انتخاب کنید." });
+      return;
+    }
+
+    setDoreAmozeshiSaving(true);
+    try {
+      const method = editingDoreAmozeshiId === null ? "POST" : "PUT";
+      const payload = {
+        id: editingDoreAmozeshiId ?? 0,
+        personId: form.personId,
+        nameDore: doreAmozeshiForm.nameDore,
+        modatSaat: hours,
+        nameMarkazMahalAmozesh: doreAmozeshiForm.nameMarkazMahalAmozesh,
+        noeMadrak: Number(doreAmozeshiForm.noeMadrak),
+        tarikhAkhzMadrak: doreAmozeshiForm.tarikhAkhzMadrak,
+      };
+      const data = await readJson(await fetch("/api/persons/dore-amoozeshi", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }));
+      resetDoreAmozeshiForm();
+      setDoreAmozeshiModalOpen(false);
+      await loadDoreAmozeshi(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "دوره آموزشی ذخیره شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره دوره آموزشی انجام نشد." });
+    } finally {
+      setDoreAmozeshiSaving(false);
+    }
+  }
+
+  async function confirmDeleteDoreAmozeshi() {
+    if (!doreAmozeshiDeleteTarget) return;
+    setDoreAmozeshiSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/dore-amoozeshi", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: doreAmozeshiDeleteTarget.ID, personId: form.personId }),
+      }));
+      setDoreAmozeshiDeleteTarget(null);
+      await loadDoreAmozeshi(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "دوره آموزشی حذف شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف دوره آموزشی انجام نشد." });
+    } finally {
+      setDoreAmozeshiSaving(false);
+    }
+  }
+
+
+  function resetSabegheEntekhabatForm() {
+    setSabegheEntekhabatForm(emptySabegheEntekhabatForm);
+    setEditingSabegheEntekhabatId(null);
+  }
+
+  async function loadSabegheEntekhabat(personId: number) {
+    if (!personId) return;
+    setSabegheEntekhabatLoading(true);
+    try {
+      const data = await readJson(await fetch(`/api/persons/sabeghe-entekhabat?personId=${personId}`, { cache: "no-store" }));
+      setSabegheEntekhabat((data.rows as SabegheEntekhabatRow[] | undefined) ?? []);
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "دریافت سوابق داوطلبی در انتخابات انجام نشد." });
+    } finally {
+      setSabegheEntekhabatLoading(false);
+    }
+  }
+
+  function openSabegheEntekhabatCreate() {
+    resetSabegheEntekhabatForm();
+    setSabegheEntekhabatModalOpen(true);
+  }
+
+  function editSabegheEntekhabatRow(row: SabegheEntekhabatRow) {
+    setSabegheEntekhabatForm({
+      id: row.ID,
+      noeEntekhabat: row.NoeEntekhabat ?? "",
+      hozeEntekhabieh: row.HozeEntekhabieh ?? "",
+      natijeh: row.Natijeh ?? "",
+    });
+    setEditingSabegheEntekhabatId(row.ID);
+    setSabegheEntekhabatModalOpen(true);
+  }
+
+  async function saveSabegheEntekhabatRow() {
+    if (!sabegheEntekhabatForm.noeEntekhabat.trim()) {
+      setNotice({ type: "error", text: "نوع انتخابات را وارد کنید." });
+      return;
+    }
+    if (!sabegheEntekhabatForm.hozeEntekhabieh.trim()) {
+      setNotice({ type: "error", text: "حوزه انتخابیه را وارد کنید." });
+      return;
+    }
+
+    setSabegheEntekhabatSaving(true);
+    try {
+      const method = editingSabegheEntekhabatId === null ? "POST" : "PUT";
+      const payload = {
+        id: editingSabegheEntekhabatId ?? 0,
+        personId: form.personId,
+        noeEntekhabat: sabegheEntekhabatForm.noeEntekhabat,
+        hozeEntekhabieh: sabegheEntekhabatForm.hozeEntekhabieh,
+        natijeh: sabegheEntekhabatForm.natijeh,
+      };
+      const data = await readJson(await fetch("/api/persons/sabeghe-entekhabat", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }));
+      resetSabegheEntekhabatForm();
+      setSabegheEntekhabatModalOpen(false);
+      await loadSabegheEntekhabat(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه داوطلبی ذخیره شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "ذخیره سابقه داوطلبی انجام نشد." });
+    } finally {
+      setSabegheEntekhabatSaving(false);
+    }
+  }
+
+  async function confirmDeleteSabegheEntekhabat() {
+    if (!sabegheEntekhabatDeleteTarget) return;
+    setSabegheEntekhabatSaving(true);
+    try {
+      const data = await readJson(await fetch("/api/persons/sabeghe-entekhabat", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: sabegheEntekhabatDeleteTarget.ID, personId: form.personId }),
+      }));
+      setSabegheEntekhabatDeleteTarget(null);
+      await loadSabegheEntekhabat(form.personId);
+      setNotice({ type: "success", text: String(data.message ?? "سابقه داوطلبی حذف شد.") });
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "حذف سابقه داوطلبی انجام نشد." });
+    } finally {
+      setSabegheEntekhabatSaving(false);
+    }
+  }
+
   function openSectionEdit(sectionIndex: number) {
     sectionEditBackup.current = { ...form };
     setSectionEdit(sectionIndex);
@@ -962,10 +1629,21 @@ export default function PersonsClient() {
 
   function closeWizard() {
     if (saving) return;
+    setWizardDetailSection(null);
+    setDetailTab("details");
     setWizardOpen(false);
     setFinalConfirm(false);
     setSelectedImage(null);
     setPreviewUrl("");
+  }
+
+  function openWizardRemainingSection(tab: DetailTabId) {
+    if (!form.personId || saving || loadingDetail) return;
+    setFinalConfirm(false);
+    setSectionEdit(null);
+    sectionEditBackup.current = null;
+    setDetailTab(tab);
+    setWizardDetailSection(tab);
   }
 
   function bodyFromForm(personId = form.personId) {
@@ -1004,8 +1682,13 @@ export default function PersonsClient() {
       return "توضیحات شناسنامه باید بیشتر از ۵ کاراکتر باشد.";
     }
     if (currentStep === 2) {
+      if (!form.nezamVazifeh) return "وضعیت نظام وظیفه را انتخاب کنید.";
+    }
+    if (currentStep === 3) {
       if (form.shoghl.trim().length < 2) return "شغل را وارد کنید.";
-      if (!form.taahol || !form.dinMazhab || !form.rohani || !form.nezamVazifeh) return "وضعیت‌های تأهل، دین و مذهب، روحانیت و نظام وظیفه را انتخاب کنید.";
+      if (!form.taahol || !form.dinMazhab || !form.rohani) return "وضعیت تأهل، دین و مذهب و وضعیت روحانیت را انتخاب کنید.";
+    }
+    if (currentStep === 4) {
       if (form.telHamrah && !/^09\d{9}$/.test(form.telHamrah)) return "شماره همراه معتبر نیست.";
     }
     return "";
@@ -1057,7 +1740,22 @@ export default function PersonsClient() {
           return;
         }
       }
-      if (step === 2 && form.registrationState === 0) await saveDraft(false);
+
+      if (step === 3) {
+        const personId = await saveDraft(false);
+        if (personId) {
+          setDetailTab("sacrifice");
+          setWizardDetailSection("sacrifice");
+        }
+        return;
+      }
+
+      if (step === 4) {
+        if (form.registrationState === 0) await saveDraft(false);
+        setStep(5);
+        return;
+      }
+
       setStep((current) => Math.min(3, current + 1));
     } catch (errorValue) {
       setNotice({ type: "error", text: errorValue instanceof Error ? errorValue.message : "ذخیره پیش‌نویس انجام نشد." });
@@ -1107,7 +1805,7 @@ export default function PersonsClient() {
   }
 
   function requestFinalConfirmation() {
-    const error = stepError(0) || stepError(2);
+    const error = stepError(0) || stepError(2) || stepError(3);
     if (error) {
       setNotice({ type: "error", text: error });
       return;
@@ -1169,6 +1867,10 @@ export default function PersonsClient() {
     return cities.find((item) => String(item.Id) === value)?.Title ?? value;
   }, [cities]);
 
+  const militaryStatusTitle = lookupTitle(PERSON_DFN_PID.militaryStatus, form.nezamVazifeh);
+  const militaryIsExempt = militaryStatusTitle.includes("معاف");
+  const militaryIsCompleted = Boolean(form.nezamVazifeh) && !militaryIsExempt;
+
   const reviewRows = useMemo(() => [
     ["نام و نام خانوادگی", `${form.firstName} ${form.lastName}`.trim() || "—"],
     ["نام پدر", form.fatherName || "—"],
@@ -1196,8 +1898,29 @@ export default function PersonsClient() {
     ["نوع معافیت", lookupTitle(PERSON_DFN_PID.exemptionType, form.noeMoaafiat)],
     ["تاریخ معافیت", form.tarikhMoaafiat || "—"],
     ["شرح معافیت", form.sharhMoaafiat || "—"],
+    ["نوع تحصیل", form.noeTahsil || "—"],
+    ["سطح تحصیل حوزوی", form.sathTahsilHozavi || "—"],
+    ["همتراز (معادل)", form.hamtarazTahsil || "—"],
+    ["محل تحصیل", form.mahalTahsil || "—"],
+    ["بالاترین مدرک تحصیلی", form.balatarinMadrakTahsil || "—"],
+    ["محل اخذ مدرک", form.mahalAkhzMadrak || "—"],
+    ["تاریخ اخذ مدرک", form.tarikhAkhzMadrak || "—"],
+    ["وضعیت اشتغال", form.vazeyatEshteghal || "—"],
+    ["محل خدمت فعلی", cityTitle(form.mahalKhedmatFeli)],
+    ["عنوان پست سازمانی", form.onvanPostSazmani || "—"],
+    ["تاریخ انتصاب", form.tarikhEntesab || "—"],
+    ["آخرین محل خدمت", cityTitle(form.akharinMahalKhedmat)],
+    ["آخرین پست سازمانی", form.akharinPostSazmani || "—"],
+    ["مدت انتصاب", form.moddatEntesab || "—"],
+    ["مهارت رایانه در امور اداری", form.maharatRayaneh || "—"],
+    ["وضعیت جسمانی", form.vazeyatJesmani || "—"],
+    ["آدرس محل سکونت", form.addressManzel || "—"],
+    ["تلفن ثابت", form.telSabet || "—"],
+    ["کد شهرستان", cityTitle(form.codeShahrestan)],
     ["شماره همراه", form.telHamrah || "—"],
     ["تماس ضروری", form.telZaruri || "—"],
+    ["آدرس محل کار", form.addressKar || "—"],
+    ["تلفن محل کار", form.telKar || "—"],
     ["ایمیل", form.email || "—"],
     ["تصویر پرسنلی", selectedImage || form.imagePath ? "انتخاب شده" : "—"],
   ], [cityTitle, form, lookupTitle, selectedImage]);
@@ -1210,6 +1933,32 @@ export default function PersonsClient() {
   );
   const shownImage = previewUrl || (isStoredImageFile(form.imagePath) ? `/api/persons/image?file=${encodeURIComponent(form.imagePath)}` : "");
   const detailName = `${form.firstName} ${form.lastName}`.trim() || "پیش‌نویس بدون نام";
+  const wizardStageNumber =
+    wizardDetailSection
+      ? 5 + Math.max(0, wizardRemainingSections.findIndex((item) => item.id === wizardDetailSection))
+      : step === 4
+        ? 12
+        : step === 5
+          ? 13
+          : step + 1;
+  const wizardProgressValue = Math.round((wizardStageNumber / 13) * 100);
+  const currentWizardStageTitle =
+    wizardDetailSection
+      ? wizardRemainingSections.find((item) => item.id === wizardDetailSection)?.title ?? "اطلاعات پرونده"
+      : step === 4
+        ? "اطلاعات تکمیلی"
+        : step === 5
+          ? "تصویر و بازبینی"
+          : steps[step]?.title ?? "ثبت اطلاعات";
+
+  const currentWizardStageSubtitle =
+    wizardDetailSection
+      ? wizardRemainingSections.find((item) => item.id === wizardDetailSection)?.subtitle ?? ""
+      : step === 4
+        ? "تماس، نشانی، رایانه و وضعیت جسمانی"
+        : step === 5
+          ? "تصویر پرسنلی و مرور نهایی پرونده"
+          : steps[step]?.subtitle ?? "";
   const detailSections: Array<{
     title: string;
     subtitle: string;
@@ -1261,8 +2010,15 @@ export default function PersonsClient() {
         { label: "تاریخ پایان خدمت", value: form.tarikhPayan },
         { label: "نوع معافیت", value: lookupTitle(PERSON_DFN_PID.exemptionType, form.noeMoaafiat) },
         { label: "تاریخ معافیت", value: form.tarikhMoaafiat },
+        { label: "مهارت رایانه در امور اداری", value: form.maharatRayaneh },
+        { label: "وضعیت جسمانی", value: form.vazeyatJesmani },
+        { label: "آدرس محل سکونت", value: form.addressManzel },
+        { label: "تلفن ثابت", value: form.telSabet },
+        { label: "کد شهرستان", value: cityTitle(form.codeShahrestan) },
         { label: "تلفن همراه", value: form.telHamrah },
         { label: "تلفن ضروری", value: form.telZaruri },
+        { label: "آدرس محل کار", value: form.addressKar },
+        { label: "تلفن محل کار", value: form.telKar },
         { label: "ایمیل", value: form.email },
         { label: "شرح معافیت", value: form.sharhMoaafiat },
       ],
@@ -1361,36 +2117,6 @@ export default function PersonsClient() {
               </div>
             </header>
 
-            <nav className={styles.detailTabs} aria-label="بخش‌های پرونده" role="tablist">
-              {tableDetailTabs.map((tab) => {
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    className={`${styles.detailTab} ${detailTab === tab.id ? styles.detailTabActive : ""}`}
-                    onClick={() => setDetailTab(tab.id)}
-                    aria-selected={detailTab === tab.id}
-                    role="tab"
-                  >
-                    <span className={styles.detailTabIcon}><Icon name={tab.id === "details" ? "persons" : "file"} /></span>
-                    {tab.title}
-                  </button>
-                );
-              })}
-              <label className={styles.detailTabPicker}>
-                <span>بخش جاری</span>
-                <SearchableDropdown
-                  value={detailTab}
-                  options={detailTabs.map((tab) => ({ value: tab.id, label: tab.title }))}
-                  onChange={(value) => setDetailTab(value as DetailTabId)}
-                  placeholder="انتخاب بخش"
-                  searchPlaceholder="جست‌وجوی عنوان بخش..."
-                  ariaLabel="انتخاب بخش پرونده"
-                  menuWidth={300}
-                  compact
-                />
-              </label>
-            </nav>
 
             {loadingDetail ? (
               <div className={styles.detailLoading}><span className={styles.spinner} />در حال دریافت مشخصات فرد...</div>
@@ -1436,33 +2162,168 @@ export default function PersonsClient() {
                   </section>
                 </div>
               </div>
+            ) : detailTab === "sacrifice" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div><span>سابقه ایثارگری</span><h3>جبهه، جانبازی، آزادگی و خانواده شهید</h3><small>{isargari ? "اطلاعات ثبت شده است" : "هنوز اطلاعاتی ثبت نشده است"}</small></div>
+                    <div className={styles.workHistoryActions}>
+                      <button type="button" className={styles.workHistoryAddButton} onClick={openIsargariEditor} disabled={isargariLoading || isargariSaving}><Icon name={isargari ? "edit" : "plus"} />{isargari ? "ویرایش" : "ثبت اطلاعات"}</button>
+                      {isargari && <button type="button" className={styles.deleteAction} onClick={() => setIsargariDeleteOpen(true)} title="حذف" disabled={isargariSaving}><Icon name="trash" /></button>}
+                    </div>
+                  </header>
+                  {isargariLoading ? (
+                    <div className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت اطلاعات ایثارگری...</div>
+                  ) : !isargari ? (
+                    <div className={styles.isargariEmptyState}>
+                      <Icon name="file" />
+                      <strong>اطلاعات ایثارگری ثبت نشده است</strong>
+                      <span>برای ثبت اطلاعات از دکمه «ثبت اطلاعات» استفاده کنید.</span>
+                    </div>
+                  ) : (
+                    <div className={styles.isargariSummaryGrid}>
+                      <div className={`${styles.isargariSummaryItem} ${styles.isargariSummaryWide}`}>
+                        <span>میزان حضور در جبهه‌های حق علیه باطل</span>
+                        <strong>{`${isargari.JebheSal ?? 0} سال، ${isargari.JebheMah ?? 0} ماه، ${isargari.JebheRoz ?? 0} روز`}</strong>
+                      </div>
+
+                      <div className={styles.isargariSummaryItem}>
+                        <span>جانباز</span>
+                        <strong>{isargari.Janbaz ? "بله" : "خیر"}</strong>
+                      </div>
+
+                      {isargari.Janbaz && (
+                        <>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>درصد جانبازی</span>
+                            <strong>{`${isargari.DarsadJanbazi ?? 0}٪`}</strong>
+                          </div>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>مرجع تأییدکننده</span>
+                            <strong>{isargari.MarjaTaeid || "—"}</strong>
+                          </div>
+                        </>
+                      )}
+
+                      <div className={styles.isargariSummaryItem}>
+                        <span>آزاده</span>
+                        <strong>{isargari.Azadeh ? "بله" : "خیر"}</strong>
+                      </div>
+
+                      {isargari.Azadeh && (
+                        <div className={`${styles.isargariSummaryItem} ${styles.isargariSummaryWide}`}>
+                          <span>جمع مدت اسارت</span>
+                          <strong>{`${isargari.AsaratSal ?? 0} سال، ${isargari.AsaratMah ?? 0} ماه، ${isargari.AsaratRoz ?? 0} روز`}</strong>
+                        </div>
+                      )}
+
+                      <div className={styles.isargariSummaryItem}>
+                        <span>خانواده شهید</span>
+                        <strong>{isargari.KhanevadeShahid ? "بله" : "خیر"}</strong>
+                      </div>
+
+                      {isargari.KhanevadeShahid && (
+                        <>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>نام شهید (شهدا)</span>
+                            <strong>{isargari.NameShahid || "—"}</strong>
+                          </div>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>نسبت با شهید</span>
+                            <strong>{isargari.NesbatBaShahid || "—"}</strong>
+                          </div>
+                          <div className={`${styles.isargariSummaryItem} ${styles.isargariSummaryWide}`}>
+                            <span>تاریخ و محل شهادت</span>
+                            <strong>{isargari.TarikhMahalShahadat || "—"}</strong>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </section>
+              </div>
             ) : detailTab === "family" ? (
               <div className={styles.detailBody}>
                 <section className={styles.familyPanel}>
                   <header className={styles.familyPanelHeader}>
-                    <div><span>اطلاعات خانوادگی</span><h3>همسر و فرزندان</h3></div>
-                    <span>۵ ردیف فرزند</span>
+                    <div>
+                      <span>اطلاعات خانوادگی</span>
+                      <h3>همسر و فرزندان</h3>
+                    </div>
+                    <span>{farzandan.length.toLocaleString("fa-IR")} فرزند ثبت‌شده</span>
                   </header>
-                  <div className={styles.familySummary}>
-                    <div><span>نام و نام خانوادگی همسر</span><strong>ثبت نشده</strong></div>
-                    <div><span>شغل همسر</span><strong>ثبت نشده</strong></div>
-                    <div><span>تعداد فرزندان</span><strong>۰</strong></div>
+
+                  <div className={styles.familySpouseCard}>
+                    <div className={styles.familySpouseHeader}>
+                      <div>
+                        <span>اطلاعات همسر</span>
+                        <small>نام و نام خانوادگی و شغل همسر</small>
+                      </div>
+                      <div className={styles.familyCardActions}>
+                        <button type="button" className={styles.editAction} onClick={openHamsarForm} disabled={hamsarSaving || hamsarLoading} title={hamsar ? "ویرایش اطلاعات همسر" : "ثبت اطلاعات همسر"}>
+                          <Icon name={hamsar ? "edit" : "plus"} />
+                        </button>
+                        {hamsar && (
+                          <button type="button" className={styles.deleteAction} onClick={() => setHamsarDeleteOpen(true)} disabled={hamsarSaving} title="حذف اطلاعات همسر">
+                            <Icon name="trash" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {hamsarLoading ? (
+                      <div className={styles.familyEmpty}><span className={styles.spinner} /> در حال دریافت اطلاعات همسر...</div>
+                    ) : hamsar ? (
+                      <div className={styles.familySummary}>
+                        <div><span>نام و نام خانوادگی همسر</span><strong>{hamsar.NameHamsar || "—"}</strong></div>
+                        <div><span>شغل همسر</span><strong>{hamsar.ShoghlHamsar || "—"}</strong></div>
+                        <div><span>تعداد فرزندان</span><strong>{farzandan.length.toLocaleString("fa-IR")}</strong></div>
+                      </div>
+                    ) : (
+                      <div className={styles.familyEmpty}>اطلاعات همسر ثبت نشده است.</div>
+                    )}
                   </div>
-                  <div className={styles.familyTableWrap}>
-                    <table className={styles.familyTable}>
-                      <thead><tr><th>ردیف</th><th>نام و نام خانوادگی</th><th>شغل</th><th>نسبت</th></tr></thead>
-                      <tbody>
-                        {[1, 2, 3, 4, 5].map((rowNumber) => (
-                          <tr key={rowNumber}>
-                            <td>{rowNumber.toLocaleString("fa-IR")}</td>
-                            <td>—</td>
-                            <td>—</td>
-                            <td>فرزند</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+
+                  <section className={styles.familyChildrenCard}>
+                    <header className={styles.familyChildrenHeader}>
+                      <div>
+                        <span>فرزندان</span>
+                        <small>حداکثر ۵ ردیف مطابق فرم اطلاعات فردی</small>
+                      </div>
+                      <button type="button" className={styles.workHistoryAddButton} onClick={openFarzandCreate} disabled={farzandSaving || farzandan.length >= 5}>
+                        <Icon name="plus" />فرزند جدید
+                      </button>
+                    </header>
+
+                    <div className={styles.familyTableWrap}>
+                      <table className={styles.familyTable}>
+                        <thead>
+                          <tr><th>ردیف</th><th>نام و نام خانوادگی</th><th>شغل</th><th>عملیات</th></tr>
+                        </thead>
+                        <tbody>
+                          {farzandLoading && (
+                            <tr><td colSpan={4} className={styles.familyEmpty}><span className={styles.spinner} /> در حال دریافت فرزندان...</td></tr>
+                          )}
+                          {!farzandLoading && farzandan.map((row, index) => (
+                            <tr key={row.ID}>
+                              <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                              <td><strong>{row.NameFarzand || "—"}</strong></td>
+                              <td>{row.ShoghlFarzand || "—"}</td>
+                              <td>
+                                <div className={styles.workHistoryActions}>
+                                  <button type="button" className={styles.editAction} onClick={() => editFarzandRow(row)} disabled={farzandSaving} title="ویرایش"><Icon name="edit" /></button>
+                                  <button type="button" className={styles.deleteAction} onClick={() => setFarzandDeleteTarget(row)} disabled={farzandSaving} title="حذف"><Icon name="trash" /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {!farzandLoading && farzandan.length === 0 && (
+                            <tr><td colSpan={4} className={styles.familyEmpty}>هنوز فرزندی ثبت نشده است.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
                 </section>
               </div>
             ) : detailTab === "work-history" ? (
@@ -1621,7 +2482,328 @@ export default function PersonsClient() {
                   </div>
                 </section>
               </div>
+            ) : detailTab === "training" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>دوره‌های آموزشی عمومی و تخصصی</span>
+                      <h3>نام دوره، مدت دوره، مرکز آموزش، نوع مدرک و تاریخ اخذ مدرک</h3>
+                      <small>{doreAmozeshi.length.toLocaleString("fa-IR")} دوره ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openDoreAmozeshiCreate} disabled={doreAmozeshiSaving}>
+                      <Icon name="plus" />دوره جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>نام دوره</th>
+                          <th>مدت دوره (ساعت)</th>
+                          <th>نام مرکز و محل آموزش</th>
+                          <th>نوع مدرک</th>
+                          <th>تاریخ اخذ مدرک</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {doreAmozeshiLoading && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت دوره‌های آموزشی...</td></tr>
+                        )}
+                        {!doreAmozeshiLoading && doreAmozeshi.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.NameDore || "—"}</strong></td>
+                            <td>{Number(row.ModatSaat || 0).toLocaleString("fa-IR")}</td>
+                            <td>{row.NameMarkazMahalAmozesh || "—"}</td>
+                            <td>{row.NoeMadrakName || lookupTitle(PERSON_DFN_PID.educationCertificateType, String(row.NoeMadrak)) || "—"}</td>
+                            <td>{row.TarikhAkhzMadrak || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editDoreAmozeshiRow(row)} title="ویرایش" disabled={doreAmozeshiSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setDoreAmozeshiDeleteTarget(row)} title="حذف" disabled={doreAmozeshiSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!doreAmozeshiLoading && doreAmozeshi.length === 0 && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}>هنوز دوره آموزشی ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : detailTab === "candidacy" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>سابقه داوطلبی در انتخابات</span>
+                      <h3>نوع انتخابات، حوزه انتخابیه و نتیجه</h3>
+                      <small>{sabegheEntekhabat.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openSabegheEntekhabatCreate} disabled={sabegheEntekhabatSaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>نوع انتخابات</th>
+                          <th>حوزه انتخابیه</th>
+                          <th>نتیجه</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sabegheEntekhabatLoading && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق داوطلبی...</td></tr>
+                        )}
+                        {!sabegheEntekhabatLoading && sabegheEntekhabat.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.NoeEntekhabat || "—"}</strong></td>
+                            <td>{row.HozeEntekhabieh || "—"}</td>
+                            <td>{row.Natijeh || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editSabegheEntekhabatRow(row)} title="ویرایش" disabled={sabegheEntekhabatSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setSabegheEntekhabatDeleteTarget(row)} title="حذف" disabled={sabegheEntekhabatSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!sabegheEntekhabatLoading && sabegheEntekhabat.length === 0 && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}>هنوز سابقه داوطلبی در انتخابات ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
             ) : null}
+
+
+            {hamsarModalOpen && detailTab === "family" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label="اطلاعات همسر">
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="persons" /></span>
+                      <div><small>اطلاعات خانوادگی</small><h3>{hamsar ? "ویرایش اطلاعات همسر" : "ثبت اطلاعات همسر"}</h3></div>
+                    </div>
+                    <button type="button" disabled={hamsarSaving} onClick={() => setHamsarModalOpen(false)} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+                  <div className={styles.workHistoryForm}>
+                    <TextField label="نام و نام خانوادگی همسر" value={hamsarForm.nameHamsar} onChange={(value) => setHamsarForm((current) => ({ ...current, nameHamsar: value }))} required maxLength={250} />
+                    <TextField label="شغل همسر" value={hamsarForm.shoghlHamsar} onChange={(value) => setHamsarForm((current) => ({ ...current, shoghlHamsar: value }))} maxLength={250} />
+                  </div>
+                  <footer>
+                    <button type="button" className={styles.cancelButton} disabled={hamsarSaving} onClick={() => setHamsarModalOpen(false)}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} disabled={hamsarSaving} onClick={() => void saveHamsarRow()}>
+                      {hamsarSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {hamsar ? "ذخیره تغییرات" : "ثبت اطلاعات"}
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+
+            {farzandModalOpen && detailTab === "family" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label="اطلاعات فرزند">
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="persons" /></span>
+                      <div><small>فرزندان</small><h3>{farzandForm.id > 0 ? "ویرایش فرزند" : "افزودن فرزند جدید"}</h3></div>
+                    </div>
+                    <button type="button" disabled={farzandSaving} onClick={() => setFarzandModalOpen(false)} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+                  <div className={styles.workHistoryForm}>
+                    <TextField label="نام و نام خانوادگی" value={farzandForm.nameFarzand} onChange={(value) => setFarzandForm((current) => ({ ...current, nameFarzand: value }))} required maxLength={250} />
+                    <TextField label="شغل" value={farzandForm.shoghlFarzand} onChange={(value) => setFarzandForm((current) => ({ ...current, shoghlFarzand: value }))} maxLength={250} />
+                  </div>
+                  <footer>
+                    <button type="button" className={styles.cancelButton} disabled={farzandSaving} onClick={() => setFarzandModalOpen(false)}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} disabled={farzandSaving} onClick={() => void saveFarzandRow()}>
+                      {farzandSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {farzandForm.id > 0 ? "ذخیره تغییرات" : "ثبت فرزند"}
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+
+            {hamsarDeleteOpen && hamsar && detailTab === "family" && (
+              <ConfirmDialog
+                tone="danger"
+                title="حذف اطلاعات همسر"
+                text={`اطلاعات «${hamsar.NameHamsar}» حذف شود؟`}
+                confirmText="حذف شود"
+                busy={hamsarSaving}
+                onCancel={() => setHamsarDeleteOpen(false)}
+                onConfirm={() => void deleteHamsarRow()}
+              />
+            )}
+
+            {farzandDeleteTarget && detailTab === "family" && (
+              <ConfirmDialog
+                tone="danger"
+                title="حذف فرزند"
+                text={`اطلاعات «${farzandDeleteTarget.NameFarzand}» حذف شود؟`}
+                confirmText="حذف شود"
+                busy={farzandSaving}
+                onCancel={() => setFarzandDeleteTarget(null)}
+                onConfirm={() => void deleteFarzandRow()}
+              />
+            )}
+
+            {isargariModalOpen && detailTab === "sacrifice" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={`${styles.workHistoryModal} ${styles.isargariModal}`} role="dialog" aria-modal="true" aria-label="اطلاعات ایثارگری">
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="file" /></span>
+                      <div>
+                        <small>سابقه ایثارگری</small>
+                        <h3>{isargari ? "ویرایش اطلاعات ایثارگری" : "ثبت اطلاعات ایثارگری"}</h3>
+                      </div>
+                    </div>
+                    <button type="button" disabled={isargariSaving} onClick={() => setIsargariModalOpen(false)} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+
+                  <div className={styles.isargariFormBody}>
+                    <section className={styles.isargariFormSection}>
+                      <div className={styles.isargariFormSectionTitle}>
+                        <span>حضور در جبهه</span>
+                        <small>میزان حضور در جبهه‌های حق علیه باطل</small>
+                      </div>
+                      <div className={styles.isargariDurationGrid}>
+                        <TextField label="سال" value={isargariForm.jebheSal} onChange={(v) => setIsargariForm(c => ({...c, jebheSal:v}))} numeric maxLength={3} />
+                        <TextField label="ماه" value={isargariForm.jebheMah} onChange={(v) => setIsargariForm(c => ({...c, jebheMah:v}))} numeric maxLength={2} />
+                        <TextField label="روز" value={isargariForm.jebheRoz} onChange={(v) => setIsargariForm(c => ({...c, jebheRoz:v}))} numeric maxLength={2} />
+                      </div>
+                    </section>
+
+                    <section className={styles.isargariFormSection}>
+                      <div className={styles.isargariFormSectionTitle}>
+                        <span>جانباز</span>
+                        <small>وضعیت جانبازی و اطلاعات تأییدکننده</small>
+                      </div>
+                      <div className={styles.isargariFormGrid}>
+                        <label className={`${styles.field} ${styles.isargariSelectField}`}>
+                          <span>جانباز</span>
+                          <select
+                            value={isargariForm.janbaz ? "1" : "0"}
+                            onChange={(e) => setIsargariForm(c => ({
+                              ...c,
+                              janbaz: e.target.value === "1",
+                              darsadJanbazi: e.target.value === "1" ? c.darsadJanbazi : "",
+                              marjaTaeid: e.target.value === "1" ? c.marjaTaeid : "",
+                            }))}
+                          >
+                            <option value="0">خیر</option>
+                            <option value="1">بله</option>
+                          </select>
+                        </label>
+                        {isargariForm.janbaz && (
+                          <>
+                            <TextField label="درصد جانبازی" value={isargariForm.darsadJanbazi} onChange={(v) => setIsargariForm(c => ({...c, darsadJanbazi:v}))} numeric maxLength={3} required />
+                            <TextField label="مرجع تأییدکننده" value={isargariForm.marjaTaeid} onChange={(v) => setIsargariForm(c => ({...c, marjaTaeid:v}))} maxLength={250} />
+                          </>
+                        )}
+                      </div>
+                    </section>
+
+                    <section className={styles.isargariFormSection}>
+                      <div className={styles.isargariFormSectionTitle}>
+                        <span>آزادگی</span>
+                        <small>وضعیت آزادگی و جمع مدت اسارت</small>
+                      </div>
+                      <div className={styles.isargariFormGrid}>
+                        <label className={`${styles.field} ${styles.isargariSelectField}`}>
+                          <span>آزاده</span>
+                          <select
+                            value={isargariForm.azadeh ? "1" : "0"}
+                            onChange={(e) => setIsargariForm(c => ({
+                              ...c,
+                              azadeh: e.target.value === "1",
+                              asaratSal: e.target.value === "1" ? c.asaratSal : "",
+                              asaratMah: e.target.value === "1" ? c.asaratMah : "",
+                              asaratRoz: e.target.value === "1" ? c.asaratRoz : "",
+                            }))}
+                          >
+                            <option value="0">خیر</option>
+                            <option value="1">بله</option>
+                          </select>
+                        </label>
+                        {isargariForm.azadeh && (
+                          <div className={styles.isargariDurationBlock}>
+                            <span>جمع مدت اسارت</span>
+                            <div className={styles.isargariDurationGrid}>
+                              <TextField label="سال" value={isargariForm.asaratSal} onChange={(v) => setIsargariForm(c => ({...c, asaratSal:v}))} numeric maxLength={3} />
+                              <TextField label="ماه" value={isargariForm.asaratMah} onChange={(v) => setIsargariForm(c => ({...c, asaratMah:v}))} numeric maxLength={2} />
+                              <TextField label="روز" value={isargariForm.asaratRoz} onChange={(v) => setIsargariForm(c => ({...c, asaratRoz:v}))} numeric maxLength={2} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </section>
+
+                    <section className={styles.isargariFormSection}>
+                      <div className={styles.isargariFormSectionTitle}>
+                        <span>خانواده شهید</span>
+                        <small>اطلاعات شهید و نسبت خانوادگی</small>
+                      </div>
+                      <div className={styles.isargariFormGrid}>
+                        <label className={`${styles.field} ${styles.isargariSelectField}`}>
+                          <span>خانواده شهید</span>
+                          <select
+                            value={isargariForm.khanevadeShahid ? "1" : "0"}
+                            onChange={(e) => setIsargariForm(c => ({
+                              ...c,
+                              khanevadeShahid: e.target.value === "1",
+                              nameShahid: e.target.value === "1" ? c.nameShahid : "",
+                              tarikhMahalShahadat: e.target.value === "1" ? c.tarikhMahalShahadat : "",
+                              nesbatBaShahid: e.target.value === "1" ? c.nesbatBaShahid : "",
+                            }))}
+                          >
+                            <option value="0">خیر</option>
+                            <option value="1">بله</option>
+                          </select>
+                        </label>
+                        {isargariForm.khanevadeShahid && (
+                          <>
+                            <TextField label="نام شهید (شهدا)" value={isargariForm.nameShahid} onChange={(v) => setIsargariForm(c => ({...c, nameShahid:v}))} maxLength={500} />
+                            <TextField label="نسبت با شهید" value={isargariForm.nesbatBaShahid} onChange={(v) => setIsargariForm(c => ({...c, nesbatBaShahid:v}))} maxLength={150} />
+                            <div className={styles.isargariWideInput}>
+                              <TextField label="تاریخ و محل شهادت" value={isargariForm.tarikhMahalShahadat} onChange={(v) => setIsargariForm(c => ({...c, tarikhMahalShahadat:v}))} maxLength={500} />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </section>
+                  </div>
+
+                  <footer>
+                    <button type="button" className={styles.cancelButton} disabled={isargariSaving} onClick={() => setIsargariModalOpen(false)}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} disabled={isargariSaving} onClick={() => void saveIsargariRow()}>
+                      {isargariSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {isargari ? "ذخیره تغییرات" : "ثبت اطلاعات"}
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+
+            {isargariDeleteOpen && detailTab === "sacrifice" && (
+              <ConfirmDialog tone="danger" title="حذف اطلاعات ایثارگری" text="اطلاعات ایثارگری این شخص حذف شود؟" confirmText="حذف شود" busy={isargariSaving} onCancel={() => setIsargariDeleteOpen(false)} onConfirm={() => void confirmDeleteIsargari()} />
+            )}
 
             {workHistoryModalOpen && detailTab === "work-history" && (
               <div className={styles.workHistoryModalBackdrop}>
@@ -1804,6 +2986,115 @@ export default function PersonsClient() {
               />
             )}
 
+            {doreAmozeshiModalOpen && detailTab === "training" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingDoreAmozeshiId === null ? "افزودن دوره آموزشی" : "ویرایش دوره آموزشی"}>
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="file" /></span>
+                      <div><small>دوره‌های آموزشی عمومی و تخصصی</small><h3>{editingDoreAmozeshiId === null ? "افزودن دوره جدید" : "ویرایش دوره آموزشی"}</h3></div>
+                    </div>
+                    <button type="button" disabled={doreAmozeshiSaving} onClick={() => { resetDoreAmozeshiForm(); setDoreAmozeshiModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+
+                  <div className={styles.workHistoryForm}>
+                    <TextField label="نام دوره" value={doreAmozeshiForm.nameDore} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, nameDore: value }))} required maxLength={250} />
+                    <TextField label="مدت دوره به ساعت" value={doreAmozeshiForm.modatSaat} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, modatSaat: value.replace(/[^0-9۰-۹]/g, "") }))} required maxLength={8} />
+                    <TextField label="نام مرکز و محل آموزش" value={doreAmozeshiForm.nameMarkazMahalAmozesh} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, nameMarkazMahalAmozesh: value }))} required maxLength={300} />
+                    <label className={styles.field}>
+                      <span>نوع مدرک<i>*</i></span>
+                      <SearchableDropdown
+                        value={doreAmozeshiForm.noeMadrak}
+                        options={definitionOptions(PERSON_DFN_PID.educationCertificateType)}
+                        onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, noeMadrak: value }))}
+                        searchPlaceholder="انتخاب نوع مدرک..."
+                        compact
+                      />
+                    </label>
+                    <InputPersianDate label="تاریخ اخذ مدرک" value={doreAmozeshiForm.tarikhAkhzMadrak} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, tarikhAkhzMadrak: value ?? "" }))} placeholder="انتخاب تاریخ اخذ مدرک" />
+                  </div>
+
+                  <footer>
+                    <button type="button" className={styles.cancelButton} disabled={doreAmozeshiSaving} onClick={() => { resetDoreAmozeshiForm(); setDoreAmozeshiModalOpen(false); }}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} onClick={() => void saveDoreAmozeshiRow()} disabled={doreAmozeshiSaving}>
+                      {doreAmozeshiSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {editingDoreAmozeshiId === null ? "ثبت دوره" : "ذخیره تغییرات"}
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+
+            {doreAmozeshiDeleteTarget && detailTab === "training" && (
+              <ConfirmDialog
+                tone="danger"
+                title="حذف دوره آموزشی"
+                text={`دوره «${doreAmozeshiDeleteTarget.NameDore || "انتخاب‌شده"}» حذف شود؟`}
+                confirmText="حذف شود"
+                busy={doreAmozeshiSaving}
+                onCancel={() => setDoreAmozeshiDeleteTarget(null)}
+                onConfirm={() => void confirmDeleteDoreAmozeshi()}
+              />
+            )}
+
+
+            {sabegheEntekhabatModalOpen && detailTab === "candidacy" && (
+              <div className={styles.workHistoryModalBackdrop}>
+                <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingSabegheEntekhabatId === null ? "افزودن سابقه داوطلبی" : "ویرایش سابقه داوطلبی"}>
+                  <header>
+                    <div className={styles.workHistoryModalTitle}>
+                      <span className={styles.wizardIcon}><Icon name="file" /></span>
+                      <div><small>سابقه داوطلبی در انتخابات</small><h3>{editingSabegheEntekhabatId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                    </div>
+                    <button type="button" disabled={sabegheEntekhabatSaving} onClick={() => { resetSabegheEntekhabatForm(); setSabegheEntekhabatModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                  </header>
+
+                  <div className={styles.workHistoryForm}>
+                    <TextField
+                      label="نوع انتخابات"
+                      value={sabegheEntekhabatForm.noeEntekhabat}
+                      onChange={(value) => setSabegheEntekhabatForm((current) => ({ ...current, noeEntekhabat: value }))}
+                      required
+                      maxLength={150}
+                    />
+                    <TextField
+                      label="حوزه انتخابیه"
+                      value={sabegheEntekhabatForm.hozeEntekhabieh}
+                      onChange={(value) => setSabegheEntekhabatForm((current) => ({ ...current, hozeEntekhabieh: value }))}
+                      required
+                      maxLength={250}
+                    />
+                    <TextField
+                      label="نتیجه"
+                      value={sabegheEntekhabatForm.natijeh}
+                      onChange={(value) => setSabegheEntekhabatForm((current) => ({ ...current, natijeh: value }))}
+                      maxLength={250}
+                    />
+                  </div>
+
+                  <footer>
+                    <button type="button" className={styles.cancelButton} disabled={sabegheEntekhabatSaving} onClick={() => { resetSabegheEntekhabatForm(); setSabegheEntekhabatModalOpen(false); }}>انصراف</button>
+                    <button type="button" className={styles.sectionSaveButton} onClick={() => void saveSabegheEntekhabatRow()} disabled={sabegheEntekhabatSaving}>
+                      {sabegheEntekhabatSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                      {editingSabegheEntekhabatId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                    </button>
+                  </footer>
+                </section>
+              </div>
+            )}
+
+            {sabegheEntekhabatDeleteTarget && detailTab === "candidacy" && (
+              <ConfirmDialog
+                tone="danger"
+                title="حذف سابقه داوطلبی در انتخابات"
+                text={`سابقه «${sabegheEntekhabatDeleteTarget.NoeEntekhabat || "انتخاب‌شده"}» حذف شود؟`}
+                confirmText="حذف شود"
+                busy={sabegheEntekhabatSaving}
+                onCancel={() => setSabegheEntekhabatDeleteTarget(null)}
+                onConfirm={() => void confirmDeleteSabegheEntekhabat()}
+              />
+            )}
+
             {sectionEdit !== null && (
               <div className={styles.sectionEditBackdrop}>
                 <section className={styles.sectionEditModal} role="dialog" aria-modal="true" aria-label={`ویرایش ${steps[sectionEdit].title}`}>
@@ -1903,13 +3194,546 @@ export default function PersonsClient() {
               <button type="button" onClick={closeWizard} aria-label="بستن فرم"><Icon name="close" /></button>
             </header>
 
-            <div className={styles.stepper}>
-              {steps.map((item, index) => <div className={`${styles.stepItem} ${index === step ? styles.stepActive : ""} ${index < step ? styles.stepDone : ""}`} key={item.title}><span>{index < step ? <Icon name="check" /> : (index + 1).toLocaleString("fa-IR")}</span><div><strong>{item.title}</strong><small>{item.subtitle}</small></div></div>)}
-            </div>
+            <div className={styles.wizardWorkspace}>
+              <aside className={styles.stepper} aria-label="مراحل ثبت اطلاعات">
+                <div className={styles.wizardProgress}>
+                  <span>پیشرفت ثبت اطلاعات</span>
+                  <strong>{wizardProgressValue.toLocaleString("fa-IR")}٪</strong>
+                  <div><i style={{ width: `${wizardProgressValue}%` }} /></div>
+                </div>
+                {steps.slice(0, 4).map((item, index) => (
+                  <button
+                    type="button"
+                    className={`${styles.stepItem} ${!wizardDetailSection && step === index ? styles.stepActive : ""}`}
+                    key={item.title}
+                    onClick={() => {
+                      if (index <= step || form.personId) {
+                        setWizardDetailSection(null);
+                        setDetailTab("details");
+                        setStep(index);
+                      }
+                    }}
+                    disabled={saving || loadingDetail || (index > step && !form.personId)}
+                  >
+                    <span>{(index + 1).toLocaleString("fa-IR")}</span>
+                    <div><strong>{item.title}</strong><small>{item.subtitle}</small></div>
+                  </button>
+                ))}
 
+                {wizardRemainingSections.map((item, index) => {
+                  const stageNumber = index + 5;
+                  return (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className={`${styles.stepItem} ${wizardDetailSection === item.id ? styles.stepActive : ""}`}
+                      disabled={!form.personId || saving || loadingDetail}
+                      onClick={() => openWizardRemainingSection(item.id)}
+                    >
+                      <span>{stageNumber.toLocaleString("fa-IR")}</span>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <small>{item.subtitle}</small>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  className={`${styles.stepItem} ${!wizardDetailSection && step === 4 ? styles.stepActive : ""}`}
+                  disabled={!form.personId || saving || loadingDetail}
+                  onClick={() => {
+                    setWizardDetailSection(null);
+                    setDetailTab("details");
+                    setStep(4);
+                  }}
+                >
+                  <span>{(12).toLocaleString("fa-IR")}</span>
+                  <div>
+                    <strong>اطلاعات تکمیلی</strong>
+                    <small>تماس، نشانی، رایانه و وضعیت جسمانی</small>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className={`${styles.stepItem} ${styles.wizardFinalReviewStep} ${!wizardDetailSection && step === 5 ? styles.stepActive : ""}`}
+                  disabled={!form.personId || saving || loadingDetail}
+                  onClick={() => {
+                    setWizardDetailSection(null);
+                    setDetailTab("details");
+                    setStep(5);
+                  }}
+                >
+                  <span>{(13).toLocaleString("fa-IR")}</span>
+                  <div>
+                    <strong>تصویر و بازبینی</strong>
+                    <small>تصویر پرسنلی و مرور نهایی پرونده</small>
+                  </div>
+                </button>
+              </aside>
+
+              <div className={styles.wizardContent}>
             {loadingDetail ? <div className={styles.wizardLoading}><span className={styles.spinner} />در حال دریافت پرونده...</div> : (
               <div className={styles.wizardBody}>
-                <div className={styles.stepTitle}><span>مرحله {(step + 1).toLocaleString("fa-IR")}</span><h3>{steps[step].title}</h3><p>{steps[step].subtitle}</p></div>
+                {wizardDetailSection ? (
+                  <div className={styles.wizardEmbeddedSection}>
+                    <div className={styles.wizardEmbeddedSectionTop}>
+                      <button
+                        type="button"
+                        className={styles.wizardEmbeddedBackButton}
+                        onClick={() => {
+                          const currentIndex = wizardRemainingSections.findIndex((item) => item.id === wizardDetailSection);
+                          if (currentIndex > 0) {
+                            const previous = wizardRemainingSections[currentIndex - 1];
+                            setDetailTab(previous.id);
+                            setWizardDetailSection(previous.id);
+                          } else {
+                            setWizardDetailSection(null);
+                            setDetailTab("details");
+                            setStep(3);
+                          }
+                        }}
+                      >
+                        <Icon name="back" />
+                        مرحله قبل
+                      </button>
+                      <div>
+                        <span>تکمیل پرونده</span>
+                        <strong>{wizardRemainingSections.find((item) => item.id === wizardDetailSection)?.title ?? "اطلاعات پرونده"}</strong>
+                      </div>
+                    </div>
+
+                    {wizardDetailSection === "sacrifice" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div><span>سابقه ایثارگری</span><h3>جبهه، جانبازی، آزادگی و خانواده شهید</h3><small>{isargari ? "اطلاعات ثبت شده است" : "هنوز اطلاعاتی ثبت نشده است"}</small></div>
+                    <div className={styles.workHistoryActions}>
+                      <button type="button" className={styles.workHistoryAddButton} onClick={openIsargariEditor} disabled={isargariLoading || isargariSaving}><Icon name={isargari ? "edit" : "plus"} />{isargari ? "ویرایش" : "ثبت اطلاعات"}</button>
+                      {isargari && <button type="button" className={styles.deleteAction} onClick={() => setIsargariDeleteOpen(true)} title="حذف" disabled={isargariSaving}><Icon name="trash" /></button>}
+                    </div>
+                  </header>
+                  {isargariLoading ? (
+                    <div className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت اطلاعات ایثارگری...</div>
+                  ) : !isargari ? (
+                    <div className={styles.isargariEmptyState}>
+                      <Icon name="file" />
+                      <strong>اطلاعات ایثارگری ثبت نشده است</strong>
+                      <span>برای ثبت اطلاعات از دکمه «ثبت اطلاعات» استفاده کنید.</span>
+                    </div>
+                  ) : (
+                    <div className={styles.isargariSummaryGrid}>
+                      <div className={`${styles.isargariSummaryItem} ${styles.isargariSummaryWide}`}>
+                        <span>میزان حضور در جبهه‌های حق علیه باطل</span>
+                        <strong>{`${isargari.JebheSal ?? 0} سال، ${isargari.JebheMah ?? 0} ماه، ${isargari.JebheRoz ?? 0} روز`}</strong>
+                      </div>
+
+                      <div className={styles.isargariSummaryItem}>
+                        <span>جانباز</span>
+                        <strong>{isargari.Janbaz ? "بله" : "خیر"}</strong>
+                      </div>
+
+                      {isargari.Janbaz && (
+                        <>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>درصد جانبازی</span>
+                            <strong>{`${isargari.DarsadJanbazi ?? 0}٪`}</strong>
+                          </div>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>مرجع تأییدکننده</span>
+                            <strong>{isargari.MarjaTaeid || "—"}</strong>
+                          </div>
+                        </>
+                      )}
+
+                      <div className={styles.isargariSummaryItem}>
+                        <span>آزاده</span>
+                        <strong>{isargari.Azadeh ? "بله" : "خیر"}</strong>
+                      </div>
+
+                      {isargari.Azadeh && (
+                        <div className={`${styles.isargariSummaryItem} ${styles.isargariSummaryWide}`}>
+                          <span>جمع مدت اسارت</span>
+                          <strong>{`${isargari.AsaratSal ?? 0} سال، ${isargari.AsaratMah ?? 0} ماه، ${isargari.AsaratRoz ?? 0} روز`}</strong>
+                        </div>
+                      )}
+
+                      <div className={styles.isargariSummaryItem}>
+                        <span>خانواده شهید</span>
+                        <strong>{isargari.KhanevadeShahid ? "بله" : "خیر"}</strong>
+                      </div>
+
+                      {isargari.KhanevadeShahid && (
+                        <>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>نام شهید (شهدا)</span>
+                            <strong>{isargari.NameShahid || "—"}</strong>
+                          </div>
+                          <div className={styles.isargariSummaryItem}>
+                            <span>نسبت با شهید</span>
+                            <strong>{isargari.NesbatBaShahid || "—"}</strong>
+                          </div>
+                          <div className={`${styles.isargariSummaryItem} ${styles.isargariSummaryWide}`}>
+                            <span>تاریخ و محل شهادت</span>
+                            <strong>{isargari.TarikhMahalShahadat || "—"}</strong>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </section>
+              </div>
+            ) : wizardDetailSection === "family" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.familyPanel}>
+                  <header className={styles.familyPanelHeader}>
+                    <div>
+                      <span>اطلاعات خانوادگی</span>
+                      <h3>همسر و فرزندان</h3>
+                    </div>
+                    <span>{farzandan.length.toLocaleString("fa-IR")} فرزند ثبت‌شده</span>
+                  </header>
+
+                  <div className={styles.familySpouseCard}>
+                    <div className={styles.familySpouseHeader}>
+                      <div>
+                        <span>اطلاعات همسر</span>
+                        <small>نام و نام خانوادگی و شغل همسر</small>
+                      </div>
+                      <div className={styles.familyCardActions}>
+                        <button type="button" className={styles.editAction} onClick={openHamsarForm} disabled={hamsarSaving || hamsarLoading} title={hamsar ? "ویرایش اطلاعات همسر" : "ثبت اطلاعات همسر"}>
+                          <Icon name={hamsar ? "edit" : "plus"} />
+                        </button>
+                        {hamsar && (
+                          <button type="button" className={styles.deleteAction} onClick={() => setHamsarDeleteOpen(true)} disabled={hamsarSaving} title="حذف اطلاعات همسر">
+                            <Icon name="trash" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {hamsarLoading ? (
+                      <div className={styles.familyEmpty}><span className={styles.spinner} /> در حال دریافت اطلاعات همسر...</div>
+                    ) : hamsar ? (
+                      <div className={styles.familySummary}>
+                        <div><span>نام و نام خانوادگی همسر</span><strong>{hamsar.NameHamsar || "—"}</strong></div>
+                        <div><span>شغل همسر</span><strong>{hamsar.ShoghlHamsar || "—"}</strong></div>
+                        <div><span>تعداد فرزندان</span><strong>{farzandan.length.toLocaleString("fa-IR")}</strong></div>
+                      </div>
+                    ) : (
+                      <div className={styles.familyEmpty}>اطلاعات همسر ثبت نشده است.</div>
+                    )}
+                  </div>
+
+                  <section className={styles.familyChildrenCard}>
+                    <header className={styles.familyChildrenHeader}>
+                      <div>
+                        <span>فرزندان</span>
+                        <small>حداکثر ۵ ردیف مطابق فرم اطلاعات فردی</small>
+                      </div>
+                      <button type="button" className={styles.workHistoryAddButton} onClick={openFarzandCreate} disabled={farzandSaving || farzandan.length >= 5}>
+                        <Icon name="plus" />فرزند جدید
+                      </button>
+                    </header>
+
+                    <div className={styles.familyTableWrap}>
+                      <table className={styles.familyTable}>
+                        <thead>
+                          <tr><th>ردیف</th><th>نام و نام خانوادگی</th><th>شغل</th><th>عملیات</th></tr>
+                        </thead>
+                        <tbody>
+                          {farzandLoading && (
+                            <tr><td colSpan={4} className={styles.familyEmpty}><span className={styles.spinner} /> در حال دریافت فرزندان...</td></tr>
+                          )}
+                          {!farzandLoading && farzandan.map((row, index) => (
+                            <tr key={row.ID}>
+                              <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                              <td><strong>{row.NameFarzand || "—"}</strong></td>
+                              <td>{row.ShoghlFarzand || "—"}</td>
+                              <td>
+                                <div className={styles.workHistoryActions}>
+                                  <button type="button" className={styles.editAction} onClick={() => editFarzandRow(row)} disabled={farzandSaving} title="ویرایش"><Icon name="edit" /></button>
+                                  <button type="button" className={styles.deleteAction} onClick={() => setFarzandDeleteTarget(row)} disabled={farzandSaving} title="حذف"><Icon name="trash" /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {!farzandLoading && farzandan.length === 0 && (
+                            <tr><td colSpan={4} className={styles.familyEmpty}>هنوز فرزندی ثبت نشده است.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                </section>
+              </div>
+            ) : wizardDetailSection === "work-history" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>سوابق شغلی</span>
+                      <h3>محل خدمت، سمت و زمان خدمت</h3>
+                      <small>{workHistory.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openWorkHistoryCreate} disabled={workHistorySaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>محل خدمت</th>
+                          <th>سمت (پست سازمانی)</th>
+                          <th>از تاریخ</th>
+                          <th>تا تاریخ</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {workHistoryLoading && (
+                          <tr><td colSpan={6} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق شغلی...</td></tr>
+                        )}
+                        {!workHistoryLoading && workHistory.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.MahalName || (row.Mahal ? cityTitle(String(row.Mahal)) : "—")}</strong></td>
+                            <td>{row.SematPostSazmani || "—"}</td>
+                            <td>{row.AzTarikh || "—"}</td>
+                            <td>{row.TaTarikh || "تا اکنون"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editWorkHistoryRow(row)} title="ویرایش" disabled={workHistorySaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setWorkHistoryDeleteTarget(row)} title="حذف" disabled={workHistorySaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!workHistoryLoading && workHistory.length === 0 && (
+                          <tr><td colSpan={6} className={styles.workHistoryEmpty}>هنوز سابقه شغلی ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : wizardDetailSection === "election-supervision" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>سوابق نظارتی و اجرایی انتخابات</span>
+                      <h3>دوره، سمت انتخاباتی و محل</h3>
+                      <small>{sabegeNezarat.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openSabegeNezaratCreate} disabled={sabegeNezaratSaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>دوره انتخاباتی</th>
+                          <th>سمت انتخاباتی</th>
+                          <th>محل</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sabegeNezaratLoading && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق نظارتی...</td></tr>
+                        )}
+                        {!sabegeNezaratLoading && sabegeNezarat.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.DoreEntekhabat || "—"}</strong></td>
+                            <td>{row.SematEntekhabat || "—"}</td>
+                            <td>{row.MahalName || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editSabegeNezaratRow(row)} title="ویرایش" disabled={sabegeNezaratSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setSabegeNezaratDeleteTarget(row)} title="حذف" disabled={sabegeNezaratSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!sabegeNezaratLoading && sabegeNezarat.length === 0 && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}>هنوز سابقه نظارتی و اجرایی انتخابات ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : wizardDetailSection === "social-activities" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>سوابق فعالیت‌های اجتماعی</span>
+                      <h3>نام نهاد، محل فعالیت، مدت فعالیت و ملاحظات</h3>
+                      <small>{sabegheFaliyatEjtemai.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openSabegheFaliyatEjtemaiCreate} disabled={sabegheFaliyatEjtemaiSaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>نام نهاد، تشکل یا حزب</th>
+                          <th>محل فعالیت</th>
+                          <th>از تاریخ</th>
+                          <th>تا تاریخ</th>
+                          <th>ملاحظات</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sabegheFaliyatEjtemaiLoading && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق فعالیت‌های اجتماعی...</td></tr>
+                        )}
+                        {!sabegheFaliyatEjtemaiLoading && sabegheFaliyatEjtemai.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.NameNahadTashakolHezb || "—"}</strong></td>
+                            <td>{row.MahalName || (row.Mahal ? cityTitle(String(row.Mahal)) : "—")}</td>
+                            <td>{row.AzTarikh || "—"}</td>
+                            <td>{row.TaTarikh || "—"}</td>
+                            <td>{row.Molahazat || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editSabegheFaliyatEjtemaiRow(row)} title="ویرایش" disabled={sabegheFaliyatEjtemaiSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setSabegheFaliyatEjtemaiDeleteTarget(row)} title="حذف" disabled={sabegheFaliyatEjtemaiSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!sabegheFaliyatEjtemaiLoading && sabegheFaliyatEjtemai.length === 0 && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}>هنوز سابقه فعالیت اجتماعی ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : wizardDetailSection === "training" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>دوره‌های آموزشی عمومی و تخصصی</span>
+                      <h3>نام دوره، مدت دوره، مرکز آموزش، نوع مدرک و تاریخ اخذ مدرک</h3>
+                      <small>{doreAmozeshi.length.toLocaleString("fa-IR")} دوره ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openDoreAmozeshiCreate} disabled={doreAmozeshiSaving}>
+                      <Icon name="plus" />دوره جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>نام دوره</th>
+                          <th>مدت دوره (ساعت)</th>
+                          <th>نام مرکز و محل آموزش</th>
+                          <th>نوع مدرک</th>
+                          <th>تاریخ اخذ مدرک</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {doreAmozeshiLoading && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت دوره‌های آموزشی...</td></tr>
+                        )}
+                        {!doreAmozeshiLoading && doreAmozeshi.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.NameDore || "—"}</strong></td>
+                            <td>{Number(row.ModatSaat || 0).toLocaleString("fa-IR")}</td>
+                            <td>{row.NameMarkazMahalAmozesh || "—"}</td>
+                            <td>{row.NoeMadrakName || lookupTitle(PERSON_DFN_PID.educationCertificateType, String(row.NoeMadrak)) || "—"}</td>
+                            <td>{row.TarikhAkhzMadrak || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editDoreAmozeshiRow(row)} title="ویرایش" disabled={doreAmozeshiSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setDoreAmozeshiDeleteTarget(row)} title="حذف" disabled={doreAmozeshiSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!doreAmozeshiLoading && doreAmozeshi.length === 0 && (
+                          <tr><td colSpan={7} className={styles.workHistoryEmpty}>هنوز دوره آموزشی ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : wizardDetailSection === "candidacy" ? (
+              <div className={styles.detailBody}>
+                <section className={styles.workHistoryPanel}>
+                  <header className={styles.workHistoryHeader}>
+                    <div>
+                      <span>سابقه داوطلبی در انتخابات</span>
+                      <h3>نوع انتخابات، حوزه انتخابیه و نتیجه</h3>
+                      <small>{sabegheEntekhabat.length.toLocaleString("fa-IR")} سابقه ثبت‌شده</small>
+                    </div>
+                    <button type="button" className={styles.workHistoryAddButton} onClick={openSabegheEntekhabatCreate} disabled={sabegheEntekhabatSaving}>
+                      <Icon name="plus" />سابقه جدید
+                    </button>
+                  </header>
+                  <div className={styles.workHistoryTableWrap}>
+                    <table className={`${styles.workHistoryTable} ${styles.workHistoryRealTable}`}>
+                      <thead>
+                        <tr>
+                          <th>ردیف</th>
+                          <th>نوع انتخابات</th>
+                          <th>حوزه انتخابیه</th>
+                          <th>نتیجه</th>
+                          <th>عملیات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sabegheEntekhabatLoading && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}><span className={styles.spinner} /> در حال دریافت سوابق داوطلبی...</td></tr>
+                        )}
+                        {!sabegheEntekhabatLoading && sabegheEntekhabat.map((row, index) => (
+                          <tr key={row.ID}>
+                            <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                            <td><strong className={styles.workHistoryPrimary}>{row.NoeEntekhabat || "—"}</strong></td>
+                            <td>{row.HozeEntekhabieh || "—"}</td>
+                            <td>{row.Natijeh || "—"}</td>
+                            <td>
+                              <div className={styles.workHistoryActions}>
+                                <button type="button" className={styles.editAction} onClick={() => editSabegheEntekhabatRow(row)} title="ویرایش" disabled={sabegheEntekhabatSaving}><Icon name="edit" /></button>
+                                <button type="button" className={styles.deleteAction} onClick={() => setSabegheEntekhabatDeleteTarget(row)} title="حذف" disabled={sabegheEntekhabatSaving}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {!sabegheEntekhabatLoading && sabegheEntekhabat.length === 0 && (
+                          <tr><td colSpan={5} className={styles.workHistoryEmpty}>هنوز سابقه داوطلبی در انتخابات ثبت نشده است.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : null}
+                  </div>
+                ) : (
+                  <>
+                <div className={styles.stepTitle}><span>مرحله {(step + 1).toLocaleString("fa-IR")}</span><h3>{currentWizardStageTitle}</h3><p>{currentWizardStageSubtitle}</p></div>
 
                 {step === 0 && <div className={styles.formGrid}>
                   <TextField label="نام" value={form.firstName} onChange={(value) => change("firstName", value)} required maxLength={150} />
@@ -1981,23 +3805,260 @@ export default function PersonsClient() {
                   />
                 </div>}
 
-                {step === 2 && <div className={styles.formGrid}>
-                  <TextField label="شغل" value={form.shoghl} onChange={(value) => change("shoghl", value)} required maxLength={50} />
-                  <label className={styles.field}><span>وضعیت تأهل<i>*</i></span><SearchableDropdown value={form.taahol} options={definitionOptions(PERSON_DFN_PID.maritalStatus)} onChange={(value) => change("taahol", value)} compact /></label>
-                  <label className={styles.field}><span>دین و مذهب<i>*</i></span><SearchableDropdown value={form.dinMazhab} options={definitionOptions(PERSON_DFN_PID.religionSect)} onChange={(value) => change("dinMazhab", value)} compact /></label>
-                  <label className={styles.field}><span>وضعیت روحانیت<i>*</i></span><SearchableDropdown value={form.rohani} options={definitionOptions(PERSON_DFN_PID.clergyStatus)} onChange={(value) => change("rohani", value)} compact /></label>
-                  <label className={styles.field}><span>وضعیت نظام وظیفه<i>*</i></span><SearchableDropdown value={form.nezamVazifeh} options={definitionOptions(PERSON_DFN_PID.militaryStatus)} onChange={(value) => change("nezamVazifeh", value)} compact /></label>
-                  <InputPersianDate label="تاریخ شروع خدمت" value={form.tarikhShoro} onChange={(value) => change("tarikhShoro", value ?? "")} placeholder="انتخاب تاریخ شروع" />
-                  <InputPersianDate label="تاریخ پایان خدمت" value={form.tarikhPayan} onChange={(value) => change("tarikhPayan", value ?? "")} placeholder="انتخاب تاریخ پایان" />
-                  <label className={styles.field}><span>نوع معافیت</span><SearchableDropdown value={form.noeMoaafiat} options={definitionOptions(PERSON_DFN_PID.exemptionType)} onChange={(value) => change("noeMoaafiat", value)} compact /></label>
-                  <InputPersianDate label="تاریخ معافیت" value={form.tarikhMoaafiat} onChange={(value) => change("tarikhMoaafiat", value ?? "")} placeholder="انتخاب تاریخ معافیت" />
-                  <TextField label="تلفن همراه" value={form.telHamrah} onChange={(value) => change("telHamrah", value)} placeholder="09xxxxxxxxx" maxLength={11} numeric largeLabel />
-                  <TextField label="تلفن ضروری" value={form.telZaruri} onChange={(value) => change("telZaruri", value)} maxLength={15} numeric largeLabel />
-                  <TextField label="ایمیل" value={form.email} onChange={(value) => change("email", value)} type="email" maxLength={1500} largeLabel />
-                  <TextAreaField label="شرح معافیت" value={form.sharhMoaafiat} onChange={(value) => change("sharhMoaafiat", value)} largeLabel />
+                {step === 2 && <div className={styles.wizardCards}>
+                  <section className={styles.wizardFormCard}>
+                    <header className={styles.wizardFormCardHeader}>
+                      <span>وضعیت نظام وظیفه</span>
+                      <small>رونوشت کارت پایان خدمت یا معافیت ضمیمه گردد</small>
+                    </header>
+                    <div className={styles.formGrid}>
+                      <label className={styles.field}>
+                        <span>وضعیت نظام وظیفه<i>*</i></span>
+                        <SearchableDropdown
+                          value={form.nezamVazifeh}
+                          options={definitionOptions(PERSON_DFN_PID.militaryStatus)}
+                          onChange={(value) => change("nezamVazifeh", value)}
+                          compact
+                        />
+                      </label>
+
+                      {militaryIsCompleted && <>
+                        <InputPersianDate
+                          label="تاریخ ورود به خدمت"
+                          value={form.tarikhShoro}
+                          onChange={(value) => change("tarikhShoro", value ?? "")}
+                          placeholder="انتخاب تاریخ ورود"
+                        />
+                        <InputPersianDate
+                          label="تاریخ انقضاء خدمت"
+                          value={form.tarikhPayan}
+                          onChange={(value) => change("tarikhPayan", value ?? "")}
+                          placeholder="انتخاب تاریخ انقضاء"
+                        />
+                      </>}
+
+                      {militaryIsExempt && <>
+                        <InputPersianDate
+                          label="تاریخ معافیت"
+                          value={form.tarikhMoaafiat}
+                          onChange={(value) => change("tarikhMoaafiat", value ?? "")}
+                          placeholder="انتخاب تاریخ معافیت"
+                        />
+                        <label className={styles.field}>
+                          <span>نوع معافیت</span>
+                          <SearchableDropdown
+                            value={form.noeMoaafiat}
+                            options={definitionOptions(PERSON_DFN_PID.exemptionType)}
+                            onChange={(value) => change("noeMoaafiat", value)}
+                            compact
+                          />
+                        </label>
+                      </>}
+                    </div>
+                  </section>
+
+                  <section className={styles.wizardFormCard}>
+                    <header className={styles.wizardFormCardHeader}>
+                      <span>سوابق تحصیلی</span>
+                      <small>رونوشت آخرین مدرک تحصیلی ضمیمه گردد</small>
+                    </header>
+
+                    <div className={styles.formGrid}>
+                      <label className={styles.field}>
+                        <span>نوع تحصیل</span>
+                        <select
+                          className={styles.wizardNativeSelect}
+                          value={form.noeTahsil}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            setForm((current) => ({
+                              ...current,
+                              noeTahsil: value,
+                              sathTahsilHozavi: value === "حوزوی" ? current.sathTahsilHozavi : "",
+                              hamtarazTahsil: value === "حوزوی" ? current.hamtarazTahsil : "",
+                              mahalTahsil: value === "حوزوی" ? current.mahalTahsil : "",
+                              balatarinMadrakTahsil: value === "دانشگاهی" ? current.balatarinMadrakTahsil : "",
+                              mahalAkhzMadrak: value === "دانشگاهی" ? current.mahalAkhzMadrak : "",
+                              tarikhAkhzMadrak: value === "دانشگاهی" ? current.tarikhAkhzMadrak : "",
+                            }));
+                          }}
+                        >
+                          <option value="">انتخاب نشده</option>
+                          <option value="حوزوی">حوزوی</option>
+                          <option value="دانشگاهی">دانشگاهی</option>
+                        </select>
+                      </label>
+
+                      {form.noeTahsil === "حوزوی" && <>
+                        <TextField
+                          label="سطح تحصیل حوزوی"
+                          value={form.sathTahsilHozavi}
+                          onChange={(value) => change("sathTahsilHozavi", value)}
+                          maxLength={150}
+                        />
+                        <TextField
+                          label="همتراز (معادل)"
+                          value={form.hamtarazTahsil}
+                          onChange={(value) => change("hamtarazTahsil", value)}
+                          maxLength={150}
+                        />
+                        <TextField
+                          label="محل تحصیل"
+                          value={form.mahalTahsil}
+                          onChange={(value) => change("mahalTahsil", value)}
+                          maxLength={250}
+                        />
+                      </>}
+
+                      {form.noeTahsil === "دانشگاهی" && <>
+                        <TextField
+                          label="بالاترین مدرک تحصیلی"
+                          value={form.balatarinMadrakTahsil}
+                          onChange={(value) => change("balatarinMadrakTahsil", value)}
+                          maxLength={150}
+                        />
+                        <TextField
+                          label="محل اخذ"
+                          value={form.mahalAkhzMadrak}
+                          onChange={(value) => change("mahalAkhzMadrak", value)}
+                          maxLength={250}
+                        />
+                        <InputPersianDate
+                          label="تاریخ اخذ مدرک"
+                          value={form.tarikhAkhzMadrak}
+                          onChange={(value) => change("tarikhAkhzMadrak", value ?? "")}
+                          placeholder="انتخاب تاریخ اخذ مدرک"
+                        />
+                      </>}
+                    </div>
+                  </section>
+
+                  <section className={styles.wizardFormCard}>
+                    <header className={styles.wizardFormCardHeader}>
+                      <span>اطلاعات شغلی</span>
+                      <small>حکم کارگزینی یا بازنشستگی ضمیمه گردد</small>
+                    </header>
+
+                    <div className={styles.formGrid}>
+                      <label className={styles.field}>
+                        <span>وضعیت اشتغال</span>
+                        <select
+                          className={styles.wizardNativeSelect}
+                          value={form.vazeyatEshteghal}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            setForm((current) => ({
+                              ...current,
+                              vazeyatEshteghal: value,
+                              mahalKhedmatFeli: value === "شاغل" ? current.mahalKhedmatFeli : "",
+                              onvanPostSazmani: value === "شاغل" ? current.onvanPostSazmani : "",
+                              tarikhEntesab: value === "شاغل" ? current.tarikhEntesab : "",
+                              akharinMahalKhedmat: value === "بازنشسته" ? current.akharinMahalKhedmat : "",
+                              akharinPostSazmani: value === "بازنشسته" ? current.akharinPostSazmani : "",
+                              moddatEntesab: value === "بازنشسته" ? current.moddatEntesab : "",
+                            }));
+                          }}
+                        >
+                          <option value="">انتخاب نشده</option>
+                          <option value="شاغل">شاغل</option>
+                          <option value="بازنشسته">بازنشسته</option>
+                        </select>
+                      </label>
+
+                      {form.vazeyatEshteghal === "شاغل" && <>
+                        <label className={styles.field}>
+                          <span>محل خدمت فعلی</span>
+                          <SearchableDropdown
+                            value={form.mahalKhedmatFeli}
+                            options={cityOptions}
+                            onChange={(value) => change("mahalKhedmatFeli", value)}
+                            searchPlaceholder="جست‌وجوی استان یا شهرستان..."
+                            compact
+                          />
+                        </label>
+                        <TextField
+                          label="عنوان پست سازمانی"
+                          value={form.onvanPostSazmani}
+                          onChange={(value) => change("onvanPostSazmani", value)}
+                          maxLength={250}
+                        />
+                        <InputPersianDate
+                          label="تاریخ انتصاب"
+                          value={form.tarikhEntesab}
+                          onChange={(value) => change("tarikhEntesab", value ?? "")}
+                          placeholder="انتخاب تاریخ انتصاب"
+                        />
+                      </>}
+
+                      {form.vazeyatEshteghal === "بازنشسته" && <>
+                        <label className={styles.field}>
+                          <span>آخرین محل خدمت</span>
+                          <SearchableDropdown
+                            value={form.akharinMahalKhedmat}
+                            options={cityOptions}
+                            onChange={(value) => change("akharinMahalKhedmat", value)}
+                            searchPlaceholder="جست‌وجوی استان یا شهرستان..."
+                            compact
+                          />
+                        </label>
+                        <TextField
+                          label="آخرین پست سازمانی"
+                          value={form.akharinPostSazmani}
+                          onChange={(value) => change("akharinPostSazmani", value)}
+                          maxLength={250}
+                        />
+                        <TextField
+                          label="مدت انتصاب"
+                          value={form.moddatEntesab}
+                          onChange={(value) => change("moddatEntesab", value)}
+                          placeholder="مثلاً ۳ سال و ۶ ماه"
+                          maxLength={100}
+                        />
+                      </>}
+                    </div>
+                  </section>
                 </div>}
 
-                {step === 3 && <div className={styles.reviewLayout}>
+                {step === 3 && <div className={styles.wizardCards}>
+                  <section className={styles.wizardFormCard}>
+                    <header className={styles.wizardFormCardHeader}>
+                      <span>وضعیت عمومی</span>
+                      <small>اطلاعات پایه مرتبط با وضعیت فرد</small>
+                    </header>
+                    <div className={styles.formGrid}>
+                      <TextField label="شغل" value={form.shoghl} onChange={(value) => change("shoghl", value)} required maxLength={50} />
+                      <label className={styles.field}><span>وضعیت تأهل<i>*</i></span><SearchableDropdown value={form.taahol} options={definitionOptions(PERSON_DFN_PID.maritalStatus)} onChange={(value) => change("taahol", value)} compact /></label>
+                      <label className={styles.field}><span>دین و مذهب<i>*</i></span><SearchableDropdown value={form.dinMazhab} options={definitionOptions(PERSON_DFN_PID.religionSect)} onChange={(value) => change("dinMazhab", value)} compact /></label>
+                      <label className={styles.field}><span>وضعیت روحانیت<i>*</i></span><SearchableDropdown value={form.rohani} options={definitionOptions(PERSON_DFN_PID.clergyStatus)} onChange={(value) => change("rohani", value)} compact /></label>
+                    </div>
+                  </section>
+                </div>}
+
+                {step === 4 && <div className={styles.wizardCards}>
+                  <section className={styles.wizardFormCard}>
+                    <header className={styles.wizardFormCardHeader}><span>مهارت و وضعیت جسمانی</span><small>اطلاعات تکمیلی فرد</small></header>
+                    <div className={styles.formGrid}>
+                      <TextAreaField label="مهارت در استفاده از رایانه در امور اداری چه میزان است؟" value={form.maharatRayaneh} onChange={(value) => change("maharatRayaneh", value)} />
+                      <TextAreaField label="وضعیت جسمانی را (چنانچه بیماری یا معلولیت خاصی دارید) تشریح نمایید" value={form.vazeyatJesmani} onChange={(value) => change("vazeyatJesmani", value)} />
+                    </div>
+                  </section>
+
+                  <section className={styles.wizardFormCard}>
+                    <header className={styles.wizardFormCardHeader}><span>آدرس و اطلاعات تماس</span><small>اطلاعات محل سکونت و محل کار</small></header>
+                    <div className={styles.formGrid}>
+                      <TextAreaField label="آدرس محل سکونت" value={form.addressManzel} onChange={(value) => change("addressManzel", value)} />
+                      <TextField label="تلفن ثابت" value={form.telSabet} onChange={(value) => change("telSabet", value)} maxLength={20} numeric largeLabel />
+                      <label className={styles.field}><span>کد شهرستان</span><SearchableDropdown value={form.codeShahrestan} options={cityOptions} onChange={(value) => change("codeShahrestan", value)} searchPlaceholder="جست‌وجوی شهرستان..." compact /></label>
+                      <TextField label="تلفن همراه" value={form.telHamrah} onChange={(value) => change("telHamrah", value)} placeholder="09xxxxxxxxx" maxLength={11} numeric largeLabel />
+                      <TextField label="تلفن ضروری" value={form.telZaruri} onChange={(value) => change("telZaruri", value)} maxLength={15} numeric largeLabel />
+                      <TextField label="ایمیل" value={form.email} onChange={(value) => change("email", value)} type="email" maxLength={1500} largeLabel />
+                      <TextAreaField label="آدرس محل کار" value={form.addressKar} onChange={(value) => change("addressKar", value)} />
+                      <TextField label="تلفن محل کار" value={form.telKar} onChange={(value) => change("telKar", value)} maxLength={20} numeric largeLabel />
+                    </div>
+                  </section>
+                </div>}
+
+                {step === 5 && <div className={styles.reviewLayout}>
                   <section className={styles.imagePanel}>
                     <div className={styles.imagePreview}>{shownImage ? <img src={shownImage} alt="پیش‌نمایش تصویر پرسنلی" /> : <><Icon name="camera" /><strong>تصویر پرسنلی</strong><span>تصویری انتخاب نشده است</span></>}</div>
                     <label className={styles.uploadButton}><Icon name="upload" /><span>{shownImage ? "تغییر تصویر" : "انتخاب تصویر"}</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} /></label>
@@ -2009,18 +4070,534 @@ export default function PersonsClient() {
                     <div className={styles.reviewRows}>{reviewRows.map(([label, value]) => <div className={styles.reviewRow} key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
                   </section>
                 </div>}
+                  </>
+                )}
               </div>
             )}
 
-            <footer className={styles.wizardFooter}>
+            {!wizardDetailSection && <footer className={styles.wizardFooter}>
               <div>{form.registrationState === 0 && <button type="button" className={styles.draftButton} onClick={() => void handleDraftSave()} disabled={saving || loadingDetail}><Icon name="draft" />ذخیره موقت</button>}<small>{form.personId ? "اطلاعات تا این مرحله قابل بازیابی است." : "با ذخیره موقت، پیش‌نویس در جدول اشخاص ایجاد می‌شود."}</small></div>
               <div>
                 {step > 0 && <button type="button" className={styles.backButton} onClick={() => setStep((value) => Math.max(0, value - 1))} disabled={saving}><Icon name="back" />مرحله قبل</button>}
-                {step < 3 ? <button type="button" className={styles.nextButton} onClick={() => void nextStep()} disabled={saving || loadingDetail}>{saving ? <span className={styles.buttonSpinner} /> : <Icon name="next" />}مرحله بعد</button> : <button type="button" className={styles.finalButton} onClick={requestFinalConfirmation} disabled={saving}><Icon name="check" />تأیید و ثبت نهایی</button>}
+                {step < 5 ? <button type="button" className={styles.nextButton} onClick={() => void nextStep()} disabled={saving || loadingDetail}>{saving ? <span className={styles.buttonSpinner} /> : <Icon name="next" />}ذخیره و ادامه</button> : <button type="button" className={styles.finalButton} onClick={requestFinalConfirmation} disabled={saving}><Icon name="check" />تأیید و ثبت نهایی</button>}
               </div>
-            </footer>
+            </footer>}
+              </div>
+            </div>
           </section>
         </div>
+      )}
+
+
+      {wizardOpen && wizardDetailSection && (
+        <>
+          {hamsarModalOpen && detailTab === "family" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label="اطلاعات همسر">
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="persons" /></span>
+                    <div><small>اطلاعات خانوادگی</small><h3>{hamsar ? "ویرایش اطلاعات همسر" : "ثبت اطلاعات همسر"}</h3></div>
+                  </div>
+                  <button type="button" disabled={hamsarSaving} onClick={() => setHamsarModalOpen(false)} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+                <div className={styles.workHistoryForm}>
+                  <TextField label="نام و نام خانوادگی همسر" value={hamsarForm.nameHamsar} onChange={(value) => setHamsarForm((current) => ({ ...current, nameHamsar: value }))} required maxLength={250} />
+                  <TextField label="شغل همسر" value={hamsarForm.shoghlHamsar} onChange={(value) => setHamsarForm((current) => ({ ...current, shoghlHamsar: value }))} maxLength={250} />
+                </div>
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={hamsarSaving} onClick={() => setHamsarModalOpen(false)}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} disabled={hamsarSaving} onClick={() => void saveHamsarRow()}>
+                    {hamsarSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {hamsar ? "ذخیره تغییرات" : "ثبت اطلاعات"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {farzandModalOpen && detailTab === "family" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label="اطلاعات فرزند">
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="persons" /></span>
+                    <div><small>فرزندان</small><h3>{farzandForm.id > 0 ? "ویرایش فرزند" : "افزودن فرزند جدید"}</h3></div>
+                  </div>
+                  <button type="button" disabled={farzandSaving} onClick={() => setFarzandModalOpen(false)} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+                <div className={styles.workHistoryForm}>
+                  <TextField label="نام و نام خانوادگی" value={farzandForm.nameFarzand} onChange={(value) => setFarzandForm((current) => ({ ...current, nameFarzand: value }))} required maxLength={250} />
+                  <TextField label="شغل" value={farzandForm.shoghlFarzand} onChange={(value) => setFarzandForm((current) => ({ ...current, shoghlFarzand: value }))} maxLength={250} />
+                </div>
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={farzandSaving} onClick={() => setFarzandModalOpen(false)}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} disabled={farzandSaving} onClick={() => void saveFarzandRow()}>
+                    {farzandSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {farzandForm.id > 0 ? "ذخیره تغییرات" : "ثبت فرزند"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {hamsarDeleteOpen && hamsar && detailTab === "family" && (
+            <ConfirmDialog
+              tone="danger"
+              title="حذف اطلاعات همسر"
+              text={`اطلاعات «${hamsar.NameHamsar}» حذف شود؟`}
+              confirmText="حذف شود"
+              busy={hamsarSaving}
+              onCancel={() => setHamsarDeleteOpen(false)}
+              onConfirm={() => void deleteHamsarRow()}
+            />
+          )}
+
+          {farzandDeleteTarget && detailTab === "family" && (
+            <ConfirmDialog
+              tone="danger"
+              title="حذف فرزند"
+              text={`اطلاعات «${farzandDeleteTarget.NameFarzand}» حذف شود؟`}
+              confirmText="حذف شود"
+              busy={farzandSaving}
+              onCancel={() => setFarzandDeleteTarget(null)}
+              onConfirm={() => void deleteFarzandRow()}
+            />
+          )}
+
+          {isargariModalOpen && detailTab === "sacrifice" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={`${styles.workHistoryModal} ${styles.isargariModal}`} role="dialog" aria-modal="true" aria-label="اطلاعات ایثارگری">
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="file" /></span>
+                    <div>
+                    <small>سابقه ایثارگری</small>
+                    <h3>{isargari ? "ویرایش اطلاعات ایثارگری" : "ثبت اطلاعات ایثارگری"}</h3>
+                    </div>
+                  </div>
+                  <button type="button" disabled={isargariSaving} onClick={() => setIsargariModalOpen(false)} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+
+                <div className={styles.isargariFormBody}>
+                  <section className={styles.isargariFormSection}>
+                    <div className={styles.isargariFormSectionTitle}>
+                    <span>حضور در جبهه</span>
+                    <small>میزان حضور در جبهه‌های حق علیه باطل</small>
+                    </div>
+                    <div className={styles.isargariDurationGrid}>
+                    <TextField label="سال" value={isargariForm.jebheSal} onChange={(v) => setIsargariForm(c => ({...c, jebheSal:v}))} numeric maxLength={3} />
+                    <TextField label="ماه" value={isargariForm.jebheMah} onChange={(v) => setIsargariForm(c => ({...c, jebheMah:v}))} numeric maxLength={2} />
+                    <TextField label="روز" value={isargariForm.jebheRoz} onChange={(v) => setIsargariForm(c => ({...c, jebheRoz:v}))} numeric maxLength={2} />
+                    </div>
+                  </section>
+
+                  <section className={styles.isargariFormSection}>
+                    <div className={styles.isargariFormSectionTitle}>
+                    <span>جانباز</span>
+                    <small>وضعیت جانبازی و اطلاعات تأییدکننده</small>
+                    </div>
+                    <div className={styles.isargariFormGrid}>
+                    <label className={`${styles.field} ${styles.isargariSelectField}`}>
+                      <span>جانباز</span>
+                      <select
+                        value={isargariForm.janbaz ? "1" : "0"}
+                        onChange={(e) => setIsargariForm(c => ({
+                          ...c,
+                          janbaz: e.target.value === "1",
+                          darsadJanbazi: e.target.value === "1" ? c.darsadJanbazi : "",
+                          marjaTaeid: e.target.value === "1" ? c.marjaTaeid : "",
+                        }))}
+                      >
+                        <option value="0">خیر</option>
+                        <option value="1">بله</option>
+                      </select>
+                    </label>
+                    {isargariForm.janbaz && (
+                      <>
+                        <TextField label="درصد جانبازی" value={isargariForm.darsadJanbazi} onChange={(v) => setIsargariForm(c => ({...c, darsadJanbazi:v}))} numeric maxLength={3} required />
+                        <TextField label="مرجع تأییدکننده" value={isargariForm.marjaTaeid} onChange={(v) => setIsargariForm(c => ({...c, marjaTaeid:v}))} maxLength={250} />
+                      </>
+                    )}
+                    </div>
+                  </section>
+
+                  <section className={styles.isargariFormSection}>
+                    <div className={styles.isargariFormSectionTitle}>
+                    <span>آزادگی</span>
+                    <small>وضعیت آزادگی و جمع مدت اسارت</small>
+                    </div>
+                    <div className={styles.isargariFormGrid}>
+                    <label className={`${styles.field} ${styles.isargariSelectField}`}>
+                      <span>آزاده</span>
+                      <select
+                        value={isargariForm.azadeh ? "1" : "0"}
+                        onChange={(e) => setIsargariForm(c => ({
+                          ...c,
+                          azadeh: e.target.value === "1",
+                          asaratSal: e.target.value === "1" ? c.asaratSal : "",
+                          asaratMah: e.target.value === "1" ? c.asaratMah : "",
+                          asaratRoz: e.target.value === "1" ? c.asaratRoz : "",
+                        }))}
+                      >
+                        <option value="0">خیر</option>
+                        <option value="1">بله</option>
+                      </select>
+                    </label>
+                    {isargariForm.azadeh && (
+                      <div className={styles.isargariDurationBlock}>
+                        <span>جمع مدت اسارت</span>
+                        <div className={styles.isargariDurationGrid}>
+                          <TextField label="سال" value={isargariForm.asaratSal} onChange={(v) => setIsargariForm(c => ({...c, asaratSal:v}))} numeric maxLength={3} />
+                          <TextField label="ماه" value={isargariForm.asaratMah} onChange={(v) => setIsargariForm(c => ({...c, asaratMah:v}))} numeric maxLength={2} />
+                          <TextField label="روز" value={isargariForm.asaratRoz} onChange={(v) => setIsargariForm(c => ({...c, asaratRoz:v}))} numeric maxLength={2} />
+                        </div>
+                      </div>
+                    )}
+                    </div>
+                  </section>
+
+                  <section className={styles.isargariFormSection}>
+                    <div className={styles.isargariFormSectionTitle}>
+                    <span>خانواده شهید</span>
+                    <small>اطلاعات شهید و نسبت خانوادگی</small>
+                    </div>
+                    <div className={styles.isargariFormGrid}>
+                    <label className={`${styles.field} ${styles.isargariSelectField}`}>
+                      <span>خانواده شهید</span>
+                      <select
+                        value={isargariForm.khanevadeShahid ? "1" : "0"}
+                        onChange={(e) => setIsargariForm(c => ({
+                          ...c,
+                          khanevadeShahid: e.target.value === "1",
+                          nameShahid: e.target.value === "1" ? c.nameShahid : "",
+                          tarikhMahalShahadat: e.target.value === "1" ? c.tarikhMahalShahadat : "",
+                          nesbatBaShahid: e.target.value === "1" ? c.nesbatBaShahid : "",
+                        }))}
+                      >
+                        <option value="0">خیر</option>
+                        <option value="1">بله</option>
+                      </select>
+                    </label>
+                    {isargariForm.khanevadeShahid && (
+                      <>
+                        <TextField label="نام شهید (شهدا)" value={isargariForm.nameShahid} onChange={(v) => setIsargariForm(c => ({...c, nameShahid:v}))} maxLength={500} />
+                        <TextField label="نسبت با شهید" value={isargariForm.nesbatBaShahid} onChange={(v) => setIsargariForm(c => ({...c, nesbatBaShahid:v}))} maxLength={150} />
+                        <div className={styles.isargariWideInput}>
+                          <TextField label="تاریخ و محل شهادت" value={isargariForm.tarikhMahalShahadat} onChange={(v) => setIsargariForm(c => ({...c, tarikhMahalShahadat:v}))} maxLength={500} />
+                        </div>
+                      </>
+                    )}
+                    </div>
+                  </section>
+                </div>
+
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={isargariSaving} onClick={() => setIsargariModalOpen(false)}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} disabled={isargariSaving} onClick={() => void saveIsargariRow()}>
+                    {isargariSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {isargari ? "ذخیره تغییرات" : "ثبت اطلاعات"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {isargariDeleteOpen && detailTab === "sacrifice" && (
+            <ConfirmDialog tone="danger" title="حذف اطلاعات ایثارگری" text="اطلاعات ایثارگری این شخص حذف شود؟" confirmText="حذف شود" busy={isargariSaving} onCancel={() => setIsargariDeleteOpen(false)} onConfirm={() => void confirmDeleteIsargari()} />
+          )}
+
+          {workHistoryModalOpen && detailTab === "work-history" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingWorkHistoryId === null ? "افزودن سابقه شغلی" : "ویرایش سابقه شغلی"}>
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="file" /></span>
+                    <div><small>سوابق شغلی</small><h3>{editingWorkHistoryId === null ? "افزودن سابقه جدید" : "ویرایش سابقه شغلی"}</h3></div>
+                  </div>
+                  <button type="button" disabled={workHistorySaving} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+
+                <div className={styles.workHistoryForm}>
+                  <label className={styles.field}>
+                    <span>محل خدمت</span>
+                    <SearchableDropdown
+                    value={workHistoryForm.mahal}
+                    options={cityOptions}
+                    onChange={(value) => setWorkHistoryForm((current) => ({ ...current, mahal: value }))}
+                    searchPlaceholder="جست‌وجو و انتخاب شهرستان محل خدمت..."
+                    compact
+                    />
+                  </label>
+
+                  <TextField
+                    label="سمت (پست سازمانی)"
+                    value={workHistoryForm.sematPostSazmani}
+                    onChange={(value) => setWorkHistoryForm((current) => ({ ...current, sematPostSazmani: value }))}
+                    required
+                    maxLength={150}
+                  />
+
+                  <InputPersianDate label="از تاریخ" value={workHistoryForm.azTarikh} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, azTarikh: value ?? "" }))} placeholder="انتخاب تاریخ شروع" />
+                  <InputPersianDate label="تا تاریخ" value={workHistoryForm.taTarikh} onChange={(value) => setWorkHistoryForm((current) => ({ ...current, taTarikh: value ?? "" }))} placeholder="تا اکنون" />
+                </div>
+
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={workHistorySaving} onClick={() => { resetWorkHistoryForm(); setWorkHistoryModalOpen(false); }}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} onClick={() => void saveWorkHistoryRow()} disabled={workHistorySaving}>
+                    {workHistorySaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {editingWorkHistoryId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {workHistoryDeleteTarget && detailTab === "work-history" && (
+            <ConfirmDialog
+              tone="danger"
+              title="حذف سابقه شغلی"
+              text={`سابقه شغلی «${workHistoryDeleteTarget.SematPostSazmani || "انتخاب‌شده"}» حذف شود؟`}
+              confirmText="حذف شود"
+              busy={workHistorySaving}
+              onCancel={() => setWorkHistoryDeleteTarget(null)}
+              onConfirm={() => void confirmDeleteWorkHistory()}
+            />
+          )}
+
+          {sabegeNezaratModalOpen && detailTab === "election-supervision" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingSabegeNezaratId === null ? "افزودن سابقه نظارتی" : "ویرایش سابقه نظارتی"}>
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="file" /></span>
+                    <div><small>سوابق نظارتی و اجرایی انتخابات</small><h3>{editingSabegeNezaratId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                  </div>
+                  <button type="button" disabled={sabegeNezaratSaving} onClick={() => { resetSabegeNezaratForm(); setSabegeNezaratModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+
+                <div className={styles.workHistoryForm}>
+                  <TextField
+                    label="دوره انتخاباتی"
+                    value={sabegeNezaratForm.doreEntekhabat}
+                    onChange={(value) => setSabegeNezaratForm((current) => ({ ...current, doreEntekhabat: value }))}
+                    required
+                    maxLength={150}
+                  />
+                  <TextField
+                    label="سمت انتخاباتی"
+                    value={sabegeNezaratForm.sematEntekhabat}
+                    onChange={(value) => setSabegeNezaratForm((current) => ({ ...current, sematEntekhabat: value }))}
+                    required
+                    maxLength={150}
+                  />
+                  <label className={styles.field}>
+                    <span>محل<i>*</i></span>
+                    <SearchableDropdown
+                    value={sabegeNezaratForm.mahal}
+                    options={cityOptions}
+                    onChange={(value) => setSabegeNezaratForm((current) => ({ ...current, mahal: value }))}
+                    searchPlaceholder="جست‌وجو و انتخاب محل..."
+                    compact
+                    />
+                  </label>
+                </div>
+
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={sabegeNezaratSaving} onClick={() => { resetSabegeNezaratForm(); setSabegeNezaratModalOpen(false); }}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} onClick={() => void saveSabegeNezaratRow()} disabled={sabegeNezaratSaving}>
+                    {sabegeNezaratSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {editingSabegeNezaratId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {sabegeNezaratDeleteTarget && detailTab === "election-supervision" && (
+            <ConfirmDialog
+              tone="danger"
+              title="حذف سابقه نظارتی و اجرایی انتخابات"
+              text={`سابقه «${sabegeNezaratDeleteTarget.DoreEntekhabat || "انتخاب‌شده"}» حذف شود؟`}
+              confirmText="حذف شود"
+              busy={sabegeNezaratSaving}
+              onCancel={() => setSabegeNezaratDeleteTarget(null)}
+              onConfirm={() => void confirmDeleteSabegeNezarat()}
+            />
+          )}
+
+          {sabegheFaliyatEjtemaiModalOpen && detailTab === "social-activities" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingSabegheFaliyatEjtemaiId === null ? "افزودن سابقه فعالیت اجتماعی" : "ویرایش سابقه فعالیت اجتماعی"}>
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="file" /></span>
+                    <div><small>سوابق فعالیت‌های اجتماعی</small><h3>{editingSabegheFaliyatEjtemaiId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                  </div>
+                  <button type="button" disabled={sabegheFaliyatEjtemaiSaving} onClick={() => { resetSabegheFaliyatEjtemaiForm(); setSabegheFaliyatEjtemaiModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+
+                <div className={styles.workHistoryForm}>
+                  <TextField
+                    label="نام نهاد، تشکل یا حزب"
+                    value={sabegheFaliyatEjtemaiForm.nameNahadTashakolHezb}
+                    onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, nameNahadTashakolHezb: value }))}
+                    required
+                    maxLength={250}
+                  />
+                  <label className={styles.field}>
+                    <span>محل فعالیت (استان و شهرستان)<i>*</i></span>
+                    <SearchableDropdown
+                    value={sabegheFaliyatEjtemaiForm.mahal}
+                    options={cityOptions}
+                    onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, mahal: value }))}
+                    searchPlaceholder="جست‌وجو و انتخاب محل فعالیت..."
+                    compact
+                    />
+                  </label>
+                  <InputPersianDate label="از تاریخ" value={sabegheFaliyatEjtemaiForm.azTarikh} onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, azTarikh: value ?? "" }))} placeholder="انتخاب تاریخ شروع" />
+                  <InputPersianDate label="تا تاریخ" value={sabegheFaliyatEjtemaiForm.taTarikh} onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, taTarikh: value ?? "" }))} placeholder="انتخاب تاریخ پایان" />
+                  <TextField
+                    label="ملاحظات"
+                    value={sabegheFaliyatEjtemaiForm.molahazat}
+                    onChange={(value) => setSabegheFaliyatEjtemaiForm((current) => ({ ...current, molahazat: value }))}
+                    maxLength={1000}
+                  />
+                </div>
+
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={sabegheFaliyatEjtemaiSaving} onClick={() => { resetSabegheFaliyatEjtemaiForm(); setSabegheFaliyatEjtemaiModalOpen(false); }}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} onClick={() => void saveSabegheFaliyatEjtemaiRow()} disabled={sabegheFaliyatEjtemaiSaving}>
+                    {sabegheFaliyatEjtemaiSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {editingSabegheFaliyatEjtemaiId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {sabegheFaliyatEjtemaiDeleteTarget && detailTab === "social-activities" && (
+            <ConfirmDialog
+              tone="danger"
+              title="حذف سابقه فعالیت اجتماعی"
+              text={`سابقه «${sabegheFaliyatEjtemaiDeleteTarget.NameNahadTashakolHezb || "انتخاب‌شده"}» حذف شود؟`}
+              confirmText="حذف شود"
+              busy={sabegheFaliyatEjtemaiSaving}
+              onCancel={() => setSabegheFaliyatEjtemaiDeleteTarget(null)}
+              onConfirm={() => void confirmDeleteSabegheFaliyatEjtemai()}
+            />
+          )}
+
+          {doreAmozeshiModalOpen && detailTab === "training" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingDoreAmozeshiId === null ? "افزودن دوره آموزشی" : "ویرایش دوره آموزشی"}>
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="file" /></span>
+                    <div><small>دوره‌های آموزشی عمومی و تخصصی</small><h3>{editingDoreAmozeshiId === null ? "افزودن دوره جدید" : "ویرایش دوره آموزشی"}</h3></div>
+                  </div>
+                  <button type="button" disabled={doreAmozeshiSaving} onClick={() => { resetDoreAmozeshiForm(); setDoreAmozeshiModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+
+                <div className={styles.workHistoryForm}>
+                  <TextField label="نام دوره" value={doreAmozeshiForm.nameDore} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, nameDore: value }))} required maxLength={250} />
+                  <TextField label="مدت دوره به ساعت" value={doreAmozeshiForm.modatSaat} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, modatSaat: value.replace(/[^0-9۰-۹]/g, "") }))} required maxLength={8} />
+                  <TextField label="نام مرکز و محل آموزش" value={doreAmozeshiForm.nameMarkazMahalAmozesh} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, nameMarkazMahalAmozesh: value }))} required maxLength={300} />
+                  <label className={styles.field}>
+                    <span>نوع مدرک<i>*</i></span>
+                    <SearchableDropdown
+                    value={doreAmozeshiForm.noeMadrak}
+                    options={definitionOptions(PERSON_DFN_PID.educationCertificateType)}
+                    onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, noeMadrak: value }))}
+                    searchPlaceholder="انتخاب نوع مدرک..."
+                    compact
+                    />
+                  </label>
+                  <InputPersianDate label="تاریخ اخذ مدرک" value={doreAmozeshiForm.tarikhAkhzMadrak} onChange={(value) => setDoreAmozeshiForm((current) => ({ ...current, tarikhAkhzMadrak: value ?? "" }))} placeholder="انتخاب تاریخ اخذ مدرک" />
+                </div>
+
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={doreAmozeshiSaving} onClick={() => { resetDoreAmozeshiForm(); setDoreAmozeshiModalOpen(false); }}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} onClick={() => void saveDoreAmozeshiRow()} disabled={doreAmozeshiSaving}>
+                    {doreAmozeshiSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {editingDoreAmozeshiId === null ? "ثبت دوره" : "ذخیره تغییرات"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {doreAmozeshiDeleteTarget && detailTab === "training" && (
+            <ConfirmDialog
+              tone="danger"
+              title="حذف دوره آموزشی"
+              text={`دوره «${doreAmozeshiDeleteTarget.NameDore || "انتخاب‌شده"}» حذف شود؟`}
+              confirmText="حذف شود"
+              busy={doreAmozeshiSaving}
+              onCancel={() => setDoreAmozeshiDeleteTarget(null)}
+              onConfirm={() => void confirmDeleteDoreAmozeshi()}
+            />
+          )}
+
+
+          {sabegheEntekhabatModalOpen && detailTab === "candidacy" && (
+            <div className={styles.workHistoryModalBackdrop}>
+              <section className={styles.workHistoryModal} role="dialog" aria-modal="true" aria-label={editingSabegheEntekhabatId === null ? "افزودن سابقه داوطلبی" : "ویرایش سابقه داوطلبی"}>
+                <header>
+                  <div className={styles.workHistoryModalTitle}>
+                    <span className={styles.wizardIcon}><Icon name="file" /></span>
+                    <div><small>سابقه داوطلبی در انتخابات</small><h3>{editingSabegheEntekhabatId === null ? "افزودن سابقه جدید" : "ویرایش سابقه"}</h3></div>
+                  </div>
+                  <button type="button" disabled={sabegheEntekhabatSaving} onClick={() => { resetSabegheEntekhabatForm(); setSabegheEntekhabatModalOpen(false); }} aria-label="بستن"><Icon name="close" /></button>
+                </header>
+
+                <div className={styles.workHistoryForm}>
+                  <TextField
+                    label="نوع انتخابات"
+                    value={sabegheEntekhabatForm.noeEntekhabat}
+                    onChange={(value) => setSabegheEntekhabatForm((current) => ({ ...current, noeEntekhabat: value }))}
+                    required
+                    maxLength={150}
+                  />
+                  <TextField
+                    label="حوزه انتخابیه"
+                    value={sabegheEntekhabatForm.hozeEntekhabieh}
+                    onChange={(value) => setSabegheEntekhabatForm((current) => ({ ...current, hozeEntekhabieh: value }))}
+                    required
+                    maxLength={250}
+                  />
+                  <TextField
+                    label="نتیجه"
+                    value={sabegheEntekhabatForm.natijeh}
+                    onChange={(value) => setSabegheEntekhabatForm((current) => ({ ...current, natijeh: value }))}
+                    maxLength={250}
+                  />
+                </div>
+
+                <footer>
+                  <button type="button" className={styles.cancelButton} disabled={sabegheEntekhabatSaving} onClick={() => { resetSabegheEntekhabatForm(); setSabegheEntekhabatModalOpen(false); }}>انصراف</button>
+                  <button type="button" className={styles.sectionSaveButton} onClick={() => void saveSabegheEntekhabatRow()} disabled={sabegheEntekhabatSaving}>
+                    {sabegheEntekhabatSaving ? <span className={styles.buttonSpinner} /> : <Icon name="check" />}
+                    {editingSabegheEntekhabatId === null ? "ثبت سابقه" : "ذخیره تغییرات"}
+                  </button>
+                </footer>
+              </section>
+            </div>
+          )}
+
+          {sabegheEntekhabatDeleteTarget && detailTab === "candidacy" && (
+            <ConfirmDialog
+              tone="danger"
+              title="حذف سابقه داوطلبی در انتخابات"
+              text={`سابقه «${sabegheEntekhabatDeleteTarget.NoeEntekhabat || "انتخاب‌شده"}» حذف شود؟`}
+              confirmText="حذف شود"
+              busy={sabegheEntekhabatSaving}
+              onCancel={() => setSabegheEntekhabatDeleteTarget(null)}
+              onConfirm={() => void confirmDeleteSabegheEntekhabat()}
+            />
+          )}
+
+        </>
       )}
 
       {finalConfirm && <ConfirmDialog tone="success" title="تأیید ثبت نهایی اطلاعات" text={`اطلاعات ${`${form.firstName} ${form.lastName}`.trim()} پس از تأیید به وضعیت ثبت نهایی منتقل می‌شود. آیا اطلاعات بررسی شده است؟`} confirmText="بله، ثبت نهایی شود" busy={saving} onCancel={() => setFinalConfirm(false)} onConfirm={() => void finalizePerson()} />}

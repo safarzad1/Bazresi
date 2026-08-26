@@ -9,6 +9,7 @@ export const PERSON_DFN_PID = {
   clergyStatus: 10112,
   militaryStatus: 10113,
   exemptionType: 1011401,
+  educationCertificateType: 10115,
 } as const;
 
 export const PERSON_DFN_PIDS = Array.from(

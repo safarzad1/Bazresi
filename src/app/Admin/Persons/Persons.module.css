@@ -151,8 +151,8 @@
 }
 .tableScroll { position: relative; min-height: 310px; overflow: auto; }
 .tableCard table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.tableCard th { height: 38px; padding: 0 9px; border-bottom: 1px solid #dce7eb; color: #607984; background: #f7fafb; font-size: 10.5px; text-align: right; white-space: nowrap; }
-.tableCard td { height: 42px; padding: 2px 9px; border-bottom: 1px solid #edf2f4; color: #4b6571; font-size: 11.5px; vertical-align: middle; }
+.tableCard th { height: 38px; padding: 0 9px; border-bottom: 1px solid #dce7eb; color: #607984; background: #f7fafb; font-size: 13.5px; font-weight: 700; text-align: right; white-space: nowrap; }
+.tableCard td { height: 42px; padding: 2px 9px; border-bottom: 1px solid #edf2f4; color: #4b6571; font-size: 13px; vertical-align: middle; }
 .tableCard tbody tr:hover { background: #fbfefe; }
 .tableCard tbody tr:last-child td { border-bottom: 0; }
 .clickableRow { cursor: pointer; }
@@ -187,8 +187,8 @@
 .finalStatus { color: #28745e; background: #e9f7f0; }
 .draftStatus { color: #a36e27; background: #fff4df; }
 .rowActions { display: flex; align-items: center; gap: 5px; }
-.rowActions button { width: 27px; height: 27px; display: grid; place-items: center; padding: 0; border: 1px solid; border-radius: 8px; background: #fff; cursor: pointer; }
-.rowActions svg { width: 14px; height: 14px; }
+.rowActions button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid; border-radius: 8px; background: #fff; cursor: pointer; }
+.rowActions svg { width: 19px; height: 19px; }
 .editAction { color: #277b7e; border-color: #b8d7d6 !important; }
 .editAction:hover { background: #edf8f7; }
 .deleteAction { color: #a24b55; border-color: #e7c7ca !important; }
@@ -308,8 +308,8 @@
 .workHistoryModal > header > button:hover { color: #a0444e; border-color: #e3c0c4; background: #fff6f7; }
 .workHistoryModal > header > button svg { width: 15px; height: 15px; }
 .workHistoryModal > .workHistoryForm { grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 0; }
-.workHistoryModal label { font-size: 12.5px; }
-.workHistoryModal .field > span { font-size: 12.5px; }
+.workHistoryModal label { font-size: 13.5px; }
+.workHistoryModal .field > span { min-height: 20px; font-size: 13.5px; font-weight: 400; line-height: 1.6; }
 .workHistoryModal > footer { min-height: 58px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 7px 12px; border-top: 1px solid #d9e5e8; background: #fff; }
 .workHistoryModal > footer button { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; border: 1px solid; border-radius: 9px; font: inherit; font-size: 11px; cursor: pointer; }
 .workHistoryModal > footer button:disabled { opacity: .55; cursor: wait; }
@@ -437,6 +437,7 @@
 .wizardBody > .reviewLayout { min-height: 0; flex: 1 1 auto; overflow-y: auto; }
 .field { min-width: 0; display: flex; flex-direction: column; gap: 4px; color: #506b76; font-size: 10px; }
 .field > span { min-height: 15px; }
+.wizardModal .field > span { min-height: 20px; font-size: 13.5px; font-weight: 400; line-height: 1.6; }
 .largeFieldLabel > span { min-height: 18px; font-size: 12.5px; }
 .field > span i { margin-right: 3px; color: #c24f5c; font-style: normal; }
 .field input,
@@ -614,4 +615,1057 @@
 @media (max-width: 620px) {
   .workHistoryModal > .workHistoryFullForm { grid-template-columns: 1fr; }
   .workHistoryFullForm .wideField { grid-column: auto; }
+}
+
+
+/* ===== Isargari UI ===== */
+.isargariSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+  background: #f8fbfc;
+}
+
+.isargariSummaryItem {
+  min-width: 0;
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 14px;
+  border: 1px solid #dce8eb;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.isargariSummaryItem > span {
+  color: #728992;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.isargariSummaryItem > strong {
+  overflow-wrap: anywhere;
+  color: #176e76;
+  font-family: Shabnam, Tahoma, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.8;
+}
+
+.isargariSummaryWide {
+  grid-column: span 2;
+}
+
+.isargariEmptyState {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 20px;
+  color: #83959d;
+  text-align: center;
+  background: #fbfdfd;
+}
+
+.isargariEmptyState svg {
+  width: 32px;
+  height: 32px;
+  color: #4e9897;
+}
+
+.isargariEmptyState strong {
+  color: #49646f;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.isargariEmptyState span {
+  font-size: 11.5px;
+}
+
+.isargariModal {
+  width: min(820px, 95vw);
+  max-height: min(780px, 92vh);
+}
+
+.isargariFormBody {
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #f5f8f9;
+}
+
+.isargariFormSection {
+  padding: 12px;
+  border: 1px solid #dce7ea;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.isargariFormSectionTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 11px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #edf2f4;
+}
+
+.isargariFormSectionTitle > span {
+  color: #365966;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.isargariFormSectionTitle > small {
+  color: #8a9ba2;
+  font-size: 10.5px;
+}
+
+.isargariFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.isargariDurationBlock {
+  grid-column: span 2;
+}
+
+.isargariDurationBlock > span {
+  display: block;
+  min-height: 20px;
+  margin-bottom: 4px;
+  color: #506b76;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.isargariDurationGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.isargariSelectField select {
+  width: 100%;
+  height: 37px;
+  padding: 0 10px;
+  border: 1px solid #d6e2e6;
+  border-radius: 8px;
+  outline: none;
+  color: #405e69;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.isargariSelectField select:focus {
+  border-color: #6cacaa;
+  box-shadow: 0 0 0 3px rgba(35, 139, 137, .08);
+}
+
+.isargariWideInput {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .isargariSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .isargariFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .isargariSummaryWide,
+  .isargariDurationBlock,
+  .isargariWideInput {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 620px) {
+  .isargariSummaryGrid,
+  .isargariFormGrid,
+  .isargariDurationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .isargariSummaryWide,
+  .isargariDurationBlock,
+  .isargariWideInput {
+    grid-column: auto;
+  }
+
+  .isargariFormSectionTitle {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* Fix: prevent add/edit button in work-history headers from collapsing */
+.workHistoryHeader > div:first-child { min-width: 0; flex: 1 1 auto; }
+.workHistoryAddButton {
+  flex: 0 0 auto;
+  min-width: 138px;
+  height: 42px;
+  min-height: 42px;
+  justify-content: center;
+  padding: 0 18px;
+  overflow: visible;
+  white-space: nowrap;
+  line-height: 1;
+}
+.workHistoryAddButton svg { flex: 0 0 18px; width: 18px; height: 18px; }
+@media (max-width: 620px) {
+  .workHistoryAddButton { min-width: 126px; padding-inline: 14px; }
+}
+
+
+/* ===== Family (Hamsar & Farzand) CRUD ===== */
+.familyPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: auto;
+  min-height: 100%;
+  padding-bottom: 14px;
+  overflow: visible;
+}
+
+.familySpouseCard,
+.familyChildrenCard {
+  margin-inline: 14px;
+  overflow: hidden;
+  border: 1px solid #dce7ea;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.familySpouseCard {
+  margin-top: 14px;
+}
+
+.familySpouseHeader,
+.familyChildrenHeader {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-bottom: 1px solid #e7eef0;
+  background: #f8fbfb;
+}
+
+.familySpouseHeader > div:first-child,
+.familyChildrenHeader > div:first-child {
+  min-width: 0;
+}
+
+.familySpouseHeader span,
+.familyChildrenHeader span {
+  display: block;
+  color: #37606a;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.familySpouseHeader small,
+.familyChildrenHeader small {
+  display: block;
+  margin-top: 2px;
+  color: #899ca3;
+  font-size: 10.5px;
+}
+
+.familyCardActions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.familySummary {
+  grid-template-columns: 1.4fr 1fr .55fr;
+}
+
+.familySummary span {
+  font-size: 11.5px;
+}
+
+.familySummary strong {
+  font-size: 13px;
+}
+
+.familyChildrenCard .familyTableWrap {
+  padding: 12px;
+}
+
+.familyTable {
+  min-width: 650px;
+}
+
+.familyTable th,
+.familyTable td {
+  height: 46px;
+  padding: 7px 11px;
+}
+
+.familyTable th {
+  font-size: 13.5px;
+}
+
+.familyTable td {
+  font-size: 13px;
+}
+
+.familyTable td strong {
+  color: #48646f;
+  font-weight: 400;
+}
+
+.familyTable th:first-child,
+.familyTable td:first-child {
+  width: 70px;
+  text-align: center;
+}
+
+.familyTable th:last-child,
+.familyTable td:last-child {
+  width: 120px;
+  text-align: center;
+}
+
+.familyEmpty {
+  padding: 22px 14px !important;
+  color: #879aa2 !important;
+  text-align: center !important;
+  font-size: 12.5px !important;
+}
+
+@media (max-width: 760px) {
+  .familySummary {
+    grid-template-columns: 1fr;
+  }
+
+  .familySpouseHeader,
+  .familyChildrenHeader {
+    align-items: flex-start;
+  }
+}
+
+/* ===== Registration wizard redesign: vertical right-side navigation ===== */
+.wizardWorkspace {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  overflow: hidden;
+  direction: rtl;
+}
+
+.wizardContent {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f6f9fa;
+}
+
+.stepper {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 10px;
+  overflow-y: auto;
+  border-left: 1px solid #dbe6e9;
+  border-bottom: 0;
+  background: #f1f6f7;
+}
+
+.wizardProgress {
+  margin-bottom: 4px;
+  padding: 10px;
+  border: 1px solid #d9e6e9;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.wizardProgress > span,
+.wizardProgress > strong {
+  display: block;
+  font-weight: 400;
+}
+
+.wizardProgress > span {
+  color: #758b94;
+  font-size: 12px;
+}
+
+.wizardProgress > strong {
+  margin-top: 3px;
+  color: #2e7e7e;
+  font-size: 15px;
+}
+
+.wizardProgress > div {
+  height: 5px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e3ecee;
+}
+
+.wizardProgress > div > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #36908e;
+  transition: width 180ms ease;
+}
+
+.stepItem {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #70858e;
+  background: transparent;
+  font-family: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+
+.stepItem:disabled {
+  opacity: .62;
+  cursor: default;
+}
+
+.stepItem > span {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  flex: 0 0 31px;
+  place-items: center;
+  border: 1px solid #cbd9dd;
+  border-radius: 50%;
+  color: #6f8790;
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.stepItem > div {
+  min-width: 0;
+}
+
+.stepItem strong,
+.stepItem small {
+  display: block;
+  overflow: hidden;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.stepItem strong {
+  color: inherit;
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+.stepItem small {
+  margin-top: 1px;
+  color: #93a3aa;
+  font-size: 10.5px;
+  line-height: 1.7;
+}
+
+.stepActive {
+  color: #236f72;
+  border-color: #bfdcdd;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(28, 90, 94, .06);
+}
+
+.stepActive > span {
+  color: #fff;
+  border-color: #2f8d8a;
+  background: #2f8d8a;
+}
+
+.stepDone {
+  color: #46796b;
+}
+
+.stepDone > span {
+  color: #2b735e;
+  border-color: #bdd9cf;
+  background: #ebf6f1;
+}
+
+.wizardBody {
+  padding: 11px 13px 14px;
+}
+
+.stepTitle {
+  min-height: 54px;
+  margin-bottom: 9px;
+  padding: 8px 11px;
+  border-right: 3px solid #399591;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.stepTitle > span,
+.stepTitle h3,
+.stepTitle p {
+  font-weight: 400;
+}
+
+.stepTitle > span {
+  font-size: 10px;
+}
+
+.stepTitle h3 {
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.stepTitle p {
+  color: #7f929a;
+  font-size: 11.5px;
+  line-height: 1.8;
+}
+
+.wizardModal .field,
+.wizardModal .field > span,
+.wizardModal .field input,
+.wizardModal .field textarea,
+.wizardModal select,
+.wizardModal button,
+.wizardModal h2,
+.wizardModal h3,
+.wizardModal small,
+.wizardModal strong {
+  font-weight: 400;
+}
+
+.wizardModal .field > span {
+  min-height: 21px;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.wizardModal .field input,
+.wizardModal .field textarea {
+  font-size: 13.5px;
+}
+
+.wizardCards {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding-bottom: 2px;
+}
+
+.wizardFormCard {
+  flex: 0 0 auto;
+  overflow: visible;
+  border: 1px solid #dbe6e9;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.wizardFormCardHeader {
+  min-height: 52px;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 9px 11px;
+  border-bottom: 1px solid #e6edef;
+  background: #f9fbfb;
+}
+
+.wizardFormCardHeader > span,
+.wizardFormCardHeader > small {
+  font-weight: 400;
+}
+
+.wizardFormCardHeader > span {
+  color: #365d68;
+  font-size: 14px;
+}
+
+.wizardFormCardHeader > small {
+  color: #8b9ca3;
+  font-size: 10.5px;
+}
+
+.wizardFormCard > .formGrid {
+  border: 0;
+  border-radius: 0;
+}
+
+.wizardFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  min-height: 64px;
+  padding: 8px 13px;
+  box-shadow: 0 -6px 18px rgba(29, 72, 81, .035);
+}
+
+.wizardFooter button,
+.wizardFooter .nextButton,
+.wizardFooter .finalButton,
+.wizardFooter .backButton,
+.wizardFooter .draftButton {
+  min-height: 41px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.wizardFooter .nextButton,
+.wizardFooter .finalButton {
+  min-width: 145px;
+}
+
+.reviewRow > strong,
+.reviewPanel > header h3,
+.imagePreview strong {
+  font-weight: 400;
+}
+
+@media (max-width: 900px) {
+  .wizardWorkspace {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+
+  .stepItem strong { font-size: 12.5px; }
+  .stepItem small { display: none; }
+}
+
+@media (max-width: 700px) {
+  .wizardWorkspace {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stepper {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(46px, 1fr));
+    gap: 4px;
+    padding: 6px;
+    overflow: visible;
+    border-left: 0;
+    border-bottom: 1px solid #dbe6e9;
+  }
+
+  .wizardProgress { display: none; }
+
+  .stepItem {
+    justify-content: center;
+    padding: 5px;
+  }
+
+  .stepItem > div { display: none; }
+
+  .wizardContent {
+    flex: 1 1 auto;
+  }
+
+  .wizardFormCardHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1px;
+  }
+}
+
+
+/* ===== Compact wizard field spacing + remaining sections navigation ===== */
+.wizardBody > .formGrid {
+  align-content: start;
+  grid-auto-rows: max-content;
+  row-gap: 10px;
+  column-gap: 8px;
+}
+
+.wizardFormCard > .formGrid {
+  align-content: start;
+  grid-auto-rows: max-content;
+  row-gap: 10px;
+  column-gap: 8px;
+  padding-top: 9px;
+  padding-bottom: 10px;
+}
+
+.wizardModal .field {
+  align-self: start;
+  gap: 2px;
+}
+
+.wizardModal .field > span {
+  min-height: 18px;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.wizardModal .field input {
+  margin-top: 0;
+}
+
+.wizardBody {
+  padding-top: 8px;
+}
+
+.stepTitle {
+  min-height: 46px;
+  margin-bottom: 7px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.wizardRemainingDivider {
+  margin-top: 5px;
+  padding: 9px 7px 6px;
+  border-top: 1px solid #d8e4e7;
+}
+
+.wizardRemainingDivider > span,
+.wizardRemainingDivider > small {
+  display: block;
+  font-weight: 400;
+}
+
+.wizardRemainingDivider > span {
+  color: #466872;
+  font-size: 12.5px;
+}
+
+.wizardRemainingDivider > small {
+  margin-top: 2px;
+  color: #92a2a9;
+  font-size: 9.5px;
+  line-height: 1.6;
+}
+
+.wizardRemainingList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.wizardRemainingItem {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 7px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #5f7780;
+  background: transparent;
+  font-family: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+
+.wizardRemainingItem:hover:not(:disabled) {
+  color: #246f72;
+  border-color: #c9dfe0;
+  background: #fff;
+}
+
+.wizardRemainingItem:disabled {
+  opacity: .48;
+  cursor: default;
+}
+
+.wizardRemainingItem > span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #398887;
+  background: #e9f5f4;
+}
+
+.wizardRemainingItem > span svg {
+  width: 14px;
+  height: 14px;
+}
+
+.wizardRemainingItem > div {
+  min-width: 0;
+}
+
+.wizardRemainingItem strong,
+.wizardRemainingItem small {
+  display: block;
+  overflow: hidden;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wizardRemainingItem strong {
+  color: inherit;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.wizardRemainingItem small {
+  margin-top: 1px;
+  color: #98a7ad;
+  font-size: 9px;
+}
+
+.wizardRemainingItem > i {
+  display: grid;
+  place-items: center;
+  color: #94a6ad;
+  font-style: normal;
+  transform: rotate(180deg);
+}
+
+.wizardRemainingItem > i svg {
+  width: 13px;
+  height: 13px;
+}
+
+@media (max-width: 900px) {
+  .wizardRemainingDivider,
+  .wizardRemainingList {
+    display: none;
+  }
+
+  .wizardBody > .formGrid,
+  .wizardFormCard > .formGrid {
+    row-gap: 8px;
+  }
+}
+
+
+/* ===== Wizard: service, education and employment ===== */
+.wizardNativeSelect {
+  width: 100%;
+  height: 37px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid #d6e2e6;
+  border-radius: 8px;
+  outline: none;
+  color: #405e69;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.wizardNativeSelect:focus {
+  border-color: #6cacaa;
+  box-shadow: 0 0 0 3px rgba(35, 139, 137, .08);
+}
+
+.wizardModal .wizardFormCardHeader > span,
+.wizardModal .wizardFormCardHeader > small,
+.wizardModal .wizardNativeSelect,
+.wizardModal .field > span {
+  font-weight: 400;
+}
+
+
+/* ===== Record sections moved from tabs into main Wizard ===== */
+.wizardEmbeddedSection {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wizardEmbeddedSectionTop {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border: 1px solid #dce7ea;
+  border-radius: 10px;
+  background: #f8fbfb;
+}
+
+.wizardEmbeddedSectionTop > div {
+  min-width: 0;
+  text-align: right;
+}
+
+.wizardEmbeddedSectionTop span,
+.wizardEmbeddedSectionTop strong {
+  display: block;
+  font-weight: 400;
+}
+
+.wizardEmbeddedSectionTop span {
+  color: #879ba3;
+  font-size: 10px;
+}
+
+.wizardEmbeddedSectionTop strong {
+  margin-top: 1px;
+  color: #355d67;
+  font-size: 14px;
+}
+
+.wizardEmbeddedBackButton {
+  flex: 0 0 auto;
+  min-width: 140px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid #cddde1;
+  border-radius: 9px;
+  color: #506d77;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.wizardEmbeddedBackButton:hover {
+  border-color: #91babb;
+  color: #24787a;
+  background: #f8fcfc;
+}
+
+.wizardEmbeddedBackButton svg {
+  width: 15px;
+  height: 15px;
+}
+
+.wizardEmbeddedSection .detailBody {
+  min-height: 0;
+  padding: 0;
+}
+
+.wizardEmbeddedSection .workHistoryPanel,
+.wizardEmbeddedSection .familyPanel {
+  min-height: 0;
+  height: auto;
+}
+
+.wizardEmbeddedSection .workHistoryHeader {
+  min-height: 62px;
+}
+
+.wizardEmbeddedSection .workHistoryHeader span,
+.wizardEmbeddedSection .workHistoryHeader h3,
+.wizardEmbeddedSection .workHistoryHeader small,
+.wizardEmbeddedSection .workHistoryTable th,
+.wizardEmbeddedSection .workHistoryTable td,
+.wizardEmbeddedSection .familyTable th,
+.wizardEmbeddedSection .familyTable td,
+.wizardEmbeddedSection .familySpouseHeader span,
+.wizardEmbeddedSection .familySpouseHeader small,
+.wizardEmbeddedSection .familyChildrenHeader span,
+.wizardEmbeddedSection .familyChildrenHeader small,
+.wizardEmbeddedSection .isargariSummaryItem span,
+.wizardEmbeddedSection .isargariSummaryItem strong {
+  font-weight: 400;
+}
+
+.wizardEmbeddedSection .workHistoryTableWrap,
+.wizardEmbeddedSection .familyTableWrap {
+  max-height: calc(100vh - 320px);
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .wizardEmbeddedSectionTop {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .wizardEmbeddedBackButton {
+    width: 100%;
+  }
+}
+
+
+/* Final Wizard item: image and review stays at the very end */
+.wizardFinalReviewItem {
+  margin-top: 6px;
+  border-color: #c9dfe0;
+  background: #f8fbfb;
+}
+
+.wizardFinalReviewItem > span {
+  color: #247f80;
+  background: #dff1f0;
+}
+
+.wizardFinalReviewItem strong,
+.wizardFinalReviewItem small {
+  font-weight: 400;
+}
+
+
+/* ===== Unified numbering for all Wizard stages ===== */
+.wizardFinalReviewStep {
+  margin-top: 6px;
+  border-top: 1px solid #d6e3e6;
+}
+
+.wizardSidebar .stepItem > span,
+.wizardSidebar .stepItem strong,
+.wizardSidebar .stepItem small {
+  font-weight: 400;
+}
+
+.wizardSidebar .stepItem > span {
+  font-size: 12px;
+}
+
+.wizardSidebar .stepItem strong {
+  font-size: 12.5px;
+}
+
+.wizardSidebar .stepItem small {
+  font-size: 9.5px;
 }

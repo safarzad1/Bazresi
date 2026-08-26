@@ -74,6 +74,8 @@ function parseBody(body: PersonBody, isFinal: boolean, actorUserId: string) {
   const codeMelliSarparast = latinDigits(textValue(body.codeMelliSarparast, 50));
   const telHamrah = latinDigits(textValue(body.telHamrah, 15));
   const telZaruri = latinDigits(textValue(body.telZaruri, 15));
+  const telSabet = latinDigits(textValue(body.telSabet, 20));
+  const telKar = latinDigits(textValue(body.telKar, 20));
   const email = textValue(body.email, 1500);
   const tarikhTavalod = latinDigits(textValue(body.tarikhTavalod, 10));
 
@@ -130,6 +132,30 @@ function parseBody(body: PersonBody, isFinal: boolean, actorUserId: string) {
     email: email || null,
     telHamrah: telHamrah || null,
     telZaruri: telZaruri || null,
+    maharatRayaneh: optionalText(body.maharatRayaneh, 1500),
+    vazeyatJesmani: optionalText(body.vazeyatJesmani, 1500),
+    addressManzel: optionalText(body.addressManzel, 1500),
+    telSabet: telSabet || null,
+    codeShahrestan: optionalInteger(body.codeShahrestan),
+    addressKar: optionalText(body.addressKar, 1500),
+    telKar: telKar || null,
+
+    noeTahsil: optionalText(body.noeTahsil, 20),
+    sathTahsilHozavi: optionalText(body.sathTahsilHozavi, 150),
+    hamtarazTahsil: optionalText(body.hamtarazTahsil, 150),
+    mahalTahsil: optionalText(body.mahalTahsil, 250),
+    balatarinMadrakTahsil: optionalText(body.balatarinMadrakTahsil, 150),
+    mahalAkhzMadrak: optionalText(body.mahalAkhzMadrak, 250),
+    tarikhAkhzMadrak: optionalText(body.tarikhAkhzMadrak, 25),
+
+    vazeyatEshteghal: optionalText(body.vazeyatEshteghal, 20),
+    mahalKhedmatFeli: optionalInteger(body.mahalKhedmatFeli),
+    onvanPostSazmani: optionalText(body.onvanPostSazmani, 250),
+    tarikhEntesab: optionalText(body.tarikhEntesab, 25),
+    akharinMahalKhedmat: optionalInteger(body.akharinMahalKhedmat),
+    akharinPostSazmani: optionalText(body.akharinPostSazmani, 250),
+    moddatEntesab: optionalText(body.moddatEntesab, 100),
+
     actorUserId,
   };
 
