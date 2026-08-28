@@ -102,26 +102,21 @@
 .cancelAppointmentButton:hover { border-color: #bf8070; background: #fff2ed; }
 .unavailableAction { color: #aab6bb; }
 
-.modalOverlay { position: fixed; inset: 0; z-index: 2147482000; display: grid; place-items: center; padding: 16px; background: rgba(31, 48, 56, .68); backdrop-filter: blur(2px); }
-.cancelModal { width: min(1480px, calc(100vw - 32px)); height: calc(100vh - 32px); min-height: 620px; display: flex; overflow: hidden; flex-direction: column; border: 1px solid #d5e2e5; border-radius: 16px; background: #fff; box-shadow: 0 24px 70px rgba(20, 40, 48, .32); }
-.modalHeader { display: flex; flex: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 13px 18px; border-bottom: 1px solid #e4ecef; background: #f8fbfb; }
-.modalHeader span { color: #258282; font-size: 11px; }
-.modalHeader h2 { margin: 2px 0 0; color: #355665; font-size: 17px; font-weight: 400; line-height: 1.6; }
-.modalCloseButton { width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid #d5e1e5; border-radius: 9px; color: #6c838c; background: #fff; font: inherit; font-size: 22px; line-height: 1; cursor: pointer; }
+.modalOverlay { position: fixed; inset: 0; z-index: 2147482000; display: grid; place-items: stretch; padding: 0; background: rgba(31, 48, 56, .68); }
+.cancelModal { width: 100vw; height: 100dvh; min-height: 0; display: flex; overflow: hidden; flex-direction: column; border: 0; border-radius: 0; background: #fff; box-shadow: none; }
+.modalHeader { min-height: 46px; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 5px 12px; border-bottom: 1px solid #dce7ea; background: #f8fbfb; }
+.modalHeader > div { min-width: 0; display: flex; align-items: center; gap: 9px; }
+.modalHeader span { flex: 0 0 auto; padding-left: 9px; border-left: 1px solid #d4e2e5; color: #258282; font-size: 10px; }
+.modalHeader h2 { min-width: 0; margin: 0; overflow: hidden; color: #355665; font-size: 13.5px; font-weight: 400; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; }
+.modalCloseButton { width: 30px; height: 30px; flex: 0 0 30px; border: 1px solid #d5e1e5; border-radius: 7px; color: #6c838c; background: #fff; font: inherit; font-size: 19px; line-height: 1; cursor: pointer; }
 .modalCloseButton:disabled { opacity: .5; cursor: default; }
 
 .cancelModalLoading, .cancelModalFatal { min-height: 320px; display: flex; align-items: center; justify-content: center; gap: 9px; color: #6f8790; font-size: 13px; }
 .cancelModalFatal { flex-direction: column; color: #a95058; }
 .cancelModalFatal button { min-width: 90px; height: 34px; border: 1px solid #d7e2e5; border-radius: 8px; color: #617b85; background: #fff; font: inherit; cursor: pointer; }
 
-.cancelWorkspace { min-height: 0; display: grid; flex: 1 1 auto; grid-template-columns: 430px minmax(0, 1fr); background: #edf2f4; }
-.cancelEditor { min-height: 0; display: flex; overflow: hidden; flex-direction: column; padding: 14px; border-left: 1px solid #d7e2e6; background: #fff; }
-.autoInfoNotice { flex: 0 0 auto; margin-bottom: 10px; padding: 9px 11px; border: 1px solid #cfe2e1; border-radius: 9px; color: #4c777b; background: #f1f9f8; font-size: 11.5px; line-height: 1.8; }
-.cancelSummary { display: grid; flex: 0 0 auto; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 11px; }
-.cancelSummary > div { min-width: 0; padding: 8px 9px; border: 1px solid #e0e9ec; border-radius: 8px; background: #fbfcfd; }
-.cancelSummary span, .cancelSummary strong { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.cancelSummary span { margin-bottom: 3px; color: #91a1a8; font-size: 9.5px; }
-.cancelSummary strong { color: #45616d; font-size: 11.5px; font-weight: 400; }
+.cancelWorkspace { min-height: 0; display: grid; flex: 1 1 auto; grid-template-columns: clamp(520px, 38vw, 660px) minmax(0, 1fr); background: #edf2f4; }
+.cancelEditor { min-height: 0; display: flex; overflow: hidden; flex-direction: column; padding: 10px 12px; border-left: 1px solid #d7e2e6; background: #fff; }
 .formStyleSettings { flex: 0 0 auto; margin-bottom: 10px; border: 1px solid #dbe6e9; border-radius: 9px; background: #f9fbfc; }
 .formStyleSettings > summary { padding: 9px 11px; color: #4a6974; font-size: 11.5px; cursor: pointer; list-style-position: inside; }
 .formStyleSettings[open] > summary { border-bottom: 1px solid #e0e8eb; }
@@ -146,21 +141,23 @@
 .styleSettingsActions button { height: 31px; padding: 0 10px; border: 1px solid #2d8585; border-radius: 7px; color: #fff; background: #318b8b; font: inherit; font-size: 9.5px; cursor: pointer; }
 .styleSettingsActions button:disabled { opacity: .5; cursor: default; }
 .styleSettingsActions span { color: #347567; font-size: 9px; }
-.reasonsEditorHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.reasonsEditorHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
 .reasonsEditorHeader div strong, .reasonsEditorHeader div span { display: block; }
 .reasonsEditorHeader div strong { color: #3f5e69; font-size: 13px; font-weight: 400; }
 .reasonsEditorHeader div span { margin-top: 2px; color: #92a2a9; font-size: 9.5px; }
-.reasonsEditorHeader button { height: 32px; padding: 0 10px; border: 1px solid #bed8d8; border-radius: 8px; color: #277a7c; background: #eef8f7; font: inherit; font-size: 10.5px; cursor: pointer; }
-.reasonsEditorHeader button:disabled { opacity: .5; cursor: default; }
-.reasonInputs { min-height: 0; overflow-y: auto; padding-left: 3px; }
-.reasonInputCard { position: relative; display: block; margin-bottom: 8px; padding: 8px 8px 7px; border: 1px solid #dde7ea; border-radius: 9px; background: #fbfcfd; }
-.reasonInputCard > span { display: block; margin-bottom: 5px; color: #647f89; font-size: 10.5px; }
-.reasonInputCard textarea { width: 100%; min-height: 60px; resize: vertical; padding: 7px 8px; border: 1px solid #d7e3e6; border-radius: 7px; outline: 0; color: #405e69; background: #fff; font: inherit; font-size: 11.5px; line-height: 1.8; }
-.reasonInputCard textarea:focus { border-color: #84b5b5; box-shadow: 0 0 0 3px rgba(49, 139, 139, .06); }
-.reasonInputCard textarea:disabled { color: #607880; background: #f5f7f8; }
-.reasonInputCard > small { display: inline-block; margin-top: 5px; color: #9aa8ae; font-size: 8.5px; }
-.reasonInputCard > button { margin-top: 5px; padding: 0; border: 0; color: #ad6d61; background: transparent; font: inherit; font-size: 9.5px; cursor: pointer; }
-.reasonInputCard > button:disabled { opacity: .45; }
+.reasonInputs { min-height: 0; overflow-y: auto; padding: 1px 0 3px 3px; }
+.reasonRow { display: grid; align-items: start; grid-template-columns: 28px minmax(0, 1fr) 28px; gap: 7px; margin-bottom: 7px; padding: 7px; border: 1px solid #dde7ea; border-radius: 9px; background: #fbfcfd; }
+.reasonNumber { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; color: #267d7e; background: #e9f5f4; font-size: 10.5px; }
+.reasonField { min-width: 0; display: block; }
+.reasonField textarea { width: 100%; min-height: 48px; display: block; resize: vertical; padding: 6px 8px; border: 0; border-radius: 6px; outline: 0; color: #405e69; background: #fff; box-shadow: inset 0 0 0 1px #d7e3e6; font: inherit; font-size: 11.5px; line-height: 1.7; }
+.reasonField textarea:focus { box-shadow: inset 0 0 0 1px #77adad, 0 0 0 3px rgba(49, 139, 139, .06); }
+.reasonField textarea:disabled { color: #607880; background: #f5f7f8; }
+.reasonField small { display: block; margin-top: 3px; color: #9aa8ae; font-size: 8px; text-align: left; }
+.reasonRemoveButton { width: 28px; height: 28px; padding: 0; border: 1px solid #ead3ce; border-radius: 7px; color: #a96658; background: #fff8f6; font: inherit; font-size: 17px; line-height: 1; cursor: pointer; }
+.reasonRemoveButton:disabled { opacity: .4; cursor: default; }
+.addReasonButton { width: 100%; height: 38px; margin-top: 1px; border: 1px dashed #9fc9c8; border-radius: 9px; color: #277a7c; background: #f3faf9; font: inherit; font-size: 11px; cursor: pointer; }
+.addReasonButton:hover { border-style: solid; background: #eaf7f5; }
+.addReasonButton:disabled { opacity: .45; cursor: default; }
 .cancelError, .cancelSuccess { flex: 0 0 auto; margin-top: 8px; padding: 8px 10px; border-radius: 8px; font-size: 10.5px; line-height: 1.7; }
 .cancelError { border: 1px solid #efc7ca; color: #a95058; background: #fff7f7; }
 .cancelSuccess { border: 1px solid #badfd3; color: #347567; background: #f1faf7; }
@@ -171,9 +168,9 @@
 .downloadImageButton { flex: 1; border: 1px solid #2d8585; color: #fff; background: #318b8b; }
 .closeCancellation { border: 1px solid #d7e2e5; color: #617b85; background: #fff; }
 
-.letterPreviewPane { min-width: 0; min-height: 0; overflow: auto; padding: 34px 24px 24px; position: relative; }
-.previewLabel { position: sticky; top: -25px; z-index: 2; width: max-content; margin: -24px auto 10px; padding: 5px 11px; border: 1px solid #d3dfe3; border-radius: 20px; color: #71878f; background: rgba(255,255,255,.94); font-size: 10px; }
-.wordToolbar { position: sticky; top: 8px; z-index: 4; width: 794px; min-height: 52px; display: flex; align-items: center; gap: 8px; margin: 0 auto 10px; padding: 7px 9px; border: 1px solid #cadcdf; border-radius: 10px; color: #506d77; background: rgba(255,255,255,.97); box-shadow: 0 5px 16px rgba(28,53,62,.12); font-size: 10px; }
+.letterPreviewPane { min-width: 0; min-height: 0; overflow: auto; padding: 7px 9px 10px; position: relative; }
+.previewLabel { width: max-content; margin: 0 auto 6px; padding: 4px 10px; border: 1px solid #d3dfe3; border-radius: 20px; color: #71878f; background: rgba(255,255,255,.94); font-size: 9.5px; }
+.wordToolbar { position: sticky; top: 4px; z-index: 4; width: 794px; min-height: 44px; display: flex; align-items: center; gap: 7px; margin: 0 auto 6px; padding: 5px 7px; border: 1px solid #cadcdf; border-radius: 9px; color: #506d77; background: rgba(255,255,255,.97); box-shadow: 0 4px 12px rgba(28,53,62,.1); font-size: 10px; }
 .wordToolbar > span { color: #315f67; white-space: nowrap; }
 .wordToolbar label { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .wordToolbar select, .wordToolbar input { height: 32px; border: 1px solid #d3e0e3; border-radius: 7px; outline: 0; color: #405f69; background: #fff; font: inherit; font-size: 10.5px; }
@@ -189,7 +186,8 @@
 .letterRecipient { margin-bottom: 24px; text-align: right; font-size: 14px; font-weight: 700; line-height: 1.5; white-space: pre-line; }
 .letterRecipient *, .letterSignature * { font-weight: inherit; }
 .letterBody { margin: 0; text-align: justify; text-indent: 24px; font-size: 19px; line-height: 2.4; }
-.letterBody b { display: inline; margin: 0 3px; padding: 0 4px; border-bottom: 1px dotted #222; font-family: MitraBold, Tahoma, Arial, sans-serif; font-weight: 700; }
+.letterData { color: #2d8585; font-family: bnaznin, Tahoma, Arial, sans-serif !important; font-size: inherit !important; font-weight: inherit !important; }
+.letterData * { color: inherit; font-family: inherit !important; font-size: inherit !important; font-weight: inherit !important; }
 .checkedBox { display: inline-grid; width: 18px; height: 18px; margin: 0 3px; place-items: center; border: 1px solid #111; font-family: Tahoma, Arial, sans-serif; font-size: 13px; line-height: 1; }
 .reasonsTitle { display: block; margin-top: 20px; font-size: 18px; }
 .letterReasons { margin: 0; padding: 0; font-size: 18px; line-height: 1.65; list-style: none; }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import {
   cancellationFontFamily,
   cancellationFontOptions,
@@ -61,7 +61,6 @@ const formStyleRows = [
   { label: "عنوان نامه", font: "TitleFont", size: "TitleFontSize", weight: "TitleFontWeight", min: 18, max: 60 },
   { label: "گیرنده", font: "RecipientFont", size: "RecipientFontSize", weight: "RecipientFontWeight", min: 12, max: 40 },
   { label: "متن نامه", font: "BodyFont", size: "BodyFontSize", weight: "BodyFontWeight", min: 11, max: 30 },
-  { label: "داده‌های نامه", font: "DataFont", size: "DataFontSize", weight: "DataFontWeight", min: 10, max: 30 },
   { label: "عنوان دلایل", font: "ReasonsTitleFont", size: "ReasonsTitleFontSize", weight: "ReasonsTitleFontWeight", min: 10, max: 28 },
   { label: "متن دلایل", font: "ReasonsFont", size: "ReasonsFontSize", weight: "ReasonsFontWeight", min: 10, max: 28 },
   { label: "امضاکننده", font: "SignerFont", size: "SignerFontSize", weight: "SignerFontWeight", min: 11, max: 36 },
@@ -72,10 +71,6 @@ async function responseJson(response: Response) {
   const data = (await response.json().catch(() => ({}))) as ApiResult;
   if (!response.ok) throw new Error(data.message || "انجام عملیات با خطا روبه‌رو شد.");
   return data;
-}
-
-function display(value: string | number | null | undefined) {
-  return value === null || value === undefined || value === "" ? "—" : String(value);
 }
 
 function formattedParts(text: string, runs: CancellationLetterFormatRun[] | undefined) {
@@ -99,7 +94,6 @@ function formattedBodyParts(
   text: string,
   fields: Array<{ start: number; end: number }>,
   runs: CancellationLetterFormatRun[] | undefined,
-  fieldStyle: CSSProperties,
 ) {
   const parts: ReactNode[] = [];
   const formatSlice = (start: number, end: number) => formattedParts(
@@ -113,7 +107,7 @@ function formattedBodyParts(
   let cursor = 0;
   fields.forEach((field, index) => {
     if (field.start > cursor) parts.push(<span key={`body-${cursor}`}>{formatSlice(cursor, field.start)}</span>);
-    parts.push(<b key={`field-${index}`} style={fieldStyle}>{formatSlice(field.start, field.end)}</b>);
+    parts.push(<span key={`field-${index}`} className={styles.letterData}>{formatSlice(field.start, field.end)}</span>);
     cursor = field.end;
   });
   if (cursor < text.length) parts.push(<span key={`body-${cursor}`}>{formatSlice(cursor, text.length)}</span>);
@@ -170,7 +164,7 @@ function CancellationLetterPreview({
     <article ref={previewRef} className={`${styles.letterSheet} ${dense ? styles.letterSheetDense : ""} ${veryDense ? styles.letterSheetVeryDense : ""}`} dir="rtl">
       <h3 data-format-block="title" style={{ fontFamily: cancellationFontFamily(settings.TitleFont), fontSize: settings.TitleFontSize, fontWeight: settings.TitleFontWeight, marginBottom: settings.TitleBottomSpacing }}>{formattedParts(blocks.title, formatting.title)}</h3>
       <div data-format-block="recipient" className={styles.letterRecipient} style={{ fontFamily: cancellationFontFamily(settings.RecipientFont), fontSize: settings.RecipientFontSize, fontWeight: settings.RecipientFontWeight, marginBottom: settings.RecipientBottomSpacing }}>{formattedParts(blocks.recipient, formatting.recipient)}</div>
-      <p data-format-block="body" className={styles.letterBody} style={{ fontFamily: cancellationFontFamily(settings.BodyFont), fontSize: bodySize, fontWeight: settings.BodyFontWeight, lineHeight: bodyLineHeight, textIndent: settings.BodyFirstLineIndent }}>{formattedBodyParts(blocks.body, blocks.bodyFields, formatting.body, { fontFamily: cancellationFontFamily(settings.DataFont), fontSize: settings.DataFontSize, fontWeight: settings.DataFontWeight })}</p>
+      <p data-format-block="body" className={styles.letterBody} style={{ fontFamily: cancellationFontFamily(settings.BodyFont), fontSize: bodySize, fontWeight: settings.BodyFontWeight, lineHeight: bodyLineHeight, textIndent: settings.BodyFirstLineIndent }}>{formattedBodyParts(blocks.body, blocks.bodyFields, formatting.body)}</p>
       <strong data-format-block="reasons-title" className={styles.reasonsTitle} style={{ fontFamily: cancellationFontFamily(settings.ReasonsTitleFont), fontSize: settings.ReasonsTitleFontSize, fontWeight: settings.ReasonsTitleFontWeight, marginTop: settings.ReasonsTitleTopSpacing }}>{formattedParts(blocks.reasonsTitle, formatting["reasons-title"])}</strong>
       {visibleReasons.length ? (
         <ol className={styles.letterReasons} style={{ fontFamily: cancellationFontFamily(settings.ReasonsFont), fontSize: reasonsSize, fontWeight: settings.ReasonsFontWeight, lineHeight: reasonsLineHeight }}>
@@ -439,15 +433,6 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
         {!loading && draft ? (
           <div className={styles.cancelWorkspace}>
             <aside className={styles.cancelEditor}>
-              <div className={styles.autoInfoNotice}>مشخصات فرم از سیستم تکمیل شده است. متن قابل تغییر نیست؛ اما می‌توانید هر بخش را در پیش‌نمایش انتخاب کرده و فونت و اندازه آن را تغییر دهید.</div>
-
-              <div className={styles.cancelSummary}>
-                <div><span>نام و نام خانوادگی</span><strong>{fullName}</strong></div>
-                <div><span>عنوان پست</span><strong>{display(draft.PostOnvan)}</strong></div>
-                <div><span>تاریخ ابلاغ</span><strong>{display(draft.TarikhEblagh)}</strong></div>
-                <div><span>تاریخ پایان</span><strong>{display(draft.TarikhPayan)}</strong></div>
-              </div>
-
               {canEditSettings && !documentUrl ? (
                 <details className={styles.formStyleSettings}>
                   <summary>تنظیمات فونت و اندازه فرم</summary>
@@ -499,25 +484,29 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
 
               <div className={styles.reasonsEditorHeader}>
                 <div><strong>دلایل لغو ابلاغ</strong><span>{validReasons.length.toLocaleString("fa-IR")} از ۱۰ دلیل</span></div>
-                <button type="button" onClick={() => setReasons((current) => current.length < 10 ? [...current, ""] : current)} disabled={reasons.length >= 10 || Boolean(documentUrl)}>+ افزودن دلیل</button>
               </div>
 
               <div className={styles.reasonInputs}>
                 {reasons.map((reason, index) => (
-                  <label key={index} className={styles.reasonInputCard}>
-                    <span>دلیل {Number(index + 1).toLocaleString("fa-IR")}</span>
-                    <textarea
-                      value={reason}
-                      onChange={(event) => changeReason(index, event.target.value)}
-                      maxLength={220}
-                      rows={3}
-                      placeholder="دلیل لغو ابلاغ را بنویسید..."
-                      disabled={Boolean(documentUrl)}
-                    />
-                    <small>{reason.length.toLocaleString("fa-IR")} / ۲۲۰</small>
-                    <button type="button" onClick={() => removeReason(index)} disabled={Boolean(documentUrl)} aria-label={`حذف دلیل ${index + 1}`}>حذف</button>
-                  </label>
+                  <div key={index} className={styles.reasonRow}>
+                    <span className={styles.reasonNumber}>{Number(index + 1).toLocaleString("fa-IR")}</span>
+                    <label className={styles.reasonField}>
+                      <textarea
+                        value={reason}
+                        onChange={(event) => changeReason(index, event.target.value)}
+                        maxLength={220}
+                        rows={2}
+                        placeholder="متن دلیل را وارد کنید..."
+                        disabled={Boolean(documentUrl)}
+                      />
+                      <small>{reason.length.toLocaleString("fa-IR")} / ۲۲۰</small>
+                    </label>
+                    <button type="button" className={styles.reasonRemoveButton} onClick={() => removeReason(index)} disabled={Boolean(documentUrl)} aria-label={`حذف دلیل ${index + 1}`} title="حذف دلیل">×</button>
+                  </div>
                 ))}
+                {!documentUrl ? (
+                  <button type="button" className={styles.addReasonButton} onClick={() => setReasons((current) => current.length < 10 ? [...current, ""] : current)} disabled={reasons.length >= 10}>+ افزودن دلیل جدید</button>
+                ) : null}
               </div>
 
               {error ? <div className={styles.cancelError}>{error}</div> : null}

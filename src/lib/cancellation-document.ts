@@ -95,7 +95,7 @@ function formattedBodyText(
   let cursor = 0;
   fields.forEach((field) => {
     if (field.start > cursor) parts.push(slice(cursor, field.start));
-    parts.push(`<span class="field">${slice(field.start, field.end)}</span>`);
+    parts.push(`<span class="letter-data">${slice(field.start, field.end)}</span>`);
     cursor = field.end;
   });
   if (cursor < text.length) parts.push(slice(cursor, text.length));
@@ -147,8 +147,7 @@ export function buildCancellationDocumentSvg(
         .title{text-align:center;font-family:${cancellationFontFamily(settings.TitleFont)};font-size:${settings.TitleFontSize * scale}px;line-height:1.55;margin:5px 0 ${settings.TitleBottomSpacing * scale}px;font-weight:${settings.TitleFontWeight}}
         .recipient{text-align:right;margin:0 0 ${settings.RecipientBottomSpacing * scale}px;font-family:${cancellationFontFamily(settings.RecipientFont)};font-size:${settings.RecipientFontSize * scale}px;line-height:1.6;font-weight:${settings.RecipientFontWeight}}.recipient *{font-weight:inherit}
         .letter{font-family:${cancellationFontFamily(settings.BodyFont)};font-size:${bodyFontSize}px;font-weight:${settings.BodyFontWeight};line-height:${bodyLineHeight};text-align:justify;text-indent:${settings.BodyFirstLineIndent * scale}px;margin:0}
-        .field{display:inline-block;min-width:80px;padding:0 7px;border-bottom:1px dotted #333;text-align:center;font-family:${cancellationFontFamily(settings.DataFont)};font-size:${settings.DataFontSize * scale}px;font-weight:${settings.DataFontWeight}}
-        .field.long{min-width:230px}.field.post{min-width:350px}
+        .letter-data{color:#2d8585;font-family:bnaznin,Tahoma,Arial,sans-serif!important;font-size:inherit!important;font-weight:inherit!important}.letter-data *{color:inherit;font-family:inherit!important;font-size:inherit!important;font-weight:inherit!important}
         .check{font-family:Tahoma,Arial,sans-serif;font-size:25px;margin:0 5px}
         .reason-title{font-family:${cancellationFontFamily(settings.ReasonsTitleFont)};font-size:${settings.ReasonsTitleFontSize * scale}px;margin:${settings.ReasonsTitleTopSpacing * scale}px 0 0;font-weight:${settings.ReasonsTitleFontWeight}}
         ol{margin:0;padding:0;font-family:${cancellationFontFamily(settings.ReasonsFont)};font-size:${reasonFontSize}px;font-weight:${settings.ReasonsFontWeight};line-height:${reasonLineHeight};list-style:none}
