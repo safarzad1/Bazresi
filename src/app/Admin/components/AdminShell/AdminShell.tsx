@@ -62,6 +62,23 @@ function PersonsIcon() {
   );
 }
 
+function AppointmentsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 4h12v16H6z" />
+      <path d="M9 2v4M15 2v4M9 10h6M9 14h6" />
+    </svg>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m9 7 5 5-5 5" />
+    </svg>
+  );
+}
+
 function LogoutIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -112,6 +129,7 @@ export default function AdminShell({
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [appointmentsOpen, setAppointmentsOpen] = useState(pathname.startsWith("/Admin/Appointments"));
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -121,6 +139,7 @@ export default function AdminShell({
     setMenuOpen(false);
     setProfileOpen(false);
     setNotificationOpen(false);
+    if (pathname.startsWith("/Admin/Appointments")) setAppointmentsOpen(true);
   }, [pathname]);
 
   useEffect(() => {
@@ -183,6 +202,31 @@ export default function AdminShell({
               </Link>
             );
           })}
+
+          <div className={styles.menuGroup}>
+            <button
+              type="button"
+              className={`${styles.menuLink} ${styles.menuGroupButton} ${pathname.startsWith("/Admin/Appointments") ? styles.menuLinkActive : ""}`}
+              onClick={() => setAppointmentsOpen((current) => !current)}
+              aria-expanded={appointmentsOpen}
+            >
+              <span className={styles.menuIcon}><AppointmentsIcon /></span>
+              <span className={styles.menuGroupTitle}>انتصابات</span>
+              <span className={`${styles.menuChevron} ${appointmentsOpen ? styles.menuChevronOpen : ""}`}><ChevronIcon /></span>
+            </button>
+
+            {appointmentsOpen && (
+              <div className={styles.submenu}>
+                <Link
+                  className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Current") ? styles.submenuLinkActive : ""}`}
+                  href="/Admin/Appointments/Current"
+                >
+                  <span />
+                  فهرست انتصاب‌های جاری
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className={styles.sidebarFooter}>
