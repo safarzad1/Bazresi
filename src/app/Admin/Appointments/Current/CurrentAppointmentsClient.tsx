@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import CancellationProposalModal from "./CancellationProposalModal";
 import styles from "./CurrentAppointments.module.css";
 
 type AppointmentDocument = {
@@ -16,7 +17,12 @@ type CurrentAppointmentRow = {
   FullName: string | null;
   PostOnvan: string | null;
   TarikhEblagh: string | null;
+  TarikhLaghv: string | null;
   ModatEblagKhedmat: number | null;
+  DaysLeft: number | null;
+  RecordState: number | null;
+  TaeedOrAdamTaeed: number | null;
+  CanCancel: boolean;
   Madarek: AppointmentDocument[];
 };
 
@@ -54,6 +60,7 @@ export default function CurrentAppointmentsClient() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cancelTarget, setCancelTarget] = useState<CurrentAppointmentRow | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -81,6 +88,16 @@ export default function CurrentAppointmentsClient() {
     return () => window.clearTimeout(timer);
   }, [load, search]);
 
+  useEffect(() => {
+    if (!cancelTarget) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [cancelTarget]);
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const pageNumbers = useMemo(() => {
     const count = Math.min(5, totalPages);
@@ -94,7 +111,7 @@ export default function CurrentAppointmentsClient() {
         <div>
           <span>انتصابات</span>
           <h1>فهرست انتصاب‌های جاری</h1>
-          <p>انتصاب‌های ابلاغ‌شده و جاری حوزه سازمانی شما</p>
+          <p>فقط انتصاب‌های جاری پست‌هایی که مجوز مدیریت آن‌ها را دارید</p>
         </div>
         <div className={styles.headerActions}>
 
@@ -130,13 +147,15 @@ export default function CurrentAppointmentsClient() {
                 <th>نام و نام خانوادگی</th>
                 <th>عنوان پست</th>
                 <th>تاریخ ابلاغ</th>
+                <th>تاریخ لغو</th>
                 <th>مدت ابلاغ خدمت</th>
                 <th>مدارک</th>
+                <th>عملیات</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className={styles.empty}><span className={styles.spinner} /> در حال دریافت فهرست...</td></tr>
+                <tr><td colSpan={8} className={styles.empty}><span className={styles.spinner} /> در حال دریافت فهرست...</td></tr>
               ) : rows.length ? rows.map((row, index) => (
                 <tr key={row.EntesabId}>
                   <td className={styles.rowNumber}>{((page - 1) * pageSize + index + 1).toLocaleString("fa-IR")}</td>
@@ -148,6 +167,7 @@ export default function CurrentAppointmentsClient() {
                   </td>
                   <td><span className={styles.postTitle}>{row.PostOnvan || "—"}</span></td>
                   <td>{row.TarikhEblagh || "—"}</td>
+                  <td>{row.TarikhLaghv || "—"}</td>
                   <td>{row.ModatEblagKhedmat === null ? "—" : row.ModatEblagKhedmat.toLocaleString("fa-IR")}</td>
                   <td>
                     <span className={styles.documentBadge} title={row.Madarek.map((item) => item.OnvanSanad).filter(Boolean).join("، ") || undefined}>
@@ -155,9 +175,16 @@ export default function CurrentAppointmentsClient() {
                       {row.Madarek.length.toLocaleString("fa-IR")}
                     </span>
                   </td>
+                  <td>
+                    {row.CanCancel && row.RecordState === 10 && row.TaeedOrAdamTaeed === 4 ? (
+                      <button type="button" className={styles.cancelAppointmentButton} onClick={() => setCancelTarget(row)}>
+                        لغو ابلاغ
+                      </button>
+                    ) : <span className={styles.unavailableAction}>—</span>}
+                  </td>
                 </tr>
               )) : (
-                <tr><td colSpan={6} className={styles.empty}>انتصاب جاری برای نمایش وجود ندارد.</td></tr>
+                <tr><td colSpan={8} className={styles.empty}>در محدوده مجوزهای شما انتصاب جاری برای نمایش وجود ندارد.</td></tr>
               )}
             </tbody>
           </table>
@@ -180,6 +207,14 @@ export default function CurrentAppointmentsClient() {
           </div>
         </footer>
       </section>
+
+      {cancelTarget ? (
+        <CancellationProposalModal
+          target={{ EntesabId: cancelTarget.EntesabId, FullName: cancelTarget.FullName }}
+          onClose={() => setCancelTarget(null)}
+          onSaved={() => void load()}
+        />
+      ) : null}
     </main>
   );
 }

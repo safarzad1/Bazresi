@@ -1,226 +1,33 @@
-
 USE [DBBazresi];
 GO
 
+/*
+    پیش‌نیاز: ابتدا AppointmentAccess_Settings.sql اجرا شود.
+    فهرست جاری فقط پست‌هایی را برمی‌گرداند که برای سمت کاربر
+    به‌صورت صریح در bz.AppointmentPostAccess ثبت شده‌اند.
+*/
+IF COL_LENGTH(N'bz.LaghveEblagh', N'EntesabId') IS NULL
+    ALTER TABLE [bz].[LaghveEblagh] ADD [EntesabId] BIGINT NULL;
+GO
+
 CREATE OR ALTER PROCEDURE [bz].[SP_Appointments_CurrentByAccess]
-    @Semat BIGINT
+    @ActorUserId NVARCHAR(450)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    /* ============================================================
-       قوانین:
-       204:
-         کل انتصاب‌های جاری، ولی فقط Mahal با طول 1 یا 3
+    DECLARE @ActorPostId BIGINT;
 
-       206:
-         1) نیروهای زیرمجموعه واقعی خودش
-         2) تمام پست‌های زیرمجموعه 20609 که LEN(Mahal)=3
-         شهرستان‌ها (LEN=5) در شاخه 20609 حذف می‌شوند
+    SELECT TOP (1)
+        @ActorPostId = TRY_CONVERT(BIGINT, U.[Semat])
+    FROM [dbo].[AspNetUsers] AS U
+    WHERE U.[Id] = @ActorUserId
+      AND ISNULL(U.[IsDelete], 0) = 0
+      AND ISNULL(U.[IsActive], 1) = 1;
 
-       سایر سمت‌ها:
-         فقط زیرمجموعه واقعی پست خودشان
-       ============================================================ */
+    IF @ActorPostId IS NULL
+        THROW 51005, N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.', 1;
 
-    /* ------------------------------------------------------------
-       Semat = 204
-       ------------------------------------------------------------ */
-    IF @Semat = 204
-    BEGIN
-        SELECT ISNULL
-        (
-            (
-                SELECT
-                    E.[EntesabId],
-                    E.[PersonId],
-                    E.[CodeMelli],
-                    E.[FirstName],
-                    E.[LastName],
-                    E.[FullName],
-                    E.[PostId],
-                    COALESCE(NULLIF(LTRIM(RTRIM(S.[OnvanSemat])), N''), E.[PostOnvan]) AS [PostOnvan],
-                    S.[PID] AS [ParentPostId],
-                    NULL AS [TreeLevel],
-                    S.[Mahal],
-                    E.[TarikhEblagh],
-                    E.[ModatEblagKhedmat],
-                    E.[RecordState],
-                    E.[RecordState_NameFarsi],
-                    E.[TaeedOrAdamTaeed],
-                    E.[TaeedOrAdamTaeedNameFarsi],
-                    E.[IsEblagh]
-                FROM [bz].[Entesabat] AS E
-                INNER JOIN [dbo].[Semats] AS S
-                    ON S.[ID] = E.[PostId]
-                WHERE
-                    E.[RecordState] = 10
-                    AND E.[TaeedOrAdamTaeed] = 4
-                    AND LEN(LTRIM(RTRIM(CONVERT(NVARCHAR(50), S.[Mahal])))) IN (1, 3)
-                ORDER BY
-                    LEN(LTRIM(RTRIM(CONVERT(NVARCHAR(50), S.[Mahal])))) ASC,
-                    TRY_CONVERT(BIGINT, S.[Mahal]) ASC,
-                    E.[PostId] ASC,
-                    E.[EntesabId] ASC
-                FOR JSON PATH, INCLUDE_NULL_VALUES
-            ),
-            '[]'
-        ) AS [JsonResult];
-
-        RETURN;
-    END;
-
-
-    /* ------------------------------------------------------------
-       Semat = 206
-       مدیرکل امور انتخابات:
-       - زیرمجموعه خودش
-       - رؤسای استان‌ها از شاخه 20609 با Mahal سه‌رقمی
-       ------------------------------------------------------------ */
-    IF @Semat = 206
-    BEGIN
-        ;WITH OwnTree AS
-        (
-            SELECT
-                S.[ID],
-                S.[PID],
-                S.[Mahal],
-                0 AS [TreeLevel],
-                CAST(CASE WHEN S.[ID] = 20609 THEN 1 ELSE 0 END AS BIT) AS [IsProvinceBranch]
-            FROM [dbo].[Semats] AS S
-            WHERE S.[ID] = 206
-
-            UNION ALL
-
-            SELECT
-                C.[ID],
-                C.[PID],
-                C.[Mahal],
-                P.[TreeLevel] + 1,
-                CAST(
-                    CASE
-                        WHEN P.[IsProvinceBranch] = 1 OR C.[ID] = 20609 THEN 1
-                        ELSE 0
-                    END
-                    AS BIT
-                )
-            FROM [dbo].[Semats] AS C
-            INNER JOIN OwnTree AS P
-                ON C.[PID] = P.[ID]
-        ),
-        ProvinceTree AS
-        (
-            SELECT
-                S.[ID],
-                S.[PID],
-                S.[Mahal],
-                0 AS [TreeLevel]
-            FROM [dbo].[Semats] AS S
-            WHERE S.[ID] = 20609
-
-            UNION ALL
-
-            SELECT
-                C.[ID],
-                C.[PID],
-                C.[Mahal],
-                P.[TreeLevel] + 1
-            FROM [dbo].[Semats] AS C
-            INNER JOIN ProvinceTree AS P
-                ON C.[PID] = P.[ID]
-        ),
-        AllowedPosts AS
-        (
-            /* نیروهای واقعی زیرمجموعه 206، به جز شاخه استانی 20609 */
-            SELECT
-                T.[ID],
-                T.[TreeLevel],
-                T.[Mahal]
-            FROM OwnTree AS T
-            WHERE
-                T.[TreeLevel] > 0
-                AND T.[IsProvinceBranch] = 0
-
-            UNION
-
-            /* رؤسای استان‌ها از شاخه 20609؛ شهرستان‌ها وارد نمی‌شوند */
-            SELECT
-                T.[ID],
-                T.[TreeLevel],
-                T.[Mahal]
-            FROM ProvinceTree AS T
-            WHERE
-                T.[TreeLevel] > 0
-                AND LEN(LTRIM(RTRIM(CONVERT(NVARCHAR(50), T.[Mahal])))) = 3
-        )
-        SELECT ISNULL
-        (
-            (
-                SELECT
-                    E.[EntesabId],
-                    E.[PersonId],
-                    E.[CodeMelli],
-                    E.[FirstName],
-                    E.[LastName],
-                    E.[FullName],
-                    E.[PostId],
-                    COALESCE(NULLIF(LTRIM(RTRIM(S.[OnvanSemat])), N''), E.[PostOnvan]) AS [PostOnvan],
-                    S.[PID] AS [ParentPostId],
-                    AP.[TreeLevel],
-                    S.[Mahal],
-                    E.[TarikhEblagh],
-                    E.[ModatEblagKhedmat],
-                    E.[RecordState],
-                    E.[RecordState_NameFarsi],
-                    E.[TaeedOrAdamTaeed],
-                    E.[TaeedOrAdamTaeedNameFarsi],
-                    E.[IsEblagh]
-                FROM [bz].[Entesabat] AS E
-                INNER JOIN AllowedPosts AS AP
-                    ON AP.[ID] = E.[PostId]
-                INNER JOIN [dbo].[Semats] AS S
-                    ON S.[ID] = E.[PostId]
-                WHERE
-                    E.[RecordState] = 10
-                    AND E.[TaeedOrAdamTaeed] = 4
-                ORDER BY
-                    LEN(LTRIM(RTRIM(CONVERT(NVARCHAR(50), S.[Mahal])))) ASC,
-                    TRY_CONVERT(BIGINT, S.[Mahal]) ASC,
-                    E.[PostId] ASC,
-                    E.[EntesabId] ASC
-                FOR JSON PATH, INCLUDE_NULL_VALUES
-            ),
-            '[]'
-        ) AS [JsonResult]
-        OPTION (MAXRECURSION 100);
-
-        RETURN;
-    END;
-
-
-    /* ------------------------------------------------------------
-       سایر مدیرکل‌ها و رؤسای استان‌ها
-       ------------------------------------------------------------ */
-    ;WITH UserSematTree AS
-    (
-        SELECT
-            S.[ID],
-            S.[PID],
-            S.[Mahal],
-            0 AS [TreeLevel]
-        FROM [dbo].[Semats] AS S
-        WHERE S.[ID] = @Semat
-
-        UNION ALL
-
-        SELECT
-            C.[ID],
-            C.[PID],
-            C.[Mahal],
-            P.[TreeLevel] + 1
-        FROM [dbo].[Semats] AS C
-        INNER JOIN UserSematTree AS P
-            ON C.[PID] = P.[ID]
-    )
     SELECT ISNULL
     (
         (
@@ -234,33 +41,85 @@ BEGIN
                 E.[PostId],
                 COALESCE(NULLIF(LTRIM(RTRIM(S.[OnvanSemat])), N''), E.[PostOnvan]) AS [PostOnvan],
                 S.[PID] AS [ParentPostId],
-                T.[TreeLevel],
+                NULL AS [TreeLevel],
                 S.[Mahal],
                 E.[TarikhEblagh],
                 E.[ModatEblagKhedmat],
+                dbo.MiladiToShamsi
+                (
+                    DATEADD(MONTH, E.[ModatEblagKhedmat], dbo.ShamsiToMiladi(E.[TarikhEblagh]))
+                ) AS [TarikhLaghv],
+                DATEDIFF
+                (
+                    DAY,
+                    CONVERT(DATE, GETDATE()),
+                    DATEADD(MONTH, E.[ModatEblagKhedmat], dbo.ShamsiToMiladi(E.[TarikhEblagh]))
+                ) AS [DaysLeft],
                 E.[RecordState],
                 E.[RecordState_NameFarsi],
                 E.[TaeedOrAdamTaeed],
                 E.[TaeedOrAdamTaeedNameFarsi],
-                E.[IsEblagh]
+                E.[IsEblagh],
+                CONVERT
+                (
+                    BIT,
+                    CASE
+                        WHEN E.[RecordState] = 10
+                         AND E.[TaeedOrAdamTaeed] = 4
+                         AND DATEADD(MONTH, E.[ModatEblagKhedmat], dbo.ShamsiToMiladi(E.[TarikhEblagh])) >= CONVERT(DATE, GETDATE())
+                         AND NOT EXISTS
+                         (
+                             SELECT 1
+                             FROM [bz].[LaghveEblagh] AS L
+                             WHERE L.[EntesabId] = E.[EntesabId]
+                               AND L.[RecordState] = 10
+                         )
+                            THEN 1
+                        ELSE 0
+                    END
+                ) AS [CanCancel],
+                ISNULL
+                (
+                    (
+                        SELECT
+                            EM.[Id],
+                            EM.[OnvanSanad],
+                            EM.[CreateDateTime],
+                            CASE
+                                WHEN CHARINDEX(N'\', REVERSE(ISNULL(EM.[FileName], N''))) > 0
+                                    THEN RIGHT
+                                    (
+                                        EM.[FileName],
+                                        CHARINDEX(N'\', REVERSE(EM.[FileName])) - 1
+                                    )
+                                ELSE EM.[FileName]
+                            END AS [FullFileName]
+                        FROM [bz].[Entesabat_Madarek] AS EM
+                        WHERE EM.[PersonId] = E.[PersonId]
+                        ORDER BY EM.[CreateDateTime] DESC
+                        FOR JSON PATH, INCLUDE_NULL_VALUES
+                    ),
+                    '[]'
+                ) AS [Madarek]
             FROM [bz].[Entesabat] AS E
-            INNER JOIN UserSematTree AS T
-                ON T.[ID] = E.[PostId]
-                AND T.[TreeLevel] > 0
-            INNER JOIN [dbo].[Semats] AS S
-                ON S.[ID] = E.[PostId]
-            WHERE
-                E.[RecordState] = 10
-                AND E.[TaeedOrAdamTaeed] = 4
-            ORDER BY
-                LEN(LTRIM(RTRIM(CONVERT(NVARCHAR(50), S.[Mahal])))) ASC,
-                TRY_CONVERT(BIGINT, S.[Mahal]) ASC,
-                E.[PostId] ASC,
-                E.[EntesabId] ASC
+            INNER JOIN [dbo].[Semats] AS S ON S.[ID] = E.[PostId]
+            WHERE E.[RecordState] = 10
+              AND E.[TaeedOrAdamTaeed] = 4
+              AND ISNULL(E.[KartablOthePost], 0) = 0
+              AND ISNULL(E.[IsDelete], 0) = 0
+              AND ISNULL(E.[IsEblagh], 0) = 1
+              AND EXISTS
+              (
+                  SELECT 1
+                  FROM [bz].[AppointmentPostAccess] AS A
+                  WHERE A.[ActorPostId] = @ActorPostId
+                    AND A.[TargetPostId] = E.[PostId]
+                    AND A.[IsActive] = 1
+              )
+            ORDER BY E.[PostId], E.[EntesabId]
             FOR JSON PATH, INCLUDE_NULL_VALUES
         ),
         '[]'
-    ) AS [JsonResult]
-    OPTION (MAXRECURSION 100);
+    ) AS [JsonResult];
 END;
 GO

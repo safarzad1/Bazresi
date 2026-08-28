@@ -24,27 +24,19 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const semat = Number(session.semat ?? 0);
-
-  if (!Number.isSafeInteger(semat) || semat <= 0) {
-    return NextResponse.json(
-      { message: "سمت سازمانی کاربر جاری در نشست معتبر نیست. لطفاً یک‌بار خارج و دوباره وارد سامانه شوید." },
-      { status: 403 },
-    );
-  }
-
   try {
     const search = textValue(request.nextUrl.searchParams.get("search"), 150).toLocaleLowerCase("fa");
     const page = boundedInteger(request.nextUrl.searchParams.get("page"), 1, 1, 1_000_000);
     const pageSize = boundedInteger(request.nextUrl.searchParams.get("pageSize"), 10, 5, 100);
 
-    const allRows = await listCurrentAppointments(semat);
+    const allRows = await listCurrentAppointments(session.userId);
     const filtered = search
       ? allRows.filter((row) => {
           const haystack = [
             row.FullName,
             row.PostOnvan,
             row.TarikhEblagh,
+            row.TarikhLaghv,
             row.PersonId ? String(row.PersonId) : "",
           ]
             .filter(Boolean)

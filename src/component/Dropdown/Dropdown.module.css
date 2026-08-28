@@ -77,6 +77,83 @@
     transform: rotate(180deg);
 }
 
+.multiTrigger {
+    min-height: 42px;
+    height: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.multiTriggerDisabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+}
+
+.multiValue {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+}
+
+.multiChip {
+    max-width: 100%;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px 3px 3px;
+    border: 1px solid #cbe2df;
+    border-radius: 7px;
+    color: #276d69;
+    background: #eaf6f4;
+    font-size: 10px;
+}
+
+.multiChip > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.multiChip button {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+    color: #357772;
+    background: #d5ebe7;
+    cursor: pointer;
+}
+
+.multiChip button:hover:not(:disabled) {
+    color: #a33b3b;
+    background: #f5d9d9;
+}
+
+.multiCheck {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border: 1px solid #bfd0d5;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #ffffff;
+}
+
+.multiCheckSelected {
+    border-color: #21827c;
+    background: #21827c;
+}
+
 .triggerWithClear {
     padding-left: 66px;
 }

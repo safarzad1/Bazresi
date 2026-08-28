@@ -16,7 +16,12 @@ export type CurrentAppointmentRow = {
   ParentPostId?: number | null;
   TreeLevel?: number | null;
   TarikhEblagh: string | null;
+  TarikhLaghv: string | null;
   ModatEblagKhedmat: number | null;
+  DaysLeft: number | null;
+  RecordState: number | null;
+  TaeedOrAdamTaeed: number | null;
+  CanCancel: boolean;
   Madarek: AppointmentDocument[];
 };
 
@@ -56,10 +61,24 @@ function normalizeRows(jsonText: string | null | undefined) {
           ? null
           : Number(item.TreeLevel),
       TarikhEblagh: typeof item.TarikhEblagh === "string" ? item.TarikhEblagh : null,
+      TarikhLaghv: typeof item.TarikhLaghv === "string" ? item.TarikhLaghv : null,
       ModatEblagKhedmat:
         item.ModatEblagKhedmat === null || item.ModatEblagKhedmat === undefined
           ? null
           : Number(item.ModatEblagKhedmat),
+      DaysLeft:
+        item.DaysLeft === null || item.DaysLeft === undefined
+          ? null
+          : Number(item.DaysLeft),
+      RecordState:
+        item.RecordState === null || item.RecordState === undefined
+          ? null
+          : Number(item.RecordState),
+      TaeedOrAdamTaeed:
+        item.TaeedOrAdamTaeed === null || item.TaeedOrAdamTaeed === undefined
+          ? null
+          : Number(item.TaeedOrAdamTaeed),
+      CanCancel: item.CanCancel === true || item.CanCancel === 1 || item.CanCancel === "1",
       Madarek: parseDocuments(item.Madarek),
     }));
   } catch {
@@ -67,13 +86,13 @@ function normalizeRows(jsonText: string | null | undefined) {
   }
 }
 
-export async function listCurrentAppointments(semat: number | null) {
-  if (!semat) return [] as CurrentAppointmentRow[];
+export async function listCurrentAppointments(actorUserId: string) {
+  if (!actorUserId.trim()) return [] as CurrentAppointmentRow[];
 
   const pool = await getDbPool();
   const result = await pool
     .request()
-    .input("Semat", String(semat))
+    .input("ActorUserId", actorUserId)
     .execute("bz.SP_Appointments_CurrentByAccess");
 
   const row = (result.recordset?.[0] ?? null) as DashboardAppointmentRow | null;

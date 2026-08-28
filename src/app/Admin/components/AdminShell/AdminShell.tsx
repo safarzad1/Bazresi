@@ -10,6 +10,7 @@ type AdminShellProps = {
   displayName: string;
   userName: string;
   sematTitle: string | null;
+  isSystemAdmin: boolean;
 };
 
 function DashboardIcon() {
@@ -125,6 +126,7 @@ export default function AdminShell({
   displayName,
   userName,
   sematTitle,
+  isSystemAdmin,
 }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -188,7 +190,7 @@ export default function AdminShell({
 
         <nav className={styles.navigation} aria-label="منوی عمومی">
           <span className={styles.menuTitle}>منوی عمومی</span>
-          {menuItems.map((item) => {
+          {menuItems.filter((item) => item.href !== "/Admin/Settings" || isSystemAdmin).map((item) => {
             const Icon = item.icon;
             const active = pathname.startsWith(item.href);
             return (
@@ -323,10 +325,12 @@ export default function AdminShell({
 
               {profileOpen && (
                 <div className={styles.profileMenu}>
-                  <Link className={styles.profileMenuItem} href="/Admin/Settings">
-                    <SettingsIcon />
-                    تنظیمات
-                  </Link>
+                  {isSystemAdmin && (
+                    <Link className={styles.profileMenuItem} href="/Admin/Settings">
+                      <SettingsIcon />
+                      تنظیمات
+                    </Link>
+                  )}
                   <button
                     className={`${styles.profileMenuItem} ${styles.profileMenuLogout}`}
                     type="button"

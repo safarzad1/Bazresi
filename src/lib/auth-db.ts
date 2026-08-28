@@ -18,6 +18,7 @@ export type LoginUserRecord = {
   TabEntesabat: boolean | number | null;
   TabPersonnel: boolean | number | null;
   TabEstelam: boolean | number | null;
+  IsSystemAdmin: boolean | number | null;
 };
 
 export async function getLoginUser(userName: string) {

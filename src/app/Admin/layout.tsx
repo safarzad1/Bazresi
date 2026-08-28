@@ -13,6 +13,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       displayName={session.fullName}
       userName={session.userName}
       sematTitle={session.sematTitle}
+      isSystemAdmin={session.isSystemAdmin}
     >
       {children}
     </AdminShell>

@@ -1,0 +1,166 @@
+.page {
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  color: #294657;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 3px 12px;
+  color: #8b99a1;
+  font-size: 10.5px;
+}
+
+.breadcrumb a { color: #278386; text-decoration: none; }
+.breadcrumb strong { color: #556c79; font-weight: 400; }
+
+.formHeading span, .tableHeader > span {
+  color: #208286;
+  font-size: 10.5px;
+}
+
+.formCard, .tableCard {
+  margin-top: 15px;
+  border: 1px solid #dce6eb;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 9px 24px rgba(25, 55, 74, 0.04);
+}
+
+.hydrationCard {
+  min-height: 150px;
+  margin-top: 15px;
+  border: 1px solid #dce6eb;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #82919b;
+  background: #fff;
+  font-size: 11px;
+}
+
+.formCard { padding: 21px 23px; }
+.formGrid {
+  display: grid;
+  grid-template-columns: minmax(270px, 1fr) minmax(270px, 1fr) auto;
+  align-items: end;
+  gap: 13px;
+  margin-top: 17px;
+}
+
+.formGrid label { min-width: 0; }
+.formGrid label > span { display: block; margin: 0 2px 7px; color: #637782; font-size: 10.5px; }
+
+.saveButton {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 11px;
+  color: #fff;
+  background: #247f82;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.saveButton:disabled { opacity: .55; cursor: default; }
+
+.error, .success {
+  margin-top: 13px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 10.5px;
+}
+
+.error { color: #a13d3d; background: #fff0f0; }
+.success { color: #247360; background: #ebf8f3; }
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 19px 22px 15px;
+  border-bottom: 1px solid #e5ecef;
+}
+
+.searchBox {
+  width: min(360px, 100%);
+  height: 39px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #dbe5e9;
+  border-radius: 10px;
+  background: #fafcfc;
+}
+
+.searchBox span { color: #80939d; font-size: 18px; }
+.searchBox input { width: 100%; border: 0; outline: 0; color: #405864; background: transparent; font-family: inherit; font-size: 10.5px; }
+
+.tableWrap { overflow-x: auto; }
+.tableWrap table { width: 100%; border-collapse: collapse; min-width: 680px; }
+.tableWrap th { padding: 12px 15px; color: #768892; background: #f7fafb; font-size: 11.5px; font-weight: 400; text-align: right; white-space: nowrap; }
+.tableWrap td { padding: 14px 15px; border-top: 1px solid #edf1f3; color: #526a76; font-size: 12px; vertical-align: middle; }
+.tableWrap td:first-child, .tableWrap th:first-child { width: 55px; text-align: center; }
+.tableWrap td:last-child, .tableWrap th:last-child { width: 80px; text-align: center; }
+.tableWrap td strong { display: block; color: #314e5e; font-size: 12.5px; font-weight: 400; }
+.tableWrap td small { display: block; margin-top: 4px; color: #91a0a8; font-size: 10.5px; }
+
+.permissionBadge {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 8px;
+  color: #2c7974;
+  background: #eaf7f5;
+  font-size: 10.5px;
+}
+
+.deleteButton {
+  padding: 6px 10px;
+  border: 1px solid #f0caca;
+  border-radius: 8px;
+  color: #b34a4a;
+  background: #fff7f7;
+  font-family: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.deleteButton:disabled { opacity: .55; cursor: default; }
+.empty { height: 120px; color: #91a0a8 !important; text-align: center !important; }
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  border: 2px solid currentColor;
+  border-left-color: transparent;
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .formGrid { grid-template-columns: 1fr 1fr; }
+  .saveButton { grid-column: 1 / -1; }
+}
+
+@media (max-width: 650px) {
+  .tableHeader { align-items: flex-start; flex-direction: column; }
+  .formGrid { grid-template-columns: 1fr; }
+  .saveButton { grid-column: auto; }
+  .formCard { padding: 18px; }
+  .searchBox { width: 100%; }
+}

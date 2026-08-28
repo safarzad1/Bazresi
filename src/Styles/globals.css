@@ -47,7 +47,12 @@ input {
 
 @font-face {
   font-family: titr;
-  src: url('./Fonts/Titr/titr.ttf');
+  src: url('./Fonts/Titr/BTitr.ttf');
+}
+
+@font-face {
+  font-family: MitraBold;
+  src: url('./Fonts/BMitra/BMitraBold.ttf');
 }
 
 @font-face {
@@ -69,6 +74,10 @@ input {
   font-family: titr;
   /* font-size: 20; */
   /* font-weight: bold; */
+}
+
+.MitraBold {
+  font-family: MitraBold;
 }
 
 .IRANSansXBold {

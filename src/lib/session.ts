@@ -20,6 +20,7 @@ export type AuthSession = {
   semat: number | null;
   sematTitle: string | null;
   mustChangePassword: boolean;
+  isSystemAdmin: boolean;
   permissions: SessionPermissions;
   issuedAt: number;
   expiresAt: number;

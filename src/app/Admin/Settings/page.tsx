@@ -1,27 +1,44 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentSession } from "@/lib/session";
 import styles from "./Settings.module.css";
 
 const settingCards = [
+  {
+    title: "دسترسی انتصابات",
+    text: "تعیین پست انجام‌دهنده و پست‌هایی که اجازه انتصاب یا لغو انتصاب آن‌ها را دارد",
+    tone: "orange",
+    icon: "ن",
+    href: "/Admin/Settings/AppointmentAccess",
+  },
   {
     title: "کاربران و دسترسی‌ها",
     text: "مدیریت کاربران، سمت‌ها و سطح دسترسی به بخش‌های سامانه",
     tone: "teal",
     icon: "ک",
+    href: null,
   },
   {
     title: "تنظیمات پایه",
     text: "مدیریت اطلاعات پایه و گزینه‌های عمومی سامانه بازرسی",
     tone: "blue",
     icon: "ت",
+    href: null,
   },
   {
     title: "امنیت و ورود",
     text: "سیاست‌های ورود، رمز عبور و کنترل نشست کاربران",
     tone: "purple",
     icon: "ا",
+    href: null,
   },
 ] as const;
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await getCurrentSession();
+  if (!session) redirect("/Login");
+  if (!session.isSystemAdmin) redirect("/Admin/Dashboard");
+
   return (
     <main className={styles.page}>
       <div className={styles.heading}>
@@ -31,16 +48,21 @@ export default function SettingsPage() {
       </div>
 
       <div className={styles.grid}>
-        {settingCards.map((item) => (
-          <article className={styles.card} key={item.title}>
+        {settingCards.map((item) => {
+          const content = (
+          <article className={`${styles.card} ${item.href ? styles.cardActive : ""}`}>
             <span className={`${styles.icon} ${styles[item.tone]}`}>{item.icon}</span>
             <div>
               <h2>{item.title}</h2>
               <p>{item.text}</p>
-              <small>در مرحله بعد تکمیل می‌شود</small>
+              <small>{item.href ? "ورود به تنظیمات" : "در مرحله بعد تکمیل می‌شود"}</small>
             </div>
           </article>
-        ))}
+          );
+          return item.href
+            ? <Link className={styles.cardLink} href={item.href} key={item.title}>{content}</Link>
+            : <div key={item.title}>{content}</div>;
+        })}
       </div>
     </main>
   );

@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
       semat: user.Semat === null ? null : Number(user.Semat),
       sematTitle: user.OnvanSemat || null,
       mustChangePassword: dbBit(user.ChangePassword),
+      isSystemAdmin: dbBit(user.IsSystemAdmin),
       permissions: {
         dashboard: dbBit(user.TabDashboard),
         evaluation: dbBit(user.TabArzeshyabi),
