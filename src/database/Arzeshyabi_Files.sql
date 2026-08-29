@@ -15,9 +15,9 @@ BEGIN
     FileSize bigint NOT NULL,
     FileData varbinary(max) NOT NULL,
     IsDelete bit NOT NULL CONSTRAINT DF_EvaluationFiles_IsDelete DEFAULT(0),
-    CreateUserId nvarchar(450) NOT NULL,
+    CreateUserId nvarchar(200) NOT NULL,
     CreateDateTime datetime2(0) NOT NULL CONSTRAINT DF_EvaluationFiles_CreateDate DEFAULT(SYSDATETIME()),
-    DeleteUserId nvarchar(450) NULL,
+    DeleteUserId nvarchar(200) NULL,
     DeleteDateTime datetime2(0) NULL,
     CONSTRAINT UQ_EvaluationFiles_FileName UNIQUE(FileName),
     CONSTRAINT CK_EvaluationFiles_Size CHECK(FileSize > 0 AND FileSize <= 5242880)
@@ -26,9 +26,16 @@ BEGIN
 END;
 GO
 
+IF COL_LENGTH(N'filedb.EvaluationFiles',N'CreateUserId')<>400
+  ALTER TABLE filedb.EvaluationFiles ALTER COLUMN CreateUserId nvarchar(200) NOT NULL;
+GO
+IF COL_LENGTH(N'filedb.EvaluationFiles',N'DeleteUserId')<>400
+  ALTER TABLE filedb.EvaluationFiles ALTER COLUMN DeleteUserId nvarchar(200) NULL;
+GO
+
 CREATE OR ALTER PROCEDURE filedb.SP_EvaluationFile_Save
   @EvaluationId nvarchar(150), @FileName nvarchar(150), @OriginalName nvarchar(260),
-  @ContentType nvarchar(100), @FileData varbinary(max), @CreateUserId nvarchar(450)
+  @ContentType nvarchar(100), @FileData varbinary(max), @CreateUserId nvarchar(200)
 AS
 BEGIN
   SET NOCOUNT ON;
@@ -48,7 +55,7 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE filedb.SP_EvaluationFile_SoftDelete @FileName nvarchar(150), @DeleteUserId nvarchar(450)
+CREATE OR ALTER PROCEDURE filedb.SP_EvaluationFile_SoftDelete @FileName nvarchar(150), @DeleteUserId nvarchar(200)
 AS
 BEGIN
   SET NOCOUNT ON;

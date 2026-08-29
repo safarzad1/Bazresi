@@ -12,6 +12,22 @@ type AdminShellProps = {
   sematTitle: string | null;
   isSystemAdmin: boolean;
   evaluationAllowed: boolean;
+  appointmentsAllowed: boolean;
+};
+
+type AppointmentNotification = {
+  entesabId: number;
+  fullName: string | null;
+  postTitle: string | null;
+  requesterFullName: string | null;
+  createDateTime: string | null;
+  unread: boolean;
+};
+
+type AppointmentNotifications = {
+  pendingCount: number;
+  unreadCount: number;
+  items: AppointmentNotification[];
 };
 
 function DashboardIcon() {
@@ -124,13 +140,19 @@ function DownIcon() {
   );
 }
 
-const menuItems = [
-  { href: "/Admin/Dashboard", title: "داشبورد", icon: DashboardIcon },
-  { href: "/Admin/Users", title: "فهرست کاربران", icon: UsersIcon },
+const dashboardItem = { href: "/Admin/Dashboard", title: "داشبورد", icon: DashboardIcon };
+
+const personsItems = [
   { href: "/Admin/Persons", title: "فهرست اشخاص", icon: PersonsIcon },
+];
+
+const organizationItems = [
   { href: "/Admin/OrganizationStructure", title: "ساختار سازمانی", icon: OrganizationIcon },
-  { href: "/Admin/Evaluation", title: "ارزشیابی", icon: EvaluationIcon },
-  { href: "/Admin/Settings", title: "تنظیمات", icon: SettingsIcon },
+];
+
+const systemItems = [
+  { href: "/Admin/Users", title: "فهرست کاربران", icon: UsersIcon },
+  { href: "/Admin/Settings", title: "تنظیمات سامانه", icon: SettingsIcon },
 ];
 
 export default function AdminShell({
@@ -140,6 +162,7 @@ export default function AdminShell({
   sematTitle,
   isSystemAdmin,
   evaluationAllowed,
+  appointmentsAllowed,
 }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -148,6 +171,12 @@ export default function AdminShell({
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<AppointmentNotifications>({
+    pendingCount: 0,
+    unreadCount: 0,
+    items: [],
+  });
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
   const headerActionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -171,6 +200,42 @@ export default function AdminShell({
     document.addEventListener("mousedown", closeHeaderMenus);
     return () => document.removeEventListener("mousedown", closeHeaderMenus);
   }, []);
+
+  useEffect(() => {
+    if (!appointmentsAllowed && !isSystemAdmin) return;
+    let active = true;
+
+    async function loadNotifications() {
+      setNotificationsLoading(true);
+      try {
+        const response = await fetch("/api/appointments/notifications", {
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as AppointmentNotifications;
+        if (active) {
+          setNotifications({
+            pendingCount: Number(payload.pendingCount || 0),
+            unreadCount: Number(payload.unreadCount || 0),
+            items: Array.isArray(payload.items) ? payload.items : [],
+          });
+        }
+      } catch {
+        // خطای موقت اعلان نباید مانع نمایش سایر بخش‌های پنل شود.
+      } finally {
+        if (active) setNotificationsLoading(false);
+      }
+    }
+
+    void loadNotifications();
+    const timer = window.setInterval(() => void loadNotifications(), 60_000);
+    window.addEventListener("appointments:notifications-changed", loadNotifications);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener("appointments:notifications-changed", loadNotifications);
+    };
+  }, [appointmentsAllowed, isSystemAdmin, pathname]);
 
   async function logout() {
     if (loggingOut) return;
@@ -201,64 +266,130 @@ export default function AdminShell({
           </div>
         </div>
 
-        <nav className={styles.navigation} aria-label="منوی عمومی">
-          <span className={styles.menuTitle}>منوی عمومی</span>
-          {menuItems.filter((item) =>
-            (item.href !== "/Admin/Settings" || isSystemAdmin) &&
-            (item.href !== "/Admin/Evaluation" || evaluationAllowed || isSystemAdmin)
-          ).map((item) => {
-            const Icon = item.icon;
-            const active = pathname.startsWith(item.href);
-            return (
-              <Link
-                className={`${styles.menuLink} ${active ? styles.menuLinkActive : ""}`}
-                href={item.href}
-                key={item.href}
-              >
-                <span className={styles.menuIcon}><Icon /></span>
-                <span>{item.title}</span>
-              </Link>
-            );
-          })}
-
-          <div className={styles.menuGroup}>
-            <button
-              type="button"
-              className={`${styles.menuLink} ${styles.menuGroupButton} ${pathname.startsWith("/Admin/Appointments") ? styles.menuLinkActive : ""}`}
-              onClick={() => setAppointmentsOpen((current) => !current)}
-              aria-expanded={appointmentsOpen}
+        <nav className={styles.navigation} aria-label="منوی سامانه">
+          <div className={styles.menuSection}>
+            <span className={styles.menuTitle}>اصلی</span>
+            <Link
+              className={`${styles.menuLink} ${pathname.startsWith(dashboardItem.href) ? styles.menuLinkActive : ""}`}
+              href={dashboardItem.href}
             >
-              <span className={styles.menuIcon}><AppointmentsIcon /></span>
-              <span className={styles.menuGroupTitle}>انتصابات</span>
-              <span className={`${styles.menuChevron} ${appointmentsOpen ? styles.menuChevronOpen : ""}`}><ChevronIcon /></span>
-            </button>
-
-            {appointmentsOpen && (
-              <div className={styles.submenu}>
-                <Link
-                  className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Workflow") ? styles.submenuLinkActive : ""}`}
-                  href="/Admin/Appointments/Workflow"
-                >
-                  <span />
-                  فرایند انتصابات
-                </Link>
-                <Link
-                  className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Current") ? styles.submenuLinkActive : ""}`}
-                  href="/Admin/Appointments/Current"
-                >
-                  <span />
-                  فهرست انتصاب‌های جاری
-                </Link>
-                <Link
-                  className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Cancellations") ? styles.submenuLinkActive : ""}`}
-                  href="/Admin/Appointments/Cancellations"
-                >
-                  <span />
-                  فرایند لغو انتصاب
-                </Link>
-              </div>
-            )}
+              <span className={styles.menuIcon}><DashboardIcon /></span>
+              <span>{dashboardItem.title}</span>
+            </Link>
           </div>
+
+          <div className={styles.menuSection}>
+            <span className={styles.menuTitle}>اشخاص و پرونده‌ها</span>
+            {personsItems.map((item) => {
+              const Icon = item.icon;
+              const active = pathname.startsWith(item.href);
+              return (
+                <Link
+                  className={`${styles.menuLink} ${active ? styles.menuLinkActive : ""}`}
+                  href={item.href}
+                  key={item.href}
+                >
+                  <span className={styles.menuIcon}><Icon /></span>
+                  <span>{item.title}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {(appointmentsAllowed || evaluationAllowed || isSystemAdmin) && (
+            <div className={styles.menuSection}>
+              <span className={styles.menuTitle}>فرآیندها</span>
+
+              {(appointmentsAllowed || isSystemAdmin) && (
+                <div className={styles.menuGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.menuLink} ${styles.menuGroupButton} ${pathname.startsWith("/Admin/Appointments") ? styles.menuLinkActive : ""}`}
+                    onClick={() => setAppointmentsOpen((current) => !current)}
+                    aria-expanded={appointmentsOpen}
+                  >
+                    <span className={styles.menuIcon}><AppointmentsIcon /></span>
+                    <span className={styles.menuGroupTitle}>انتصابات</span>
+                    <span className={`${styles.menuChevron} ${appointmentsOpen ? styles.menuChevronOpen : ""}`}><ChevronIcon /></span>
+                  </button>
+
+                  {appointmentsOpen && (
+                    <div className={styles.submenu}>
+                      <Link
+                        className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Workflow") ? styles.submenuLinkActive : ""}`}
+                        href="/Admin/Appointments/Workflow"
+                      >
+                        <span />
+                        فرایند انتصابات
+                      </Link>
+                      <Link
+                        className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Current") ? styles.submenuLinkActive : ""}`}
+                        href="/Admin/Appointments/Current"
+                      >
+                        <span />
+                        انتصاب‌های جاری
+                      </Link>
+                      <Link
+                        className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Cancellations") ? styles.submenuLinkActive : ""}`}
+                        href="/Admin/Appointments/Cancellations"
+                      >
+                        <span />
+                        لغو انتصاب
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(evaluationAllowed || isSystemAdmin) && (
+                <Link
+                  className={`${styles.menuLink} ${pathname.startsWith("/Admin/Evaluation") ? styles.menuLinkActive : ""}`}
+                  href="/Admin/Evaluation"
+                >
+                  <span className={styles.menuIcon}><EvaluationIcon /></span>
+                  <span>ارزشیابی</span>
+                </Link>
+              )}
+            </div>
+          )}
+
+          <div className={styles.menuSection}>
+            <span className={styles.menuTitle}>ساختار سازمان</span>
+            {organizationItems.map((item) => {
+              const Icon = item.icon;
+              const active = pathname.startsWith(item.href);
+              return (
+                <Link
+                  className={`${styles.menuLink} ${active ? styles.menuLinkActive : ""}`}
+                  href={item.href}
+                  key={item.href}
+                >
+                  <span className={styles.menuIcon}><Icon /></span>
+                  <span>{item.title}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {isSystemAdmin && (
+            <div className={styles.menuSection}>
+              <span className={styles.menuTitle}>مدیریت سامانه</span>
+              {systemItems.map((item) => {
+                const Icon = item.icon;
+                const active = pathname.startsWith(item.href);
+                return (
+                  <Link
+                    className={`${styles.menuLink} ${active ? styles.menuLinkActive : ""}`}
+                    href={item.href}
+                    key={item.href}
+                  >
+                    <span className={styles.menuIcon}><Icon /></span>
+                    <span>{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </nav>
 
         <div className={styles.sidebarFooter}>
@@ -321,12 +452,56 @@ export default function AdminShell({
                 }}
               >
                 <BellIcon />
+                {notifications.unreadCount > 0 && (
+                  <span className={styles.notificationBadge}>
+                    {notifications.unreadCount > 99
+                      ? "+۹۹"
+                      : notifications.unreadCount.toLocaleString("fa-IR")}
+                  </span>
+                )}
               </button>
               {notificationOpen && (
                 <div className={styles.notificationPanel}>
-                  <BellIcon />
-                  <strong>اعلان جدیدی ندارید</strong>
-                  <span>اعلان‌های سامانه در این بخش نمایش داده می‌شوند.</span>
+                  <header className={styles.notificationHeader}>
+                    <div>
+                      <strong>کارتابل انتصابات</strong>
+                      <span>{notifications.pendingCount.toLocaleString("fa-IR")} درخواست در انتظار اقدام</span>
+                    </div>
+                    {notifications.unreadCount > 0 && (
+                      <b>{notifications.unreadCount.toLocaleString("fa-IR")} جدید</b>
+                    )}
+                  </header>
+                  <div className={styles.notificationList}>
+                    {notificationsLoading && !notifications.items.length ? (
+                      <p>در حال دریافت اعلان‌ها...</p>
+                    ) : notifications.items.length ? (
+                      notifications.items.slice(0, 5).map((item) => (
+                        <Link
+                          href={`/Admin/Appointments/Workflow?request=${item.entesabId}`}
+                          className={item.unread ? styles.unreadNotification : ""}
+                          key={item.entesabId}
+                          onClick={() => setNotificationOpen(false)}
+                        >
+                          <i />
+                          <span>
+                            <strong>{item.fullName || "فرد پیشنهادی"}</strong>
+                            <small>{item.postTitle || "پیشنهاد انتصاب"}{item.requesterFullName ? ` · از ${item.requesterFullName}` : ""}</small>
+                          </span>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className={styles.emptyNotifications}>
+                        <BellIcon />
+                        <strong>اعلان جدیدی ندارید</strong>
+                        <span>درخواست‌های رسیده به کارتابل شما اینجا نمایش داده می‌شوند.</span>
+                      </div>
+                    )}
+                  </div>
+                  {notifications.pendingCount > 0 && (
+                    <Link className={styles.allNotificationsLink} href="/Admin/Appointments/Workflow" onClick={() => setNotificationOpen(false)}>
+                      مشاهده همه درخواست‌ها
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

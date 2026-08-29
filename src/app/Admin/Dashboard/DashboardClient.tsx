@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import styles from "./Dashboard.module.css";
+
+type InboxItem = {
+  entesabId: number;
+  fullName: string | null;
+  postTitle: string | null;
+  requesterFullName: string | null;
+  createDateTime: string | null;
+  unread: boolean;
+};
+
+type AppointmentInbox = {
+  pendingCount: number;
+  unreadCount: number;
+  items: InboxItem[];
+};
 
 type ModuleKey = "persons" | "appointments" | "cancellations" | "evaluation" | "inspection";
 type Metric = { label: string; value: number; suffix?: string; hint: string; tone: "teal" | "blue" | "amber" | "purple" };
@@ -54,14 +69,39 @@ function ModuleIcon({name}:{name:ModuleKey}) {
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export default function DashboardClient({displayName,mustChangePassword}:{displayName:string;mustChangePassword:boolean}) {
+export default function DashboardClient({mustChangePassword,appointmentsAllowed}:{mustChangePassword:boolean;appointmentsAllowed:boolean}) {
   const [active,setActive]=useState<ModuleKey>("persons");
+  const [appointmentInbox,setAppointmentInbox]=useState<AppointmentInbox>({pendingCount:0,unreadCount:0,items:[]});
+  const [inboxLoading,setInboxLoading]=useState(appointmentsAllowed);
   const selected=modules[active];
   const maxChartValue=useMemo(()=>Math.max(...selected.chart.map(item=>item.value),1),[selected]);
-  const today=useMemo(()=>new Intl.DateTimeFormat("fa-IR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(new Date()),[]);
+
+  useEffect(()=>{
+    if(!appointmentsAllowed)return;
+    let activeRequest=true;
+    async function loadInbox(){
+      setInboxLoading(true);
+      try{
+        const response=await fetch("/api/appointments/notifications",{cache:"no-store"});
+        if(!response.ok)return;
+        const payload=(await response.json()) as AppointmentInbox;
+        if(activeRequest)setAppointmentInbox({pendingCount:Number(payload.pendingCount||0),unreadCount:Number(payload.unreadCount||0),items:Array.isArray(payload.items)?payload.items:[]});
+      }catch{
+        // داشبورد در خطای موقت کارتابل همچنان قابل استفاده می‌ماند.
+      }finally{if(activeRequest)setInboxLoading(false);}
+    }
+    void loadInbox();
+    const timer=window.setInterval(()=>void loadInbox(),60_000);
+    return()=>{activeRequest=false;window.clearInterval(timer);};
+  },[appointmentsAllowed]);
+
   return <main className={styles.page} dir="rtl">
-    <header className={styles.headerCard}><div className={styles.headerText}><span>داشبورد مدیریتی</span><h1>{displayName}، خوش آمدید</h1><p>وضعیت بخش‌های مختلف سامانه را یکجا مشاهده و پیگیری کنید.</p></div><div className={styles.headerMeta}><span>{today}</span><small><i/> سامانه فعال است</small></div></header>
     {mustChangePassword&&<div className={styles.notice}>برای افزایش امنیت حساب، لازم است رمز عبور خود را تغییر دهید.</div>}
+    {appointmentsAllowed&&<section className={styles.appointmentInbox} aria-label="درخواست‌های رسیده انتصابات">
+      <header><div><span>کارتابل انتصابات</span><h2>درخواست‌های رسیده به شما</h2></div><div className={styles.inboxCounters}><span><b>{appointmentInbox.unreadCount.toLocaleString("fa-IR")}</b> جدید</span><span><b>{appointmentInbox.pendingCount.toLocaleString("fa-IR")}</b> در انتظار اقدام</span></div></header>
+      <div className={styles.inboxRows}>{inboxLoading&&!appointmentInbox.items.length?<p>در حال دریافت کارتابل...</p>:appointmentInbox.items.length?appointmentInbox.items.slice(0,4).map(item=><Link href={`/Admin/Appointments/Workflow?request=${item.entesabId}`} key={item.entesabId} className={item.unread?styles.newInboxRow:""}><i/><span><strong>{item.fullName||"فرد پیشنهادی"}</strong><small>{item.postTitle||"پیشنهاد انتصاب"}{item.requesterFullName?` · از ${item.requesterFullName}`:""}</small></span><em>{item.unread?"جدید":"در انتظار"}</em></Link>):<p>درخواست جدیدی در کارتابل انتصابات شما نیست.</p>}</div>
+      {appointmentInbox.pendingCount>0&&<Link className={styles.openInbox} href="/Admin/Appointments/Workflow">همه <b>←</b></Link>}
+    </section>}
     <div className={styles.demoNotice}><span>نسخه نمایشی داشبورد</span> اعداد این صفحه فعلاً نمونه هستند و پس از تأیید ظاهر به اطلاعات واقعی متصل می‌شوند.</div>
     <nav className={styles.moduleTabs} aria-label="بخش‌های داشبورد">{tabOrder.map(key=><button type="button" key={key} className={active===key?styles.activeTab:""} onClick={()=>setActive(key)}><span className={styles.tabIcon}><ModuleIcon name={key}/></span><span><strong>{modules[key].title}</strong><small>{modules[key].eyebrow}</small></span></button>)}</nav>
     <section className={styles.moduleHeading}><div><span>{selected.eyebrow}</span><h2>{selected.title}</h2><p>{selected.description}</p></div>{selected.href?<Link href={selected.href}>{selected.action}<b>←</b></Link>:<span className={styles.disabledAction}>{selected.action}</span>}</section>

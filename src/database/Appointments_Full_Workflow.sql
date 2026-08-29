@@ -122,8 +122,12 @@ BEGIN
     WHERE U.[Id] = @ActorUserId AND ISNULL(U.[IsDelete],0)=0 AND ISNULL(U.[IsActive],1)=1;
     IF @ActorPostId IS NULL THROW 51201, N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.', 1;
 
-    SELECT @DestinationPostId = NULLIF(S.[PID],0) FROM [dbo].[Semats] S WHERE S.[ID]=@ActorPostId;
-    SET @DestinationPostId = ISNULL(@DestinationPostId,@ActorPostId);
+    /* مقصد نخست همان گیرنده رسمی درخواست‌های بازرسی در گردش سامانه قبلی است. */
+    /* قانون گردش: تمام پیشنهادهای انتصاب ابتدا باید به رئیس دفتر بازرسی (پست 204) ارسال شوند. */
+    SELECT @DestinationPostId=S.[ID]
+    FROM [dbo].[Semats] S
+    WHERE S.[ID]=204;
+    IF @DestinationPostId IS NULL THROW 51221,N'پست رئیس دفتر بازرسی با کد 204 در ساختار سازمانی پیدا نشد.',1;
 
     SELECT TOP (20) P.[PersonId], P.[CodeMelli], P.[FirstName], P.[LastName],
            LTRIM(RTRIM(CONCAT(P.[FirstName],N' ',P.[LastName]))) AS [FullName], P.[FatherName], P.[TarikhTavalod],
@@ -162,12 +166,19 @@ BEGIN
         THROW 51203,N'حداقل یک و حداکثر ده دلیل وارد کنید.',1;
     IF @ProposalFileData IS NULL OR @ProposalContentType<>N'image/png' OR DATALENGTH(@ProposalFileData)<100 OR DATALENGTH(@ProposalFileData)>12582912 OR SUBSTRING(@ProposalFileData,1,8)<>0x89504E470D0A1A0A
         THROW 51204,N'تصویر PNG پیشنهاد انتصاب معتبر نیست یا بیش از ۱۲ مگابایت حجم دارد.',1;
+    IF OBJECT_ID(N'[bz].[AppointmentWorkflowReferrals]',N'U') IS NULL
+        THROW 51222,N'ساختار ارجاعات انتصابات نصب نشده است؛ ابتدا اسکریپت Appointments_Workflow_Referrals.sql را اجرا کنید.',1;
 
     DECLARE @ActorPostId BIGINT,@DestinationPostId BIGINT,@PersonCode NVARCHAR(10),@FirstName NVARCHAR(150),@LastName NVARCHAR(150),@FatherName NVARCHAR(150),@BirthDate NVARCHAR(10),@LastJob NVARCHAR(150),@PostTitle NVARCHAR(500),@Code NVARCHAR(50);
     SELECT @ActorPostId=TRY_CONVERT(BIGINT,U.[Semat]) FROM [dbo].[AspNetUsers] U WHERE U.[Id]=@ActorUserId AND ISNULL(U.[IsDelete],0)=0 AND ISNULL(U.[IsActive],1)=1;
     IF @ActorPostId IS NULL THROW 51205,N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.',1;
     IF NOT EXISTS(SELECT 1 FROM [bz].[AppointmentPostAccess] A WHERE A.[ActorPostId]=@ActorPostId AND A.[TargetPostId]=@PostId AND A.[IsActive]=1) THROW 51206,N'مجوز پیشنهاد انتصاب برای این پست را ندارید.',1;
-    SELECT @DestinationPostId=ISNULL(NULLIF(S.[PID],0),@ActorPostId),@PostTitle=S.[OnvanSemat] FROM [dbo].[Semats] S WHERE S.[ID]=@PostId;
+    SELECT @PostTitle=S.[OnvanSemat] FROM [dbo].[Semats] S WHERE S.[ID]=@PostId;
+    /* قانون گردش: تمام پیشنهادهای انتصاب ابتدا باید به رئیس دفتر بازرسی (پست 204) ارسال شوند. */
+    SELECT @DestinationPostId=S.[ID]
+    FROM [dbo].[Semats] S
+    WHERE S.[ID]=204;
+    IF @DestinationPostId IS NULL THROW 51221,N'پست رئیس دفتر بازرسی با کد 204 در ساختار سازمانی پیدا نشد.',1;
     SELECT @PersonCode=LEFT(P.[CodeMelli],10),@FirstName=P.[FirstName],@LastName=P.[LastName],@FatherName=P.[FatherName],@BirthDate=LEFT(P.[TarikhTavalod],10),@LastJob=P.[Shoghl] FROM [bz].[Person] P WHERE P.[PersonId]=@PersonId AND ISNULL(P.[IsDelete],0)=0;
     IF @PersonCode IS NULL OR @PostTitle IS NULL THROW 51207,N'شخص یا پست انتخاب‌شده پیدا نشد.',1;
     SET @Code=LEFT(REPLACE(CONVERT(NVARCHAR(36),NEWID()),N'-',N''),10);
@@ -181,8 +192,8 @@ BEGIN
       VALUES(@PersonId,@PersonCode,@FirstName,@LastName,LTRIM(RTRIM(CONCAT(@FirstName,N' ',@LastName))),@FatherName,@BirthDate,@PostId,@PostTitle,@LastJob,2,N'پیشنهاد انتصاب',CONVERT(NVARCHAR(50),@ActorPostId),CONVERT(NVARCHAR(50),@DestinationPostId),@DestinationPostId,0,@Code,0,@ActorUserId,CONVERT(NVARCHAR(19),GETDATE(),120),1,0,0);
       DECLARE @EntesabId BIGINT=SCOPE_IDENTITY();
 
-      /* پس از اجرای Appointments_Workflow_Referrals.sql، ارجاع اولیه نیز همزمان ساخته می‌شود. */
-      IF OBJECT_ID(N'[bz].[AppointmentWorkflowReferrals]',N'U') IS NOT NULL AND @DestinationPostId<>@ActorPostId
+      /* ثبت درخواست و ارجاع اولیه یک تراکنش واحد هستند تا رکورد بدون کارتابل ایجاد نشود. */
+      IF @DestinationPostId<>@ActorPostId
       BEGIN
         INSERT [bz].[AppointmentWorkflowReferrals]
           ([EntesabId],[ParentReferralId],[ReferralKind],[FromPostId],[ToPostId],[Note],[StatusCode],[CreateUserId])

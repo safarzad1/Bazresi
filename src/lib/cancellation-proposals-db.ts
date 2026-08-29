@@ -1,4 +1,4 @@
-import { getDbPool, sql } from "@/lib/db";
+import { getDbPool } from "@/lib/db";
 
 export type CancellationProposalDraft = {
   EntesabId: number;
@@ -143,9 +143,9 @@ export async function createCancellationProposal(
     .input("ActorUserId", actorUserId)
     .input("EntesabId", entesabId)
     .input("ReasonsJson", JSON.stringify(reasons))
-    .input("FormFileName", sql.NVarChar(150), formFileName)
-    .input("FormContentType", sql.NVarChar(100), formContentType)
-    .input("FormFileData", sql.VarBinary(sql.MAX), formFileData)
+    .input("FormFileName", formFileName)
+    .input("FormContentType", formContentType)
+    .input("FormFileData", formFileData)
     .input("DocumentHash", documentHash)
     .execute("bz.SP_Appointments_CancellationProposal_Create");
 
@@ -236,7 +236,7 @@ export async function decideCancellationProposal(
     .input("ActorUserId", actorUserId)
     .input("ProposalId", proposalId)
     .input("DecisionCode", decisionCode)
-    .input("DecisionNote", sql.NVarChar(1000), decisionNote)
+    .input("DecisionNote", decisionNote)
     .execute("bz.SP_Appointments_CancellationWorkflow_Decide");
   const row = (result.recordset?.[0] ?? null) as Record<string, unknown> | null;
   return {

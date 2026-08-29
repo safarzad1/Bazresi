@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/session";
-import { getDbPool, sql } from "@/lib/db";
+import { getDbPool } from "@/lib/db";
 import { deleteEvaluationFile, getEvaluationFile, saveEvaluationFile } from "@/lib/evaluation-files-db";
 import { getEvaluationIdentity, setEvaluationFileName } from "@/lib/evaluation-db";
 
@@ -19,7 +19,7 @@ async function authContext() {
   return identity ? { session, identity } : null;
 }
 async function canAccess(id: string, nationalCode: string, admin: boolean) {
-  const pool = await getDbPool(); const result = await pool.request().input("Id", sql.NVarChar(150), id).input("Code", sql.NVarChar(10), nationalCode).query("SELECT TOP 1 a.FileName FROM Arzyabi.Arzyabi a LEFT JOIN Arzyabi.Arzyabi p ON p.IDArzYabi=a.PID WHERE a.IDArzYabi=@Id AND (@Code=a.CodeMelli OR @Code=p.CodeMelli)");
+  const pool = await getDbPool(); const result = await pool.request().input("Id", id).input("Code", nationalCode).query("SELECT TOP 1 a.FileName FROM Arzyabi.Arzyabi a LEFT JOIN Arzyabi.Arzyabi p ON p.IDArzYabi=a.PID WHERE a.IDArzYabi=@Id AND (@Code=a.CodeMelli OR @Code=p.CodeMelli)");
   return admin || Boolean(result.recordset?.[0]);
 }
 

@@ -4,9 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } 
 import domtoimage from "dom-to-image";
 import {
   cancellationFontFamily,
-  cancellationFontOptions,
   defaultCancellationFormSettings,
-  type CancellationFontName,
   type CancellationFormSettings,
 } from "@/lib/cancellation-form-settings";
 import {
@@ -50,7 +48,6 @@ type ApiResult = {
   proposalId?: number;
   documentUrl?: string;
   settings?: CancellationFormSettings;
-  canEditSettings?: boolean;
 };
 
 type Props = {
@@ -58,16 +55,6 @@ type Props = {
   onClose: () => void;
   onSaved: () => void;
 };
-
-const formStyleRows = [
-  { label: "عنوان نامه", font: "TitleFont", size: "TitleFontSize", weight: "TitleFontWeight", min: 18, max: 60 },
-  { label: "گیرنده", font: "RecipientFont", size: "RecipientFontSize", weight: "RecipientFontWeight", min: 12, max: 40 },
-  { label: "متن نامه", font: "BodyFont", size: "BodyFontSize", weight: "BodyFontWeight", min: 11, max: 30 },
-  { label: "عنوان دلایل", font: "ReasonsTitleFont", size: "ReasonsTitleFontSize", weight: "ReasonsTitleFontWeight", min: 10, max: 28 },
-  { label: "متن دلایل", font: "ReasonsFont", size: "ReasonsFontSize", weight: "ReasonsFontWeight", min: 10, max: 28 },
-  { label: "امضاکننده", font: "SignerFont", size: "SignerFontSize", weight: "SignerFontWeight", min: 11, max: 36 },
-  { label: "رونوشت", font: "CopyFont", size: "CopyFontSize", weight: "CopyFontWeight", min: 10, max: 28 },
-] as const;
 
 async function responseJson(response: Response) {
   const data = (await response.json().catch(() => ({}))) as ApiResult;
@@ -114,28 +101,6 @@ function formattedBodyParts(
   });
   if (cursor < text.length) parts.push(<span key={`body-${cursor}`}>{formatSlice(cursor, text.length)}</span>);
   return parts;
-}
-
-function replaceFormattingRange(
-  runs: CancellationLetterFormatRun[] | undefined,
-  next: CancellationLetterFormatRun,
-) {
-  const result: CancellationLetterFormatRun[] = [];
-  for (const run of runs ?? []) {
-    if (run.end <= next.start || run.start >= next.end) result.push(run);
-    else {
-      if (run.start < next.start) result.push({ ...run, end: next.start });
-      if (run.end > next.end) result.push({ ...run, start: next.end });
-    }
-  }
-  result.push(next);
-  result.sort((a, b) => a.start - b.start);
-  return result.reduce<CancellationLetterFormatRun[]>((merged, run) => {
-    const previous = merged.at(-1);
-    if (previous && previous.end === run.start && previous.font === run.font && previous.fontSize === run.fontSize) previous.end = run.end;
-    else merged.push({ ...run });
-    return merged;
-  }, []);
 }
 
 function CancellationLetterPreview({
@@ -247,16 +212,8 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
   const [success, setSuccess] = useState("");
   const [documentUrl, setDocumentUrl] = useState("");
   const [settings, setSettings] = useState<CancellationFormSettings>(defaultCancellationFormSettings);
-  const [canEditSettings, setCanEditSettings] = useState(false);
-  const [settingsDirty, setSettingsDirty] = useState(false);
-  const [savingSettings, setSavingSettings] = useState(false);
-  const [settingsMessage, setSettingsMessage] = useState("");
-  const [formatting, setFormatting] = useState<CancellationLetterFormatting>({});
-  const [selectedFont, setSelectedFont] = useState<CancellationFontName>("bnaznin");
-  const [selectedFontSize, setSelectedFontSize] = useState(18);
-  const [formatMessage, setFormatMessage] = useState("ابتدا بخشی از متن پیش‌نمایش را انتخاب کنید.");
+  const formatting: CancellationLetterFormatting = {};
   const previewRef = useRef<HTMLDivElement | null>(null);
-  const savedRangeRef = useRef<Range | null>(null);
 
   const fullName = draft?.FullName || target.FullName || "—";
   const validReasons = useMemo(() => reasons.map((reason) => reason.trim()).filter(Boolean), [reasons]);
@@ -274,9 +231,6 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
         if (active) {
           setDraft(data.draft ?? null);
           setSettings(data.settings ?? defaultCancellationFormSettings);
-          setCanEditSettings(Boolean(data.canEditSettings));
-          setSettingsDirty(false);
-          setFormatting({});
           setReasons(data.reasons?.length ? data.reasons : [""]);
           setDocumentUrl(data.documentUrl ?? "");
         }
@@ -292,119 +246,16 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
 
   const changeReason = (index: number, value: string) => {
     setReasons((current) => current.map((reason, reasonIndex) => reasonIndex === index ? value.slice(0, 220) : reason));
-    setFormatting((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !key.startsWith("reason-"))));
-    savedRangeRef.current = null;
   };
 
   const removeReason = (index: number) => {
     setReasons((current) => current.length === 1 ? [""] : current.filter((_, reasonIndex) => reasonIndex !== index));
-    setFormatting((current) => Object.fromEntries(Object.entries(current).filter(([key]) => !key.startsWith("reason-"))));
-    savedRangeRef.current = null;
-  };
-
-  const changeSetting = (
-    key: keyof CancellationFormSettings,
-    value: CancellationFormSettings[keyof CancellationFormSettings],
-  ) => {
-    setSettings((current) => ({ ...current, [key]: value }));
-    setSettingsDirty(true);
-    setSettingsMessage("تغییرات ذخیره نشده است.");
-  };
-
-  const saveSettings = async () => {
-    if (!canEditSettings || !settingsDirty || savingSettings) return;
-    setSavingSettings(true);
-    setError("");
-    setSettingsMessage("");
-    try {
-      const data = await responseJson(await fetch("/api/settings/cancellation-form", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      }));
-      setSettings(data.settings ?? settings);
-      setSettingsDirty(false);
-      setSettingsMessage(data.message || "تنظیمات فرم ذخیره شد.");
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "ذخیره تنظیمات فرم انجام نشد.");
-    } finally {
-      setSavingSettings(false);
-    }
-  };
-
-  useEffect(() => {
-    const rememberSelection = () => {
-      const selection = window.getSelection();
-      const preview = previewRef.current;
-      if (!selection || selection.rangeCount === 0 || selection.isCollapsed || !preview) return;
-      const range = selection.getRangeAt(0);
-      if (preview.contains(range.startContainer) && preview.contains(range.endContainer)) {
-        savedRangeRef.current = range.cloneRange();
-        setFormatMessage("متن انتخاب شد؛ فونت و اندازه را تعیین و اعمال کنید.");
-      }
-    };
-    document.addEventListener("selectionchange", rememberSelection);
-    return () => document.removeEventListener("selectionchange", rememberSelection);
-  }, []);
-
-  const applySelectedFormatting = () => {
-    const range = savedRangeRef.current;
-    const preview = previewRef.current;
-    if (!range || range.collapsed || !preview) {
-      setFormatMessage("ابتدا بخشی از متن پیش‌نمایش را انتخاب کنید.");
-      return;
-    }
-
-    const updates: Array<{ blockId: string; start: number; end: number }> = [];
-    preview.querySelectorAll<HTMLElement>("[data-format-block]").forEach((block) => {
-      if (!range.intersectsNode(block)) return;
-      const length = block.textContent?.length ?? 0;
-      let start = 0;
-      let end = length;
-      if (block.contains(range.startContainer)) {
-        const prefix = document.createRange();
-        prefix.selectNodeContents(block);
-        prefix.setEnd(range.startContainer, range.startOffset);
-        start = prefix.toString().length;
-      }
-      if (block.contains(range.endContainer)) {
-        const prefix = document.createRange();
-        prefix.selectNodeContents(block);
-        prefix.setEnd(range.endContainer, range.endOffset);
-        end = prefix.toString().length;
-      }
-      if (end > start) updates.push({ blockId: block.dataset.formatBlock || "", start, end });
-    });
-
-    if (!updates.length) {
-      setFormatMessage("متن انتخاب‌شده داخل محدوده قابل قالب‌بندی نیست.");
-      return;
-    }
-    setFormatting((current) => {
-      const next = { ...current };
-      updates.forEach(({ blockId, start, end }) => {
-        next[blockId] = replaceFormattingRange(next[blockId], {
-          start,
-          end,
-          font: selectedFont,
-          fontSize: selectedFontSize,
-        });
-      });
-      return next;
-    });
-    savedRangeRef.current = null;
-    window.getSelection()?.removeAllRanges();
-    setFormatMessage("فونت و اندازه روی متن انتخاب‌شده اعمال شد.");
   };
 
   const submit = async () => {
     if (!draft || saving || documentUrl) return;
     if (!validReasons.length) {
       setError("حداقل یک دلیل لغو ابلاغ وارد کنید.");
-      return;
-    }
-    if (settingsDirty) {
-      setError("ابتدا تنظیمات ظاهر فرم را ذخیره کنید.");
       return;
     }
     setSaving(true);
@@ -464,55 +315,6 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
         {!loading && draft ? (
           <div className={styles.cancelWorkspace}>
             <aside className={styles.cancelEditor}>
-              {canEditSettings && !documentUrl ? (
-                <details className={styles.formStyleSettings}>
-                  <summary>تنظیمات فونت و اندازه فرم</summary>
-                  <div className={styles.styleSettingsTable}>
-                    <div className={styles.styleSettingsTableHeader}>
-                      <span>بخش</span><span>فونت</span><span>اندازه</span><span>حالت</span>
-                    </div>
-                    {formStyleRows.map((row) => (
-                      <div className={styles.styleSettingsTableRow} key={row.label}>
-                        <strong>{row.label}</strong>
-                        <select
-                          value={String(settings[row.font])}
-                          onChange={(event) => changeSetting(row.font, event.target.value as CancellationFontName)}
-                        >
-                          {cancellationFontOptions.map((font) => <option key={font.value} value={font.value}>{font.label}</option>)}
-                        </select>
-                        <input
-                          type="number"
-                          min={row.min}
-                          max={row.max}
-                          value={Number(settings[row.size])}
-                          onChange={(event) => changeSetting(row.size, Number(event.target.value))}
-                        />
-                        <select
-                          value={Number(settings[row.weight])}
-                          onChange={(event) => changeSetting(row.weight, Number(event.target.value) as 400 | 700)}
-                        >
-                          <option value={400}>معمولی</option>
-                          <option value={700}>بولد</option>
-                        </select>
-                      </div>
-                    ))}
-                    <div className={styles.styleSettingsAdvanced}>
-                      <label>فاصله خطوط متن<input type="number" min="1.2" max="3" step="0.05" value={settings.BodyLineHeight} onChange={(event) => changeSetting("BodyLineHeight", Number(event.target.value))} /></label>
-                      <label>فاصله خطوط دلایل<input type="number" min="1.1" max="3" step="0.05" value={settings.ReasonsLineHeight} onChange={(event) => changeSetting("ReasonsLineHeight", Number(event.target.value))} /></label>
-                      <label>ارتفاع سطر دلیل<input type="number" min="24" max="100" value={settings.ReasonsRowHeight} onChange={(event) => changeSetting("ReasonsRowHeight", Number(event.target.value))} /></label>
-                      <label>فاصله عنوان تا گیرنده<input type="number" min="0" max="100" value={settings.TitleBottomSpacing} onChange={(event) => changeSetting("TitleBottomSpacing", Number(event.target.value))} /></label>
-                      <label>فاصله گیرنده تا متن<input type="number" min="0" max="100" value={settings.RecipientBottomSpacing} onChange={(event) => changeSetting("RecipientBottomSpacing", Number(event.target.value))} /></label>
-                      <label>تورفتگی شروع متن<input type="number" min="0" max="100" value={settings.BodyFirstLineIndent} onChange={(event) => changeSetting("BodyFirstLineIndent", Number(event.target.value))} /></label>
-                      <label>فاصله عنوان دلایل<input type="number" min="0" max="100" value={settings.ReasonsTitleTopSpacing} onChange={(event) => changeSetting("ReasonsTitleTopSpacing", Number(event.target.value))} /></label>
-                    </div>
-                  </div>
-                  <div className={styles.styleSettingsActions}>
-                    <button type="button" onClick={() => void saveSettings()} disabled={!settingsDirty || savingSettings}>{savingSettings ? "در حال ذخیره..." : "ذخیره تنظیمات"}</button>
-                    {settingsMessage ? <span>{settingsMessage}</span> : null}
-                  </div>
-                </details>
-              ) : null}
-
               <div className={styles.reasonsEditorHeader}>
                 <div><strong>دلایل لغو ابلاغ</strong><span>{validReasons.length.toLocaleString("fa-IR")} از ۱۰ دلیل</span></div>
               </div>
@@ -544,7 +346,7 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
               {success ? <div className={styles.cancelSuccess}>{success}</div> : null}
 
               <div className={styles.cancelActions}>
-                {!documentUrl ? <button type="button" className={styles.submitCancellation} onClick={() => void submit()} disabled={saving || !validReasons.length || settingsDirty}>{saving ? "در حال ثبت لغو ابلاغ..." : "ثبت لغو ابلاغ"}</button> : null}
+                {!documentUrl ? <button type="button" className={styles.submitCancellation} onClick={() => void submit()} disabled={saving || !validReasons.length}>{saving ? "در حال ثبت لغو ابلاغ..." : "ثبت لغو ابلاغ"}</button> : null}
                 {documentUrl ? <button type="button" className={styles.downloadImageButton} onClick={() => void saveImage()} disabled={downloading}>{downloading ? "در حال دریافت پیوست..." : "دریافت پیوست PNG"}</button> : null}
                 <button type="button" className={styles.closeCancellation} onClick={onClose} disabled={saving}>بستن</button>
               </div>
@@ -552,24 +354,6 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
 
             <div className={styles.letterPreviewPane}>
               <div className={styles.previewLabel}>{documentUrl ? "نامه ثبت‌شده" : "پیش‌نمایش زنده فرم"}</div>
-              {!documentUrl ? (
-                <div className={styles.wordToolbar} onMouseDown={(event) => {
-                  if ((event.target as HTMLElement).tagName === "BUTTON") event.preventDefault();
-                }}>
-                  <span>متن را در برگه انتخاب کنید</span>
-                  <label>فونت
-                    <select value={selectedFont} onChange={(event) => setSelectedFont(event.target.value as CancellationFontName)}>
-                      {cancellationFontOptions.map((font) => <option key={font.value} value={font.value}>{font.label}</option>)}
-                    </select>
-                  </label>
-                  <label>اندازه
-                    <input type="number" min="8" max="72" value={selectedFontSize} onChange={(event) => setSelectedFontSize(Math.min(72, Math.max(8, Number(event.target.value) || 8)))} />
-                  </label>
-                  <button type="button" onClick={applySelectedFormatting}>اعمال روی انتخاب</button>
-                  <button type="button" className={styles.clearFormattingButton} onClick={() => { savedRangeRef.current = null; setFormatting({}); setFormatMessage("قالب‌بندی‌های انتخابی پاک شد."); }}>پاک‌کردن قالب‌ها</button>
-                  <small>{formatMessage}</small>
-                </div>
-              ) : null}
               <CancellationLetterPreview draft={draft} reasons={reasons} settings={settings} formatting={formatting} previewRef={previewRef} />
             </div>
           </div>

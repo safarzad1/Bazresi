@@ -63,6 +63,7 @@ export default function AppointmentDetailModal({
       const data = await response.json() as Detail & { message?: string };
       if (!response.ok) throw new Error(data.message || "دریافت درخواست انجام نشد.");
       setDetail(data);
+      window.dispatchEvent(new Event("appointments:notifications-changed"));
       setFinalInterview(parseInterview(data.interviews || [], 2));
       setDate(data.row?.TarikhEblagh || "");
       setMonths(Number(data.row?.ModatEblagKhedmat || 24));
@@ -77,12 +78,17 @@ export default function AppointmentDetailModal({
   useEffect(() => { void load(); }, [entesabId]);
 
   const row = detail?.row;
+  /*
+   * ارجاع داخلی فقط کارتابل را تغییر می‌دهد. سربرگ نامه پیشنهاد از ابتدا متعلق به
+   * رئیس دفتر بازرسی (پست 204) است و نباید با مقصد جاری ارجاع تغییر کند.
+   */
+  const inspectionOfficeHeadReferral = detail?.referrals?.find((item) => item.ToPostId === 204) || null;
   const letter: LetterData = useMemo(() => ({
     fullName: row?.FullName || "", fatherName: row?.FatherName || "", codeMelli: row?.CodeMelli || "",
     birthDate: row?.TarikhTavalod || "", postTitle: row?.PostOnvan || "", requesterName: row?.RequesterFullName || "",
-    requesterPost: row?.RequesterPostTitle || "", recipientName: row?.DestinationFullName || "",
-    recipientPost: row?.DestinationPostTitle || "", reasons: detail?.reasons || [], date: row?.CreateDateTime?.slice(0, 10),
-  }), [detail, row]);
+    requesterPost: row?.RequesterPostTitle || "", recipientName: inspectionOfficeHeadReferral?.ToFullName || "",
+    recipientPost: inspectionOfficeHeadReferral?.ToPostTitle || "رئیس دفتر بازرسی", reasons: detail?.reasons || [], date: row?.CreateDateTime?.slice(0, 10),
+  }), [detail, row, inspectionOfficeHeadReferral]);
 
   const act = async (action: "save-interview" | "approve" | "reject") => {
     if (!detail) return;

@@ -1,8 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SearchableDropdown, type DropdownOption } from "@/component/Dropdown";
 import CancellationProposalModal from "./CancellationProposalModal";
 import styles from "./CurrentAppointments.module.css";
+
+const pageSizeOptions: DropdownOption<number>[] = [10, 20, 50, 100].map((size) => ({
+  value: size,
+  label: size.toLocaleString("fa-IR"),
+}));
 
 type AppointmentDocument = {
   Id: number;
@@ -203,9 +209,14 @@ export default function CurrentAppointmentsClient() {
         <footer className={styles.pagination}>
           <div className={styles.pageSizeWrap}>
             <span>تعداد در صفحه</span>
-            <select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}>
-              {[10, 20, 50, 100].map((size) => <option value={size} key={size}>{size.toLocaleString("fa-IR")}</option>)}
-            </select>
+            <SearchableDropdown<number>
+              compact
+              value={pageSize}
+              options={pageSizeOptions}
+              onChange={(value) => { setPageSize(value); setPage(1); }}
+              ariaLabel="تعداد رکورد در صفحه"
+              className={styles.pageSizeDropdown}
+            />
           </div>
 
           <div className={styles.pageButtons}>

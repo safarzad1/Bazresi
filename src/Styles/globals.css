@@ -117,6 +117,22 @@ input {
 }
 
 @font-face {
+  font-family: PeydaUI;
+  src: url('./Fonts/Peyda/Peyda-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: PeydaUI;
+  src: url('./Fonts/Peyda/Peyda-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+}
+
+@font-face {
   font-family: PeydaFaNum_Regular;
   src: url('./Fonts/Peyda/PeydaFaNum_Regular.ttf');
 }

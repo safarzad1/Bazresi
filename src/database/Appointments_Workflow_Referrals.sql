@@ -79,6 +79,66 @@ WHERE ISNULL(E.[IsDelete],0)=0
       (SELECT 1 FROM [bz].[AppointmentWorkflowReferrals] R WHERE R.[EntesabId]=E.[EntesabId]);
 GO
 
+/*
+  ترمیم مقصد درخواست‌های در انتظاری که نسخه قبلی گردش جدید، آن‌ها را به
+  والد پست پیشنهادی فرستاده بود. درخواست‌های ارجاع‌شده قبلی دست‌کاری نمی‌شوند.
+*/
+DECLARE @OfficialReceiverPostId BIGINT;
+/* قانون گردش: گیرنده اولیه پیشنهاد انتصاب همیشه رئیس دفتر بازرسی با پست 204 است. */
+SELECT @OfficialReceiverPostId=S.[ID]
+FROM [dbo].[Semats] S
+WHERE S.[ID]=204;
+
+IF @OfficialReceiverPostId IS NOT NULL
+BEGIN
+  DECLARE @RoutingRepair TABLE
+  (
+    [EntesabId] BIGINT PRIMARY KEY,
+    [FromPostId] BIGINT NOT NULL,
+    [CreateUserId] NVARCHAR(450) NOT NULL
+  );
+
+  INSERT @RoutingRepair([EntesabId],[FromPostId],[CreateUserId])
+  SELECT E.[EntesabId],TRY_CONVERT(BIGINT,E.[PostSender]),COALESCE(E.[CreateUserId],N'system-routing-repair')
+  FROM [bz].[Entesabat] E
+  WHERE ISNULL(E.[IsDelete],0)=0 AND E.[RecordState]=2 AND E.[IsEblagh]=1
+    AND TRY_CONVERT(BIGINT,E.[PostSender]) IS NOT NULL
+    AND TRY_CONVERT(BIGINT,E.[PostSender])<>@OfficialReceiverPostId
+    AND EXISTS
+      (SELECT 1 FROM [bz].[AppointmentWorkflowHistory] H WHERE H.[EntesabId]=E.[EntesabId] AND H.[ActionCode]=1)
+    AND NOT EXISTS
+      (SELECT 1 FROM [bz].[AppointmentWorkflowReferrals] R WHERE R.[EntesabId]=E.[EntesabId] AND R.[ToPostId]=@OfficialReceiverPostId);
+
+  UPDATE R
+     SET R.[StatusCode]=4,R.[IsRecalled]=1,
+         R.[RecallUserId]=N'system-routing-repair',R.[RecallDateTime]=SYSDATETIME()
+  FROM [bz].[AppointmentWorkflowReferrals] R
+  INNER JOIN @RoutingRepair X ON X.[EntesabId]=R.[EntesabId]
+  WHERE R.[ParentReferralId] IS NULL AND R.[ReferralKind]=1
+    AND R.[ToPostId]<>@OfficialReceiverPostId
+    AND R.[StatusCode] IN(1,2) AND R.[IsRecalled]=0;
+
+  UPDATE E
+     SET E.[WorkflowDestinationPostId]=@OfficialReceiverPostId,
+         E.[PostDelivered]=CONVERT(NVARCHAR(50),@OfficialReceiverPostId),
+         E.[IsRead]=0,E.[ReadTime]=NULL,E.[WhoRead]=NULL
+  FROM [bz].[Entesabat] E
+  INNER JOIN @RoutingRepair X ON X.[EntesabId]=E.[EntesabId];
+
+  INSERT [bz].[AppointmentWorkflowReferrals]
+    ([EntesabId],[ParentReferralId],[ReferralKind],[FromPostId],[ToPostId],[Note],[StatusCode],[CreateUserId])
+  SELECT X.[EntesabId],NULL,1,X.[FromPostId],@OfficialReceiverPostId,
+         N'ارجاع اولیه پیشنهاد انتصاب (اصلاح مقصد)',1,X.[CreateUserId]
+  FROM @RoutingRepair X;
+
+  INSERT [bz].[AppointmentWorkflowHistory]
+    ([EntesabId],[ActionCode],[ActionTitle],[FromState],[ToState],[Note],[ActorUserId],[ActorPostId],[FromPostId],[ToPostId])
+  SELECT X.[EntesabId],8,N'اصلاح مقصد ارجاع اولیه',2,2,
+         N'انتقال به گیرنده رسمی درخواست‌های بازرسی',N'system-routing-repair',X.[FromPostId],X.[FromPostId],@OfficialReceiverPostId
+  FROM @RoutingRepair X;
+END;
+GO
+
 /* جست‌وجوی سروری فرد: نام، نام خانوادگی، نام کامل یا کد ملی؛ حداکثر ۲۰ نتیجه */
 CREATE OR ALTER PROCEDURE [bz].[SP_Appointments_Workflow_Lookups]
     @ActorUserId NVARCHAR(450),
@@ -92,8 +152,11 @@ BEGIN
     WHERE U.[Id]=@ActorUserId AND ISNULL(U.[IsDelete],0)=0 AND ISNULL(U.[IsActive],1)=1;
     IF @ActorPostId IS NULL THROW 51201,N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.',1;
 
-    SELECT @DestinationPostId=NULLIF(S.[PID],0) FROM [dbo].[Semats] S WHERE S.[ID]=@ActorPostId;
-    SET @DestinationPostId=ISNULL(@DestinationPostId,@ActorPostId);
+    /* قانون گردش: تمام پیشنهادهای انتصاب ابتدا باید به رئیس دفتر بازرسی (پست 204) ارسال شوند. */
+    SELECT @DestinationPostId=S.[ID]
+    FROM [dbo].[Semats] S
+    WHERE S.[ID]=204;
+    IF @DestinationPostId IS NULL THROW 51221,N'پست رئیس دفتر بازرسی با کد 204 در ساختار سازمانی پیدا نشد.',1;
 
     SELECT TOP(20) P.[PersonId],P.[CodeMelli],P.[FirstName],P.[LastName],
       LTRIM(RTRIM(CONCAT(P.[FirstName],N' ',P.[LastName]))) AS [FullName],P.[FatherName],P.[TarikhTavalod],
@@ -125,14 +188,11 @@ CREATE OR ALTER PROCEDURE [bz].[SP_Appointments_Workflow_Referral_Lookups]
 AS
 BEGIN
     SET NOCOUNT ON;
-    DECLARE @ActorPostId BIGINT,@IsAdmin BIT=0,@CanSee BIT=0,@CanRefer BIT=0;
+    DECLARE @ActorPostId BIGINT,@CanSee BIT=0,@CanRefer BIT=0;
     SELECT @ActorPostId=TRY_CONVERT(BIGINT,U.[Semat])
     FROM [dbo].[AspNetUsers] U
     WHERE U.[Id]=@ActorUserId AND ISNULL(U.[IsDelete],0)=0 AND ISNULL(U.[IsActive],1)=1;
     IF @ActorPostId IS NULL THROW 51301,N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.',1;
-
-    IF EXISTS(SELECT 1 FROM [dbo].[AspNetUserRoles] UR INNER JOIN [dbo].[AspNetRoles] AR ON AR.[Id]=UR.[RoleId]
-              WHERE UR.[UserId]=@ActorUserId AND AR.[Name] IN(N'Admin',N'a_root')) SET @IsAdmin=1;
 
     SELECT @CanSee=CONVERT(BIT,CASE WHEN EXISTS
     (
@@ -145,33 +205,33 @@ BEGIN
     SELECT @CanRefer=CONVERT(BIT,CASE WHEN EXISTS
     (
       SELECT 1 FROM [bz].[Entesabat] E WHERE E.[EntesabId]=@EntesabId AND E.[RecordState]=2 AND
-      (E.[CreateUserId]=@ActorUserId OR EXISTS(SELECT 1 FROM [bz].[AppointmentWorkflowReferrals] R
+      (E.[WorkflowDestinationPostId]=@ActorPostId OR EXISTS(SELECT 1 FROM [bz].[AppointmentWorkflowReferrals] R
        WHERE R.[EntesabId]=E.[EntesabId] AND R.[ToPostId]=@ActorPostId AND R.[StatusCode] IN(1,2) AND R.[IsRecalled]=0))
     ) THEN 1 ELSE 0 END);
 
-    ;WITH DownTree AS
+    ;WITH Candidate AS
     (
-      SELECT S.[ID],S.[PID],0 AS [Depth] FROM [dbo].[Semats] S WHERE S.[ID]=@ActorPostId
-      UNION ALL
-      SELECT C.[ID],C.[PID],T.[Depth]+1 FROM [dbo].[Semats] C INNER JOIN DownTree T ON C.[PID]=T.[ID] WHERE T.[Depth]<12
-    ), Candidate AS
-    (
-      SELECT S.[ID] FROM [dbo].[Semats] S WHERE @IsAdmin=1 OR @ActorPostId IN(2,201,204) OR CONVERT(NVARCHAR(50),@ActorPostId) LIKE N'204%'
-      UNION SELECT T.[ID] FROM DownTree T
-      UNION SELECT S.[PID] FROM [dbo].[Semats] S WHERE S.[ID]=@ActorPostId AND ISNULL(S.[PID],0)>0
-      UNION SELECT B.[ID] FROM [dbo].[Semats] A INNER JOIN [dbo].[Semats] B ON B.[PID]=A.[PID]
-            WHERE A.[ID]=@ActorPostId AND ISNULL(A.[IsReadEntesabatTop],0)=1
-      UNION SELECT A.[TargetPostId] FROM [bz].[AppointmentPostAccess] A WHERE A.[ActorPostId]=@ActorPostId AND A.[IsActive]=1
+      -- فقط زیرمجموعه مستقیم
+      SELECT C.[ID]
+      FROM [dbo].[Semats] C
+      WHERE C.[PID]=@ActorPostId
+
+      UNION
+
+      -- فقط مافوق مستقیم
+      SELECT S.[PID]
+      FROM [dbo].[Semats] S
+      WHERE S.[ID]=@ActorPostId AND ISNULL(S.[PID],0)>0
     )
-    SELECT DISTINCT CONVERT(BIGINT,S.[ID]) AS [PostId],S.[OnvanSemat] AS [PostTitle],S.[PID] AS [ParentPostId],S.[Mahal],
+    SELECT CONVERT(BIGINT,S.[ID]) AS [PostId],S.[OnvanSemat] AS [PostTitle],S.[PID] AS [ParentPostId],S.[Mahal],
       U.[FullName] AS [AssigneeFullName]
-    FROM Candidate C INNER JOIN [dbo].[Semats] S ON S.[ID]=C.[ID]
-    OUTER APPLY(SELECT TOP(1) AU.[FullName] FROM [dbo].[AspNetUsers] AU
+    FROM Candidate C
+    INNER JOIN [dbo].[Semats] S ON S.[ID]=C.[ID]
+    CROSS APPLY(SELECT TOP(1) AU.[FullName] FROM [dbo].[AspNetUsers] AU
                 WHERE TRY_CONVERT(BIGINT,AU.[Semat])=S.[ID] AND ISNULL(AU.[IsDelete],0)=0 AND ISNULL(AU.[IsActive],1)=1
                 ORDER BY AU.[FullName]) U
     WHERE S.[ID]<>@ActorPostId
-    ORDER BY [PostTitle],[PostId]
-    OPTION(MAXRECURSION 20);
+    ORDER BY CASE WHEN S.[PID]=@ActorPostId THEN 0 ELSE 1 END,[PostTitle],[PostId];
 
     SELECT @ActorPostId AS [ActorPostId],U.[FullName] AS [ActorFullName],S.[OnvanSemat] AS [ActorPostTitle],@CanRefer AS [CanRefer]
     FROM [dbo].[AspNetUsers] U LEFT JOIN [dbo].[Semats] S ON S.[ID]=@ActorPostId WHERE U.[Id]=@ActorUserId;
@@ -214,13 +274,10 @@ BEGIN
     IF @Action NOT IN(N'forward',N'reply',N'recall',N'archive',N'restore') THROW 51303,N'عملیات ارجاع معتبر نیست.',1;
     IF @Action IN(N'forward',N'reply') AND @Note IS NULL THROW 51304,N'درج توضیحات ارجاع یا پاسخ الزامی است.',1;
 
-    DECLARE @ActorPostId BIGINT,@IsAdmin BIT=0,@State INT,@SourceReferralId BIGINT,@ReplyPostId BIGINT,@Now DATETIME2(0)=SYSDATETIME();
+    DECLARE @ActorPostId BIGINT,@State INT,@SourceReferralId BIGINT,@ReplyPostId BIGINT,@Now DATETIME2(0)=SYSDATETIME();
     SELECT @ActorPostId=TRY_CONVERT(BIGINT,U.[Semat]) FROM [dbo].[AspNetUsers] U
     WHERE U.[Id]=@ActorUserId AND ISNULL(U.[IsDelete],0)=0 AND ISNULL(U.[IsActive],1)=1;
     IF @ActorPostId IS NULL THROW 51301,N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.',1;
-    IF EXISTS(SELECT 1 FROM [dbo].[AspNetUserRoles] UR INNER JOIN [dbo].[AspNetRoles] AR ON AR.[Id]=UR.[RoleId]
-              WHERE UR.[UserId]=@ActorUserId AND AR.[Name] IN(N'Admin',N'a_root')) SET @IsAdmin=1;
-
     SELECT @State=E.[RecordState] FROM [bz].[Entesabat] E WHERE E.[EntesabId]=@EntesabId AND ISNULL(E.[IsDelete],0)=0;
     IF @State IS NULL THROW 51305,N'درخواست انتصاب پیدا نشد.',1;
     IF @Action IN(N'forward',N'reply') AND @State<>2 THROW 51306,N'ارجاع درخواست تعیین‌تکلیف‌شده امکان‌پذیر نیست.',1;
@@ -242,29 +299,45 @@ BEGIN
         IF (SELECT COUNT(1) FROM @Destinations) NOT BETWEEN 1 AND 10 THROW 51308,N'حداقل یک و حداکثر ده گیرنده انتخاب کنید.',1;
 
         DECLARE @Allowed TABLE([PostId] BIGINT PRIMARY KEY);
-        ;WITH DownTree AS
-        (
-          SELECT S.[ID],S.[PID],0 AS [Depth] FROM [dbo].[Semats] S WHERE S.[ID]=@ActorPostId
-          UNION ALL
-          SELECT C.[ID],C.[PID],T.[Depth]+1 FROM [dbo].[Semats] C INNER JOIN DownTree T ON C.[PID]=T.[ID] WHERE T.[Depth]<12
-        ), Candidate AS
-        (
-          SELECT S.[ID] FROM [dbo].[Semats] S WHERE @IsAdmin=1 OR @ActorPostId IN(2,201,204) OR CONVERT(NVARCHAR(50),@ActorPostId) LIKE N'204%'
-          UNION SELECT T.[ID] FROM DownTree T
-          UNION SELECT S.[PID] FROM [dbo].[Semats] S WHERE S.[ID]=@ActorPostId AND ISNULL(S.[PID],0)>0
-          UNION SELECT B.[ID] FROM [dbo].[Semats] A INNER JOIN [dbo].[Semats] B ON B.[PID]=A.[PID]
-                WHERE A.[ID]=@ActorPostId AND ISNULL(A.[IsReadEntesabatTop],0)=1
-          UNION SELECT A.[TargetPostId] FROM [bz].[AppointmentPostAccess] A WHERE A.[ActorPostId]=@ActorPostId AND A.[IsActive]=1
-        )
-        INSERT @Allowed([PostId]) SELECT DISTINCT [ID] FROM Candidate WHERE [ID]<>@ActorPostId OPTION(MAXRECURSION 20);
+
+        -- ارجاع دستی فقط بین دو سطح مستقیم سازمانی مجاز است:
+        -- مدیر -> زیرمجموعه مستقیم / زیرمجموعه -> مافوق مستقیم
+        INSERT @Allowed([PostId])
+        SELECT C.[ID]
+        FROM [dbo].[Semats] C
+        WHERE C.[PID]=@ActorPostId
+          AND EXISTS
+          (
+            SELECT 1 FROM [dbo].[AspNetUsers] AU
+            WHERE TRY_CONVERT(BIGINT,AU.[Semat])=C.[ID]
+              AND ISNULL(AU.[IsDelete],0)=0
+              AND ISNULL(AU.[IsActive],1)=1
+          )
+        UNION
+        SELECT S.[PID]
+        FROM [dbo].[Semats] S
+        WHERE S.[ID]=@ActorPostId
+          AND ISNULL(S.[PID],0)>0
+          AND EXISTS
+          (
+            SELECT 1 FROM [dbo].[AspNetUsers] AU
+            WHERE TRY_CONVERT(BIGINT,AU.[Semat])=S.[PID]
+              AND ISNULL(AU.[IsDelete],0)=0
+              AND ISNULL(AU.[IsActive],1)=1
+          );
+
         IF EXISTS(SELECT 1 FROM @Destinations D WHERE NOT EXISTS(SELECT 1 FROM @Allowed A WHERE A.[PostId]=D.[PostId]))
-          THROW 51309,N'یک یا چند گیرنده خارج از محدوده دسترسی شماست.',1;
+          THROW 51309,N'ارجاع فقط به مافوق مستقیم یا زیرمجموعه مستقیم شما مجاز است.',1;
 
         SELECT TOP(1) @SourceReferralId=R.[ReferralId] FROM [bz].[AppointmentWorkflowReferrals] R WITH(UPDLOCK,HOLDLOCK)
         WHERE R.[EntesabId]=@EntesabId AND R.[ToPostId]=@ActorPostId AND R.[StatusCode] IN(1,2) AND R.[IsRecalled]=0
         ORDER BY R.[ReferralId] DESC;
-        IF @SourceReferralId IS NULL AND NOT EXISTS(SELECT 1 FROM [bz].[Entesabat] E WHERE E.[EntesabId]=@EntesabId AND E.[CreateUserId]=@ActorUserId)
-          THROW 51310,N'ارجاع فعالی برای ارسال مجدد در کارتابل شما وجود ندارد.',1;
+        IF @SourceReferralId IS NULL AND NOT EXISTS
+        (
+          SELECT 1 FROM [bz].[Entesabat] E
+          WHERE E.[EntesabId]=@EntesabId AND E.[WorkflowDestinationPostId]=@ActorPostId
+        )
+          THROW 51310,N'این درخواست در کارتابل ارجاع شما قرار ندارد.',1;
 
         IF @SourceReferralId IS NOT NULL UPDATE [bz].[AppointmentWorkflowReferrals] SET [StatusCode]=3 WHERE [ReferralId]=@SourceReferralId;
         DECLARE @Created TABLE([ReferralId] BIGINT,[ToPostId] BIGINT);
@@ -285,6 +358,17 @@ BEGIN
         SELECT @ReplyPostId=R.[FromPostId] FROM [bz].[AppointmentWorkflowReferrals] R WITH(UPDLOCK,HOLDLOCK)
         WHERE R.[ReferralId]=@ReferralId AND R.[EntesabId]=@EntesabId AND R.[ToPostId]=@ActorPostId AND R.[StatusCode] IN(1,2) AND R.[IsRecalled]=0;
         IF @ReplyPostId IS NULL THROW 51311,N'ارجاع فعال برای ثبت پاسخ پیدا نشد.',1;
+
+        IF NOT EXISTS
+        (
+          SELECT 1
+          FROM [dbo].[Semats] ActorPost
+          INNER JOIN [dbo].[Semats] ReplyPost ON ReplyPost.[ID]=@ReplyPostId
+          WHERE ActorPost.[ID]=@ActorPostId
+            AND (ActorPost.[PID]=@ReplyPostId OR ReplyPost.[PID]=@ActorPostId)
+        )
+          THROW 51314,N'پاسخ فقط بین مافوق مستقیم و زیرمجموعه مستقیم مجاز است.',1;
+
         UPDATE [bz].[AppointmentWorkflowReferrals] SET [StatusCode]=3 WHERE [ReferralId]=@ReferralId;
         INSERT [bz].[AppointmentWorkflowReferrals]
           ([EntesabId],[ParentReferralId],[ReferralKind],[FromPostId],[ToPostId],[Note],[StatusCode],[CreateUserId],[CreateDateTime])

@@ -23,6 +23,9 @@ export async function GET(request: NextRequest) {
       { status: 401 },
     );
   }
+  if (!session.permissions.appointments && !session.isSystemAdmin) {
+    return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
+  }
 
   try {
     const search = textValue(request.nextUrl.searchParams.get("search"), 150).toLocaleLowerCase("fa");

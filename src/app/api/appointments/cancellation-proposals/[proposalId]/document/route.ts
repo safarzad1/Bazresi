@@ -10,6 +10,7 @@ type RouteContext = { params: Promise<{ proposalId: string }> };
 export async function GET(_request: NextRequest, context: RouteContext) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 });
+  if (!session.permissions.appointments && !session.isSystemAdmin) return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
 
   const params = await context.params;
   const proposalId = Number(params.proposalId);

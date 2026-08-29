@@ -8,8 +8,8 @@ export default async function DashboardPage() {
 
   return (
     <DashboardClient
-      displayName={session.fullName}
       mustChangePassword={session.mustChangePassword}
+      appointmentsAllowed={session.permissions.appointments || session.isSystemAdmin}
     />
   );
 }

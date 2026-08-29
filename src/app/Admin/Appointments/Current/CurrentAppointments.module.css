@@ -118,7 +118,7 @@
 .cancelModalFatal { flex-direction: column; color: #a95058; }
 .cancelModalFatal button { min-width: 90px; height: 34px; border: 1px solid #d7e2e5; border-radius: 8px; color: #617b85; background: #fff; font: inherit; cursor: pointer; }
 
-.cancelWorkspace { min-height: 0; display: grid; flex: 1 1 auto; grid-template-columns: clamp(520px, 38vw, 660px) minmax(0, 1fr); background: #edf2f4; }
+.cancelWorkspace { min-height: 0; display: grid; flex: 1 1 auto; grid-template-columns: clamp(560px, 42vw, 720px) minmax(0, 1fr); background: #edf2f4; }
 .cancelEditor { min-height: 0; display: flex; overflow: hidden; flex-direction: column; padding: 10px 12px; border-left: 1px solid #d7e2e6; background: #fff; }
 .formStyleSettings { flex: 0 0 auto; margin-bottom: 10px; border: 1px solid #dbe6e9; border-radius: 9px; background: #f9fbfc; }
 .formStyleSettings > summary { padding: 9px 11px; color: #4a6974; font-size: 11.5px; cursor: pointer; list-style-position: inside; }
@@ -214,6 +214,7 @@
 
 .pagination { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-top: 1px solid #e3ebee; background: #fbfcfd; }
 .pageSizeWrap { display: flex; align-items: center; gap: 7px; color: #7f929a; font-size: 11px; }
+.pageSizeDropdown { width: 86px; font-size: 10px; }
 .pageSizeWrap select { height: 32px; padding: 0 8px; border: 1px solid #d4e0e4; border-radius: 8px; color: #546f79; background: #fff; font: inherit; font-weight: 400; }
 .pageButtons { display: flex; align-items: center; gap: 5px; }
 .pageButtons button { min-width: 34px; height: 32px; padding: 0 9px; border: 1px solid #d7e2e5; border-radius: 8px; color: #617b85; background: #fff; font: inherit; font-size: 11px; font-weight: 400; cursor: pointer; }

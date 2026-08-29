@@ -438,6 +438,13 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    IF NOT EXISTS
+    (
+      SELECT 1 FROM [dbo].[AspNetUserRoles] UR
+      INNER JOIN [dbo].[AspNetRoles] R ON R.[Id]=UR.[RoleId]
+      WHERE UR.[UserId]=@ActorUserId AND R.[Name] IN(N'Admin',N'a_root')
+    ) THROW 51120,N'فقط مدیر سامانه مجاز به تغییر تنظیمات فرم است.',1;
+
     IF @TitleFont NOT IN (N'IranNastaliq', N'titr', N'MitraBold', N'bnaznin', N'PeydaFaNum_Regular', N'IRANSansXMedium', N'Shabnam')
        OR @RecipientFont NOT IN (N'IranNastaliq', N'titr', N'MitraBold', N'bnaznin', N'PeydaFaNum_Regular', N'IRANSansXMedium', N'Shabnam')
        OR @SignerFont NOT IN (N'IranNastaliq', N'titr', N'MitraBold', N'bnaznin', N'PeydaFaNum_Regular', N'IRANSansXMedium', N'Shabnam')

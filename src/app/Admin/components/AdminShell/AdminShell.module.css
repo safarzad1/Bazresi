@@ -1,8 +1,8 @@
 .shell {
   min-height: 100vh;
-  color: #243b4d;
-  background: #eef3f6;
-  font-family: PeydaFaNum_Regular, IRANSansXMedium, Shabnam, Tahoma, Arial, sans-serif;
+  color: #253943;
+  background: #f2f5f6;
+  font-family: PeydaUI, PeydaFaNum_Regular, Tahoma, Arial, sans-serif;
 }
 
 .sidebar {
@@ -14,36 +14,36 @@
   width: 260px;
   display: flex;
   flex-direction: column;
-  color: #fff;
-  background:
-    radial-gradient(circle at 15% 10%, rgba(56, 189, 189, 0.1), transparent 28%),
-    linear-gradient(180deg, #102f43 0%, #123a4a 55%, #0f4d50 100%);
-  box-shadow: -12px 0 34px rgba(19, 53, 70, 0.12);
+  color: #e7eef0;
+  background: #17323d;
+  border-left: 1px solid rgba(255, 255, 255, 0.055);
+  box-shadow: -8px 0 28px rgba(20, 46, 57, 0.09);
+  font-family: PeydaUI, PeydaFaNum_Regular, Tahoma, Arial, sans-serif;
 }
 
 .brand {
-  min-height: 64px;
+  min-height: 70px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 7px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(135deg, #13787b, #116f73);
+  gap: 11px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: #15303a;
 }
 
 .brandMark {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   display: grid;
-  flex: 0 0 40px;
+  flex: 0 0 38px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  color: #fff;
-  background: linear-gradient(145deg, #1d8f91, #26a6a3);
-  box-shadow: 0 10px 22px rgba(8, 35, 46, 0.2);
-  font-family: PeydaRegular, sans-serif;
-  font-size: 21px;
+  border: 1px solid rgba(122, 209, 205, 0.28);
+  border-radius: 10px;
+  color: #f4ffff;
+  background: #276c70;
+  font-family: PeydaUI, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
 }
 
 .brand strong,
@@ -53,76 +53,107 @@
 
 .brand strong {
   overflow: hidden;
-  color: #f4fbfc;
-  font-family: PeydaRegular, sans-serif;
-  font-size: 14px;
-  font-weight: 400;
+  color: #f4f8f9;
+  font-family: PeydaUI, sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .brand small {
-  margin-top: 1px;
-  color: rgba(220, 237, 242, 0.55);
-  font-size: 9px;
+  margin-top: 2px;
+  color: #90a8b0;
+  font-size: 9.5px;
+  font-weight: 400;
 }
 
 .navigation {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 13px;
+  padding: 14px 12px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143, 179, 188, .22) transparent;
+}
+
+.menuSection {
+  padding: 0 0 11px;
+  margin: 0 0 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.menuSection:last-child {
+  margin-bottom: 0;
+  border-bottom: 0;
 }
 
 .menuTitle {
   display: block;
-  margin: 0 10px 10px;
-  color: rgba(205, 226, 234, 0.45);
-  font-size: 10px;
+  margin: 0 10px 6px;
+  color: #78929b;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: -.05px;
 }
 
 .menuLink {
-  min-height: 46px;
+  position: relative;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  gap: 11px;
-  margin-bottom: 6px;
-  padding: 0 12px;
+  gap: 10px;
+  margin-bottom: 3px;
+  padding: 0 11px;
   border: 1px solid transparent;
-  border-radius: 12px;
-  color: rgba(233, 243, 247, 0.75);
-  background: rgba(255, 255, 255, 0.025);
-  font-size: 13px;
+  border-radius: 9px;
+  color: #c7d4d8;
+  background: transparent;
+  font-family: PeydaUI, PeydaFaNum_Regular, Tahoma, Arial, sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
   text-decoration: none;
-  transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
 }
 
 .menuLink:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
+  color: #f5f9fa;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .menuLinkActive {
-  color: #fff;
-  border-color: rgba(110, 220, 215, 0.16);
-  background: linear-gradient(90deg, rgba(30, 144, 146, 0.3), rgba(45, 174, 163, 0.12));
+  color: #f7ffff;
+  border-color: rgba(102, 201, 196, 0.16);
+  background: #21545a;
+}
+
+.menuLinkActive::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 0;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: #71cec9;
 }
 
 .menuIcon {
-  width: 23px;
-  height: 23px;
+  width: 22px;
+  height: 22px;
   display: grid;
-  flex: 0 0 23px;
+  flex: 0 0 22px;
   place-items: center;
-  color: rgba(176, 215, 225, 0.78);
+  color: #8eabb3;
 }
 
 .menuLinkActive .menuIcon {
-  color: #77ded7;
+  color: #8edbd6;
 }
 
 .menuIcon svg {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.7;
@@ -141,9 +172,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.032);
 }
 
 .avatar {
@@ -153,8 +184,8 @@
   flex: 0 0 38px;
   place-items: center;
   border-radius: 12px;
-  color: #e8ffff;
-  background: rgba(38, 166, 163, 0.28);
+  color: #eafffd;
+  background: #285d62;
   font-size: 16px;
 }
 
@@ -172,15 +203,16 @@
 }
 
 .userText strong {
-  color: #f0f8fa;
+  color: #f1f6f7;
   font-size: 11.5px;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .userText small {
   margin-top: 3px;
-  color: rgba(215, 232, 238, 0.48);
+  color: #7f99a1;
   font-size: 9px;
+  font-weight: 400;
 }
 
 .logoutButton {
@@ -227,9 +259,9 @@
   justify-content: space-between;
   gap: 20px;
   padding: 6px 20px;
-  border-bottom: 1px solid #dfe7ec;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 5px 22px rgba(31, 56, 83, 0.035);
+  border-bottom: 1px solid #e2e8ea;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 18px rgba(26, 54, 65, 0.025);
   backdrop-filter: blur(14px);
 }
 
@@ -252,15 +284,16 @@
 
 .headerTitle span {
   margin-bottom: 1px;
-  color: #97a5b0;
-  font-size: 10.5px;
+  color: #8b9ca3;
+  font-size: 10px;
+  font-weight: 400;
 }
 
 .headerTitle strong {
-  color: #223c4f;
-  font-family: PeydaRegular, sans-serif;
-  font-size: 17px;
-  font-weight: 400;
+  color: #243d47;
+  font-family: PeydaUI, PeydaFaNum_Regular, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .headerSearch {
@@ -270,10 +303,10 @@
   align-items: center;
   gap: 7px;
   padding: 0 11px;
-  border: 1px solid #dce6eb;
-  border-radius: 11px;
-  color: #94a4b0;
-  background: #f7fafb;
+  border: 1px solid #dfe7e9;
+  border-radius: 9px;
+  color: #8fa0a6;
+  background: #f8fafb;
 }
 
 .headerSearch:focus-within {
@@ -313,6 +346,7 @@
 }
 
 .notificationButton {
+  position: relative;
   width: 38px;
   height: 38px;
   display: grid;
@@ -323,6 +357,23 @@
   color: #b56e2e;
   background: #fff9f3;
   cursor: pointer;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  color: #fff;
+  background: #d75c55;
+  font-size: 8px;
+  line-height: 1;
 }
 
 .notificationButton:hover,
@@ -347,33 +398,43 @@
   z-index: 80;
   top: calc(100% + 8px);
   left: 0;
-  width: 255px;
-  min-height: 145px;
+  width: 310px;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 17px;
+  overflow: hidden;
+  padding: 0;
   border: 1px solid #dce6eb;
   border-radius: 13px;
   color: #8a99a2;
   background: #fff;
   box-shadow: 0 18px 42px rgba(25, 55, 70, 0.15);
-  text-align: center;
+  text-align: right;
 }
 
-.notificationPanel > svg {
-  width: 25px;
-  height: 25px;
-  margin-bottom: 3px;
-  fill: none;
-  stroke: #c9a17d;
-  stroke-width: 1.6;
-}
-
-.notificationPanel strong { color: #536b78; font-size: 11.5px; font-weight: 400; }
-.notificationPanel span { color: #93a1a8; font-size: 9px; line-height: 1.8; }
+.notificationHeader { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; border-bottom: 1px solid #e8eef0; background: #fbfdfd; }
+.notificationHeader div { min-width: 0; }
+.notificationHeader strong,.notificationHeader span { display: block; }
+.notificationHeader strong { color: #3f5e69; font-size: 10.5px; font-weight: 500; }
+.notificationHeader span { margin-top: 1px; color: #899ba2; font-size: 8.5px; }
+.notificationHeader b { flex: 0 0 auto; padding: 3px 6px; border-radius: 7px; color: #a2572a; background: #fff0e4; font-size: 8px; font-weight: 500; }
+.notificationList { max-height: 260px; overflow: auto; }
+.notificationList > p { margin: 0; padding: 25px 10px; color: #899ba2; font-size: 9px; text-align: center; }
+.notificationList > a { min-height: 50px; display: grid; grid-template-columns: 7px minmax(0,1fr); align-items: center; gap: 7px; padding: 6px 10px; border-bottom: 1px solid #edf2f3; color: inherit; text-decoration: none; }
+.notificationList > a:hover { background: #f6faf9; }
+.notificationList > a > i { width: 6px; height: 6px; border-radius: 50%; background: #cbd5d8; }
+.notificationList > a.unreadNotification > i { background: #dc7c37; box-shadow: 0 0 0 3px #fff1e5; }
+.notificationList > a > span { min-width: 0; }
+.notificationList > a strong,.notificationList > a small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notificationList > a strong { color: #365965; font-size: 9.5px; font-weight: 500; }
+.notificationList > a small { margin-top: 2px; color: #84979e; font-size: 8.5px; }
+.unreadNotification { background: #fffdf9; }
+.emptyNotifications { min-height: 115px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 13px; text-align: center; }
+.emptyNotifications svg { width: 23px; height: 23px; margin-bottom: 2px; fill: none; stroke: #c9a17d; stroke-width: 1.6; }
+.emptyNotifications strong { color: #536b78; font-size: 10px; font-weight: 400; }
+.emptyNotifications span { color: #93a1a8; font-size: 8.5px; line-height: 1.7; }
+.allNotificationsLink { height: 35px; display: grid; place-items: center; color: #267f7d; background: #f5faf9; font-size: 9px; text-decoration: none; }
+.allNotificationsLink:hover { color: #176e6c; background: #edf7f6; }
 
 .headerProfile {
   min-width: 190px;
@@ -561,21 +622,23 @@
   .headerProfile { min-width: 44px; width: 44px; padding: 3px; }
   .headerProfileText, .profileArrow { display: none; }
   .notificationButton { width: 36px; height: 36px; }
+  .notificationPanel { width: min(310px, calc(100vw - 16px)); left: -50px; }
   .profileMenu { left: 0; }
   .content { padding: 4px 5px 18px; }
 }
 
 
-/* Appointments submenu */
-.menuGroup { margin-bottom: 6px; }
-.menuGroupButton { width: 100%; border: 1px solid transparent; font: inherit; text-align: right; cursor: pointer; }
+/* Grouped navigation */
+.menuGroup { margin-bottom: 3px; }
+.menuGroupButton { width: 100%; border: 1px solid transparent; font-family: inherit; font-size: 12.5px; font-weight: 500; text-align: right; cursor: pointer; }
 .menuGroupTitle { flex: 1; }
-.menuChevron { width: 18px; height: 18px; display: grid; place-items: center; color: rgba(194, 220, 227, .55); transition: transform 160ms ease; }
+.menuChevron { width: 18px; height: 18px; display: grid; place-items: center; color: #728f98; transition: transform 160ms ease; }
 .menuChevronOpen { transform: rotate(-90deg); }
-.menuChevron svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.submenu { margin: -1px 24px 5px 0; padding: 4px 10px 2px 0; border-right: 1px solid rgba(119, 222, 215, .18); }
-.submenuLink { min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 9px; border-radius: 8px; color: rgba(220, 236, 241, .62); font-size: 11.5px; font-weight: 400; text-decoration: none; transition: color 150ms ease, background 150ms ease; }
-.submenuLink:hover { color: #fff; background: rgba(255,255,255,.045); }
-.submenuLink > span { width: 5px; height: 5px; flex: 0 0 5px; border-radius: 50%; background: rgba(119, 222, 215, .45); }
-.submenuLinkActive { color: #8de5df; background: rgba(38, 166, 163, .1); }
-.submenuLinkActive > span { background: #79ded8; }
+.menuChevron svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.submenu { margin: 1px 28px 5px 0; padding: 3px 9px 3px 0; border-right: 1px solid rgba(116, 203, 198, .16); }
+.submenuLink { min-height: 31px; display: flex; align-items: center; gap: 8px; padding: 0 8px; border-radius: 7px; color: #9db1b7; font-family: PeydaUI, PeydaFaNum_Regular, Tahoma, Arial, sans-serif; font-size: 11px; font-weight: 400; text-decoration: none; transition: color 150ms ease, background 150ms ease; }
+.submenuLink:hover { color: #eef6f7; background: rgba(255,255,255,.035); }
+.submenuLink > span { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: #587b83; }
+.submenuLinkActive { color: #8edbd6; background: rgba(78, 165, 161, .10); font-weight: 600; }
+.submenuLinkActive > span { background: #71cec9; }
+

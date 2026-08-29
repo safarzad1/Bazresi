@@ -2081,6 +2081,7 @@ export default function PersonsClient() {
                   <td className={styles.dateCell}>{person.FinalizedDateTime || person.CreateDateTime || "—"}</td>
                   <td><div className={styles.rowActions}>
                     <button className={styles.editAction} type="button" onClick={(event) => { event.stopPropagation(); void openPerson(person); }} title={Number(person.RegistrationState) === 1 ? "ویرایش اطلاعات" : "ادامه تکمیل"}><Icon name="edit" /></button>
+                    <button className={styles.caseAction} type="button" onClick={(event) => { event.stopPropagation(); window.location.assign(`/Admin/Persons/CaseFile?personId=${person.PersonId}`); }} title="پرونده الکترونیکی"><Icon name="file" /></button>
                     <button className={styles.deleteAction} type="button" onClick={(event) => { event.stopPropagation(); setDeleteTarget(person); }} title="حذف شخص"><Icon name="trash" /></button>
                   </div></td>
                 </tr>

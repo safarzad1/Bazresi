@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
+import { SearchableMultiSelectDropdown, type DropdownOption } from "@/component/Dropdown";
 import styles from "./Workflow.module.css";
 
 export type ReferralItem = {
@@ -76,7 +77,6 @@ export default function AppointmentReferrals({
   onChanged: () => Promise<void>;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
-  const [postSearch, setPostSearch] = useState("");
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [forwardNote, setForwardNote] = useState("");
   const [replyId, setReplyId] = useState<number | null>(null);
@@ -102,10 +102,12 @@ export default function AppointmentReferrals({
     return true;
   }), [actorPostId, filter, referrals]);
 
-  const visiblePosts = useMemo(() => {
-    const term = postSearch.trim().toLocaleLowerCase("fa");
-    return posts.filter((item) => !term || `${item.PostTitle} ${item.AssigneeFullName || ""}`.toLocaleLowerCase("fa").includes(term));
-  }, [postSearch, posts]);
+  const postOptions = useMemo<DropdownOption<number>[]>(() => posts.map((post) => ({
+    value: post.PostId,
+    label: post.PostTitle,
+    description: `${post.AssigneeFullName || "بدون متصدی فعال"} · ${post.ParentPostId === actorPostId ? "زیرمجموعه مستقیم" : "مافوق مستقیم"}`,
+    searchText: `${post.PostTitle} ${post.AssigneeFullName || ""}`,
+  })), [actorPostId, posts]);
 
   const runAction = async (action: "forward" | "reply" | "recall" | "archive" | "restore", referralId?: number) => {
     if (saving) return;
@@ -181,15 +183,21 @@ export default function AppointmentReferrals({
     </section>
 
     <aside className={styles.referralComposer}>
-      <header><span>ارجاع جدید</span><strong>{context?.ActorPostTitle || "پست جاری"}</strong></header>
+      <header><span>ارجاع سازمانی</span><strong>{context?.ActorPostTitle || "پست جاری"}</strong><small>فقط مافوق مستقیم و زیرمجموعه مستقیم</small></header>
       {context?.CanRefer ? <>
-        <label className={styles.referralSearch}>جست‌وجوی گیرنده<input value={postSearch} onChange={(event) => setPostSearch(event.target.value)} placeholder="عنوان پست یا نام متصدی..." /></label>
-        <div className={styles.referralPostList}>
-          {visiblePosts.length ? visiblePosts.map((post) => <label key={post.PostId} className={selectedPosts.includes(post.PostId) ? styles.selectedReferralPost : ""}>
-            <input type="checkbox" checked={selectedPosts.includes(post.PostId)} onChange={(event) => setSelectedPosts((current) => event.target.checked ? [...current, post.PostId] : current.filter((id) => id !== post.PostId))} />
-            <span><strong>{post.PostTitle}</strong><small>{post.AssigneeFullName || "بدون متصدی فعال"}</small></span>
-          </label>) : <p>گیرنده‌ای در محدوده دسترسی پیدا نشد.</p>}
-        </div>
+        <label className={styles.referralSearch}>گیرندگان ارجاع
+          <SearchableMultiSelectDropdown<number>
+            value={selectedPosts}
+            options={postOptions}
+            onChange={(next) => setSelectedPosts(next.slice(0, 10))}
+            placeholder="جست‌وجو و انتخاب گیرنده..."
+            searchPlaceholder="عنوان پست یا نام متصدی..."
+            emptyText="مافوق یا زیرمجموعه مستقیم دارای کاربر فعال پیدا نشد."
+            noResultText="گیرنده‌ای با این عبارت پیدا نشد."
+            ariaLabel="انتخاب گیرندگان ارجاع انتصاب"
+            className={styles.referralRecipientDropdown}
+          />
+        </label>
         <label className={styles.forwardNote}>توضیحات ارجاع<textarea value={forwardNote} onChange={(event) => setForwardNote(event.target.value.slice(0, 1000))} rows={4} placeholder="موضوع و اقدام مورد انتظار را بنویسید..." /></label>
         <button type="button" className={styles.sendReferralButton} disabled={saving || !selectedPosts.length} onClick={() => void runAction("forward")}>{saving ? "در حال ارسال..." : `ارجاع به ${selectedPosts.length ? selectedPosts.length.toLocaleString("fa-IR") : ""} گیرنده`}</button>
       </> : <div className={styles.noReferralAccess}>این درخواست در کارتابل اقدام شما نیست؛ سوابق ارجاعات همچنان قابل مشاهده است.</div>}

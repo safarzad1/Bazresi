@@ -390,7 +390,7 @@ BEGIN
         ISNULL(U.[AccessFailedCount], 0) AS [AccessFailedCount],
         ISNULL(S.[TabDashboard], 0) AS [TabDashboard],
         ISNULL(S.[TabArzeshyabi], 0) AS [TabArzeshyabi],
-        ISNULL(S.[TabEntesabat], 0) AS [TabEntesabat],
+        CONVERT(BIT,CASE WHEN ISNULL(S.[TabEntesabat],0)=1 OR ISNULL(S.[IsReciceviedRequest],0)=1 THEN 1 ELSE 0 END) AS [TabEntesabat],
         ISNULL(S.[TabPersonnel], 0) AS [TabPersonnel],
         ISNULL(S.[TabEstelam], 0) AS [TabEstelam],
         CONVERT(BIT, CASE WHEN EXISTS

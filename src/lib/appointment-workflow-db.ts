@@ -1,4 +1,4 @@
-import { getDbPool, sql } from "@/lib/db";
+import { getDbPool } from "@/lib/db";
 
 export type WorkflowPerson = { PersonId:number; CodeMelli:string; FirstName:string; LastName:string; FullName:string; FatherName:string; TarikhTavalod:string|null; ShomareShenasnameh:string|null; Shoghl:string|null; TelHamrah:string|null };
 export type WorkflowPost = { PostId:number; PostOnvan:string; Mahal:number|null };
@@ -33,7 +33,7 @@ function num(value:unknown){ if(value===null||value===undefined||value==="") ret
 
 export async function getAppointmentWorkflowLookups(actorUserId:string,search:string){
   const pool=await getDbPool();
-  const result=await pool.request().input("ActorUserId",actorUserId).input("Search",sql.NVarChar(150),search||null).execute("bz.SP_Appointments_Workflow_Lookups");
+  const result=await pool.request().input("ActorUserId",actorUserId).input("Search",search||null).execute("bz.SP_Appointments_Workflow_Lookups");
   const recordsets=(result.recordsets??[]) as unknown as Record<string,unknown>[][];
   return {
     persons:(recordsets[0]??[] as unknown as WorkflowPerson[]).slice(0,20) as unknown as WorkflowPerson[],
@@ -46,7 +46,7 @@ export async function createAppointmentWorkflow(input:{actorUserId:string;person
   const pool=await getDbPool();
   const result=await pool.request().input("ActorUserId",input.actorUserId).input("PersonId",input.personId).input("PostId",input.postId)
     .input("ReasonsJson",JSON.stringify(input.reasons)).input("InitialInterviewJson",JSON.stringify(input.initialInterview))
-    .input("ProposalFileName",sql.NVarChar(150),input.fileName).input("ProposalContentType",sql.NVarChar(100),input.contentType).input("ProposalFileData",sql.VarBinary(sql.MAX),input.fileData)
+    .input("ProposalFileName",input.fileName).input("ProposalContentType",input.contentType).input("ProposalFileData",input.fileData)
     .execute("bz.SP_Appointments_Workflow_Create");
   return result.recordset?.[0] as {EntesabId:number;Code:string};
 }
@@ -83,17 +83,17 @@ export async function getAppointmentWorkflow(actorUserId:string,entesabId:number
 
 export async function appointmentReferralAction(input:{actorUserId:string;entesabId:number;action:"forward"|"reply"|"recall"|"archive"|"restore";referralId:number|null;destinationPostIds:number[];note:string|null}){
   const pool=await getDbPool();
-  const result=await pool.request().input("ActorUserId",input.actorUserId).input("EntesabId",input.entesabId).input("Action",sql.NVarChar(20),input.action)
-    .input("ReferralId",input.referralId).input("DestinationPostIdsJson",sql.NVarChar(sql.MAX),JSON.stringify(input.destinationPostIds)).input("Note",sql.NVarChar(1000),input.note)
+  const result=await pool.request().input("ActorUserId",input.actorUserId).input("EntesabId",input.entesabId).input("Action",input.action)
+    .input("ReferralId",input.referralId).input("DestinationPostIdsJson",JSON.stringify(input.destinationPostIds)).input("Note",input.note)
     .execute("bz.SP_Appointments_Workflow_Referral_Action");
   return result.recordset?.[0] as {EntesabId:number;Action:string};
 }
 
 export async function decideAppointmentWorkflow(input:{actorUserId:string;entesabId:number;action:"save-interview"|"approve"|"reject";finalInterview:unknown|null;note:string|null;tarikhEblagh:string|null;durationMonths:number|null;fileName:string|null;contentType:string|null;fileData:Buffer|null}){
   const pool=await getDbPool(); const result=await pool.request().input("ActorUserId",input.actorUserId).input("EntesabId",input.entesabId).input("Action",input.action)
-    .input("FinalInterviewJson",sql.NVarChar(sql.MAX),input.finalInterview?JSON.stringify(input.finalInterview):null).input("DecisionNote",sql.NVarChar(1000),input.note)
-    .input("TarikhEblagh",sql.NVarChar(20),input.tarikhEblagh).input("DurationMonths",input.durationMonths)
-    .input("OrderFileName",sql.NVarChar(150),input.fileName).input("OrderContentType",sql.NVarChar(100),input.contentType).input("OrderFileData",sql.VarBinary(sql.MAX),input.fileData)
+    .input("FinalInterviewJson",input.finalInterview?JSON.stringify(input.finalInterview):null).input("DecisionNote",input.note)
+    .input("TarikhEblagh",input.tarikhEblagh).input("DurationMonths",input.durationMonths)
+    .input("OrderFileName",input.fileName).input("OrderContentType",input.contentType).input("OrderFileData",input.fileData)
     .execute("bz.SP_Appointments_Workflow_Decide");
   return result.recordset?.[0] as {EntesabId:number;RecordState:number};
 }

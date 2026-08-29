@@ -19,7 +19,7 @@ export async function GET() {
 
   try {
     const settings = await getCancellationFormSettings();
-    return NextResponse.json({ settings, canEdit: true });
+    return NextResponse.json({ settings, canEdit: session.isSystemAdmin });
   } catch (error) {
     console.error("Cancellation form settings read failed:", error);
     return NextResponse.json({ message: message(error, "دریافت تنظیمات قالب انجام نشد.") }, { status: 500 });
@@ -29,6 +29,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 });
+  if (!session.isSystemAdmin) return NextResponse.json({ message: "فقط مدیر سامانه مجاز به تغییر تنظیمات فرم است." }, { status: 403 });
   try {
     const body = await request.json().catch(() => ({}));
     const settings = normalizeCancellationFormSettings(body);
