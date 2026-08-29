@@ -281,6 +281,9 @@
   }
 }
 
+/* Compact cancellation form controls; A4 letter typography remains unchanged. */
+.cancelModal{font-size:11px}.cancelModal .modalHeader{min-height:42px;padding:4px 10px}.cancelModal .modalHeader span{font-size:9px}.cancelModal .modalHeader h2{font-size:12.5px}.cancelEditor{padding:7px 9px}.formStyleSettings{margin-bottom:7px}.formStyleSettings>summary{padding:7px 9px;font-size:10px}.reasonsEditorHeader{margin-bottom:5px}.reasonsEditorHeader div strong{font-size:11.5px}.reasonsEditorHeader div span{font-size:8.5px}.reasonRow{grid-template-columns:25px minmax(0,1fr) 25px;gap:5px;margin-bottom:5px;padding:5px;border-radius:8px}.reasonNumber,.reasonRemoveButton{width:25px;height:25px}.reasonNumber{font-size:9px}.reasonField textarea{min-height:43px;padding:5px 7px;font-size:10.5px}.reasonField small{font-size:7.5px}.addReasonButton{height:33px;font-size:10px}.cancelError,.cancelSuccess{margin-top:6px;padding:6px 8px;font-size:9.5px}.cancelActions{gap:6px;padding-top:7px}.cancelActions button{height:33px;padding:0 10px;font-size:9.5px}.letterPreviewPane{padding-top:5px}.previewLabel{margin-bottom:4px;font-size:8.5px}
+
 
 /* ===== Search integrated into top header ===== */
 .page {

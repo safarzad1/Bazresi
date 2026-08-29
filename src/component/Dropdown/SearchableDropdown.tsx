@@ -243,7 +243,7 @@ export default function SearchableDropdown<
                       <div className={styles.optionList}>
                           {waitingForSearch ? (
                               <div className={styles.empty}>
-                                  ۳ ثانیه پس از پایان تایپ جست‌وجو می‌شود...
+                                  پس از توقف کوتاه تایپ جست‌وجو می‌شود...
                               </div>
                           ) : searching ? (
                               <div className={styles.empty}>در حال جست‌وجو...</div>

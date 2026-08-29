@@ -7,6 +7,7 @@ GO
   وضعیت‌ها: 2 در انتظار بررسی، 3 عدم تأیید، 10 ابلاغ‌شده
   کد تصمیم: 3 عدم تأیید، 4 تأیید
   فایل‌ها در DBBazresiFiles و اطلاعات نمایشی سند در Entesabat_Madarek نگهداری می‌شود.
+  برای ارجاع چندمرحله‌ای، پس از این فایل Appointments_Workflow_Referrals.sql نیز اجرا شود.
 */
 
 IF COL_LENGTH(N'bz.Entesabat', N'WorkflowDestinationPostId') IS NULL
@@ -124,12 +125,13 @@ BEGIN
     SELECT @DestinationPostId = NULLIF(S.[PID],0) FROM [dbo].[Semats] S WHERE S.[ID]=@ActorPostId;
     SET @DestinationPostId = ISNULL(@DestinationPostId,@ActorPostId);
 
-    SELECT TOP (50) P.[PersonId], P.[CodeMelli], P.[FirstName], P.[LastName],
+    SELECT TOP (20) P.[PersonId], P.[CodeMelli], P.[FirstName], P.[LastName],
            LTRIM(RTRIM(CONCAT(P.[FirstName],N' ',P.[LastName]))) AS [FullName], P.[FatherName], P.[TarikhTavalod],
            P.[ShomareShenasnameh], P.[Shoghl], P.[TelHamrah]
     FROM [bz].[Person] P
     WHERE ISNULL(P.[IsDelete],0)=0 AND
-      (@Search IS NULL OR @Search=N'' OR P.[CodeMelli] LIKE N'%'+@Search+N'%' OR P.[FirstName] LIKE N'%'+@Search+N'%' OR P.[LastName] LIKE N'%'+@Search+N'%')
+      (@Search IS NULL OR @Search=N'' OR P.[CodeMelli] LIKE N'%'+@Search+N'%' OR P.[FirstName] LIKE N'%'+@Search+N'%' OR P.[LastName] LIKE N'%'+@Search+N'%'
+       OR LTRIM(RTRIM(CONCAT(P.[FirstName],N' ',P.[LastName]))) LIKE N'%'+@Search+N'%')
     ORDER BY P.[FirstName],P.[LastName];
 
     SELECT A.[TargetPostId] AS [PostId], S.[OnvanSemat] AS [PostOnvan], S.[Mahal]
@@ -178,6 +180,14 @@ BEGIN
       INSERT [bz].[Entesabat]([PersonId],[CodeMelli],[FirstName],[LastName],[FullName],[FatherName],[TarikhTavalod],[PostId],[PostOnvan],[LastShoghlOnvan],[RecordState],[RecordState_NameFarsi],[PostSender],[PostDelivered],[WorkflowDestinationPostId],[IsRead],[Code],[IsDelete],[CreateUserId],[CreateDateTime],[IsEblagh],[KartablOthePost],[Archive])
       VALUES(@PersonId,@PersonCode,@FirstName,@LastName,LTRIM(RTRIM(CONCAT(@FirstName,N' ',@LastName))),@FatherName,@BirthDate,@PostId,@PostTitle,@LastJob,2,N'پیشنهاد انتصاب',CONVERT(NVARCHAR(50),@ActorPostId),CONVERT(NVARCHAR(50),@DestinationPostId),@DestinationPostId,0,@Code,0,@ActorUserId,CONVERT(NVARCHAR(19),GETDATE(),120),1,0,0);
       DECLARE @EntesabId BIGINT=SCOPE_IDENTITY();
+
+      /* پس از اجرای Appointments_Workflow_Referrals.sql، ارجاع اولیه نیز همزمان ساخته می‌شود. */
+      IF OBJECT_ID(N'[bz].[AppointmentWorkflowReferrals]',N'U') IS NOT NULL AND @DestinationPostId<>@ActorPostId
+      BEGIN
+        INSERT [bz].[AppointmentWorkflowReferrals]
+          ([EntesabId],[ParentReferralId],[ReferralKind],[FromPostId],[ToPostId],[Note],[StatusCode],[CreateUserId])
+        VALUES(@EntesabId,NULL,1,@ActorPostId,@DestinationPostId,N'ارجاع اولیه پیشنهاد انتصاب',1,@ActorUserId);
+      END;
 
       INSERT [bz].[AppointmentRequestReasons]([EntesabId],[ReasonText],[SortOrder],[CreateUserId])
       SELECT @EntesabId,LTRIM(RTRIM(CONVERT(NVARCHAR(1000),[value]))),CONVERT(TINYINT,CONVERT(INT,[key])+1),@ActorUserId FROM OPENJSON(@ReasonsJson)
