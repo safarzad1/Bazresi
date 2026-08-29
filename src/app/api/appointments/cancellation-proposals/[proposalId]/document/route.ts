@@ -21,11 +21,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     const document = await getCancellationProposalDocument(session.userId, proposalId);
     if (!document) return NextResponse.json({ message: "تصویر فرم پیدا نشد یا مجوز مشاهده آن را ندارید." }, { status: 404 });
 
-    return new Response(document.DocumentSvg, {
+    return new Response(new Uint8Array(document.FileData), {
       headers: {
-        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Content-Type": document.ContentType,
+        "Content-Length": String(document.FileSize),
         "Cache-Control": "private, no-store",
-        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; font-src data:",
         "ETag": document.DocumentHash ? `\"${document.DocumentHash}\"` : "",
         "X-Content-Type-Options": "nosniff",
       },

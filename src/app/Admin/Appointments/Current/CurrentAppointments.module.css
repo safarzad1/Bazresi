@@ -98,8 +98,11 @@
 .documentBadge { min-width: 48px; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 8px; border: 1px solid #d5e3e6; border-radius: 8px; color: #547681; background: #f8fbfb; font-size: 11.5px; font-weight: 400; }
 .documentBadge svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
-.cancelAppointmentButton { height: 32px; padding: 0 13px; border: 1px solid #d8b4a8; border-radius: 8px; color: #9a5545; background: #fff8f5; font: inherit; font-size: 12px; font-weight: 400; cursor: pointer; }
+.cancelAppointmentButton { height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 13px; border: 1px solid #d8b4a8; border-radius: 8px; color: #9a5545; background: #fff8f5; font: inherit; font-size: 12px; font-weight: 400; cursor: pointer; }
 .cancelAppointmentButton:hover { border-color: #bf8070; background: #fff2ed; }
+.cancelAppointmentButton svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.viewCancellationLetterButton { border-color: #a9cecd; color: #277a7c; background: #f1faf9; }
+.viewCancellationLetterButton:hover { border-color: #78adad; background: #e8f6f4; }
 .unavailableAction { color: #aab6bb; }
 
 .modalOverlay { position: fixed; inset: 0; z-index: 2147482000; display: grid; place-items: stretch; padding: 0; background: rgba(31, 48, 56, .68); }
@@ -181,12 +184,12 @@
 .wordToolbar small { min-width: 0; margin-right: auto; overflow: hidden; color: #82959d; font-size: 9px; white-space: nowrap; text-overflow: ellipsis; }
 .letterSheet, .finalDocumentImage { width: 794px; max-width: none; margin: 0 auto; background: #fff; box-shadow: 0 7px 25px rgba(28, 53, 62, .16); }
 .finalDocumentImage { display: block; height: auto; }
-.letterSheet { min-height: 1123px; position: relative; overflow: hidden; padding: 78px 54px 54px; color: #080808; font-family: bnaznin, Tahoma, Arial, sans-serif; }
+.letterSheet { height: 1123px; min-height: 1123px; position: relative; overflow: hidden; padding: 78px 54px 54px; color: #080808; font-family: bnaznin, Tahoma, Arial, sans-serif; }
 .letterSheet h3 { margin: 5px 0 18px; text-align: center; font-size: 34px; font-weight: 400; line-height: 1.65; }
 .letterRecipient { margin-bottom: 24px; text-align: right; font-size: 14px; font-weight: 700; line-height: 1.5; white-space: pre-line; }
 .letterRecipient *, .letterSignature * { font-weight: inherit; }
 .letterBody { margin: 0; text-align: justify; text-indent: 24px; font-size: 19px; line-height: 2.4; }
-.letterData { color: #2d8585; font-family: bnaznin, Tahoma, Arial, sans-serif !important; font-size: inherit !important; font-weight: inherit !important; }
+.letterData { color: #2d8585; font-family: bnaznin, Tahoma, Arial, sans-serif !important; font-size: 1.14em !important; font-weight: inherit !important; }
 .letterData * { color: inherit; font-family: inherit !important; font-size: inherit !important; font-weight: inherit !important; }
 .checkedBox { display: inline-grid; width: 18px; height: 18px; margin: 0 3px; place-items: center; border: 1px solid #111; font-family: Tahoma, Arial, sans-serif; font-size: 13px; line-height: 1; }
 .reasonsTitle { display: block; margin-top: 20px; font-size: 18px; }

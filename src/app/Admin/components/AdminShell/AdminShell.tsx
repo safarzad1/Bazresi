@@ -220,11 +220,25 @@ export default function AdminShell({
             {appointmentsOpen && (
               <div className={styles.submenu}>
                 <Link
+                  className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Workflow") ? styles.submenuLinkActive : ""}`}
+                  href="/Admin/Appointments/Workflow"
+                >
+                  <span />
+                  فرایند انتصابات
+                </Link>
+                <Link
                   className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Current") ? styles.submenuLinkActive : ""}`}
                   href="/Admin/Appointments/Current"
                 >
                   <span />
                   فهرست انتصاب‌های جاری
+                </Link>
+                <Link
+                  className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Cancellations") ? styles.submenuLinkActive : ""}`}
+                  href="/Admin/Appointments/Cancellations"
+                >
+                  <span />
+                  فرایند لغو انتصاب
                 </Link>
               </div>
             )}

@@ -1,0 +1,78 @@
+import { getDbPool, sql } from "@/lib/db";
+
+export type WorkflowPerson = { PersonId:number; CodeMelli:string; FirstName:string; LastName:string; FullName:string; FatherName:string; TarikhTavalod:string|null; ShomareShenasnameh:string|null; Shoghl:string|null; TelHamrah:string|null };
+export type WorkflowPost = { PostId:number; PostOnvan:string; Mahal:number|null };
+export type WorkflowContext = { RequesterPostId:number; RequesterFullName:string|null; RequesterPostTitle:string|null; DestinationPostId:number; DestinationPostTitle:string|null; DestinationFullName:string|null };
+export type WorkflowRow = {
+  EntesabId:number; PersonId:number; Code:string|null; CodeMelli:string|null; FullName:string|null; FatherName:string|null; PostId:number; PostOnvan:string|null;
+  RecordState:number; RecordStateNameFarsi:string|null; TaeedOrAdamTaeed:number|null; TaeedOrAdamTaeedNameFarsi:string|null; CreateDateTime:string|null;
+  TarikhEblagh:string|null; ModatEblagKhedmat:number|null; RequesterFullName:string|null; RequesterPostTitle:string|null; DecisionByFullName:string|null;
+  DecisionAt:string|null; DecisionNote:string|null; IsOwnRequest:boolean; CanDecide:boolean; ReasonsCount:number; HasInitialInterview:boolean; HasFinalInterview:boolean; HasOrder:boolean;
+};
+
+export type WorkflowDetail = WorkflowRow & {
+  FirstName:string|null; LastName:string|null; TarikhTavalod:string|null; ShomareShenasnameh:string|null; Shoghl:string|null; TelHamrah:string|null;
+  DestinationPostTitle:string|null; DestinationFullName:string|null;
+};
+export type WorkflowInterview = { InterviewType:number; InterviewTypeTitle:string; FormJson:string; CreateDateTime:string|null; EditDateTime:string|null };
+export type WorkflowHistory = { HistoryId:number; ActionTitle:string; FromState:number|null; ToState:number; Note:string|null; ActorFullName:string|null; CreateDateTime:string|null };
+export type WorkflowFile = { FileId:number; FileKind:number; FileKindTitle:string; FileName:string; ContentType:string; FileSize:number; CreateDateTime:string|null };
+
+function bool(value:unknown){ return value===true||value===1||value==="1"; }
+function text(value:unknown){ return typeof value==="string"&&value.trim()?value.trim():null; }
+function num(value:unknown){ if(value===null||value===undefined||value==="") return null; const n=Number(value); return Number.isFinite(n)?n:null; }
+
+export async function getAppointmentWorkflowLookups(actorUserId:string,search:string){
+  const pool=await getDbPool();
+  const result=await pool.request().input("ActorUserId",actorUserId).input("Search",sql.NVarChar(150),search||null).execute("bz.SP_Appointments_Workflow_Lookups");
+  return {
+    persons:(result.recordsets?.[0]??[]) as unknown as WorkflowPerson[],
+    posts:(result.recordsets?.[1]??[]) as unknown as WorkflowPost[],
+    context:(result.recordsets?.[2]?.[0]??null) as unknown as WorkflowContext|null,
+  };
+}
+
+export async function createAppointmentWorkflow(input:{actorUserId:string;personId:number;postId:number;reasons:string[];initialInterview:unknown;fileName:string;contentType:string;fileData:Buffer}){
+  const pool=await getDbPool();
+  const result=await pool.request().input("ActorUserId",input.actorUserId).input("PersonId",input.personId).input("PostId",input.postId)
+    .input("ReasonsJson",JSON.stringify(input.reasons)).input("InitialInterviewJson",JSON.stringify(input.initialInterview))
+    .input("ProposalFileName",sql.NVarChar(150),input.fileName).input("ProposalContentType",sql.NVarChar(100),input.contentType).input("ProposalFileData",sql.VarBinary(sql.MAX),input.fileData)
+    .execute("bz.SP_Appointments_Workflow_Create");
+  return result.recordset?.[0] as {EntesabId:number;Code:string};
+}
+
+function normalizeRow(item:Record<string,unknown>):WorkflowRow{
+  return {
+    EntesabId:Number(item.EntesabId??0),PersonId:Number(item.PersonId??0),Code:text(item.Code),CodeMelli:text(item.CodeMelli),FullName:text(item.FullName),FatherName:text(item.FatherName),PostId:Number(item.PostId??0),PostOnvan:text(item.PostOnvan),
+    RecordState:Number(item.RecordState??2),RecordStateNameFarsi:text(item.RecordStateNameFarsi),TaeedOrAdamTaeed:num(item.TaeedOrAdamTaeed),TaeedOrAdamTaeedNameFarsi:text(item.TaeedOrAdamTaeedNameFarsi),CreateDateTime:text(item.CreateDateTime),TarikhEblagh:text(item.TarikhEblagh),ModatEblagKhedmat:num(item.ModatEblagKhedmat),
+    RequesterFullName:text(item.RequesterFullName),RequesterPostTitle:text(item.RequesterPostTitle),DecisionByFullName:text(item.DecisionByFullName),DecisionAt:text(item.DecisionAt),DecisionNote:text(item.DecisionNote),IsOwnRequest:bool(item.IsOwnRequest),CanDecide:bool(item.CanDecide),ReasonsCount:Number(item.ReasonsCount??0),HasInitialInterview:bool(item.HasInitialInterview),HasFinalInterview:bool(item.HasFinalInterview),HasOrder:bool(item.HasOrder),
+  };
+}
+
+export async function listAppointmentWorkflow(actorUserId:string){
+  const pool=await getDbPool(); const result=await pool.request().input("ActorUserId",actorUserId).execute("bz.SP_Appointments_Workflow_List");
+  return ((result.recordset??[]) as Record<string,unknown>[]).map(normalizeRow);
+}
+
+export async function getAppointmentWorkflow(actorUserId:string,entesabId:number){
+  const pool=await getDbPool(); const result=await pool.request().input("ActorUserId",actorUserId).input("EntesabId",entesabId).execute("bz.SP_Appointments_Workflow_Get");
+  const raw=(result.recordsets?.[0]?.[0]??null) as Record<string,unknown>|null; if(!raw)return null;
+  const row=normalizeRow(raw) as WorkflowDetail;
+  row.FirstName=text(raw.FirstName); row.LastName=text(raw.LastName); row.TarikhTavalod=text(raw.TarikhTavalod); row.ShomareShenasnameh=text(raw.ShomareShenasnameh); row.Shoghl=text(raw.Shoghl); row.TelHamrah=text(raw.TelHamrah); row.DestinationPostTitle=text(raw.DestinationPostTitle); row.DestinationFullName=text(raw.DestinationFullName);
+  return {row,reasons:((result.recordsets?.[1]??[]) as {ReasonText?:string}[]).map(x=>x.ReasonText?.trim()).filter((x):x is string=>Boolean(x)),interviews:(result.recordsets?.[2]??[]) as unknown as WorkflowInterview[],history:(result.recordsets?.[3]??[]) as unknown as WorkflowHistory[],files:(result.recordsets?.[4]??[]) as unknown as WorkflowFile[]};
+}
+
+export async function decideAppointmentWorkflow(input:{actorUserId:string;entesabId:number;action:"save-interview"|"approve"|"reject";finalInterview:unknown|null;note:string|null;tarikhEblagh:string|null;durationMonths:number|null;fileName:string|null;contentType:string|null;fileData:Buffer|null}){
+  const pool=await getDbPool(); const result=await pool.request().input("ActorUserId",input.actorUserId).input("EntesabId",input.entesabId).input("Action",input.action)
+    .input("FinalInterviewJson",sql.NVarChar(sql.MAX),input.finalInterview?JSON.stringify(input.finalInterview):null).input("DecisionNote",sql.NVarChar(1000),input.note)
+    .input("TarikhEblagh",sql.NVarChar(20),input.tarikhEblagh).input("DurationMonths",input.durationMonths)
+    .input("OrderFileName",sql.NVarChar(150),input.fileName).input("OrderContentType",sql.NVarChar(100),input.contentType).input("OrderFileData",sql.VarBinary(sql.MAX),input.fileData)
+    .execute("bz.SP_Appointments_Workflow_Decide");
+  return result.recordset?.[0] as {EntesabId:number;RecordState:number};
+}
+
+export async function getAppointmentWorkflowFile(actorUserId:string,fileId:number){
+  const pool=await getDbPool(); const result=await pool.request().input("ActorUserId",actorUserId).input("FileId",fileId).execute("bz.SP_Appointments_Workflow_File_Get");
+  const row=result.recordset?.[0] as {FileId:number;FileName:string;ContentType:string;FileSize:number;FileData:Buffer}|undefined;
+  return row?{...row,FileData:Buffer.from(row.FileData)}:null;
+}

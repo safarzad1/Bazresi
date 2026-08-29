@@ -22,6 +22,7 @@ export type CurrentAppointmentRow = {
   RecordState: number | null;
   TaeedOrAdamTaeed: number | null;
   CanCancel: boolean;
+  CancellationProposalId: number | null;
   Madarek: AppointmentDocument[];
 };
 
@@ -79,6 +80,10 @@ function normalizeRows(jsonText: string | null | undefined) {
           ? null
           : Number(item.TaeedOrAdamTaeed),
       CanCancel: item.CanCancel === true || item.CanCancel === 1 || item.CanCancel === "1",
+      CancellationProposalId:
+        item.CancellationProposalId === null || item.CancellationProposalId === undefined
+          ? null
+          : Number(item.CancellationProposalId),
       Madarek: parseDocuments(item.Madarek),
     }));
   } catch {

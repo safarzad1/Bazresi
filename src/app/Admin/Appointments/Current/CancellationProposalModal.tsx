@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import domtoimage from "dom-to-image";
 import {
   cancellationFontFamily,
   cancellationFontOptions,
@@ -44,6 +45,7 @@ type CancellationTarget = {
 
 type ApiResult = {
   draft?: CancellationDraft;
+  reasons?: string[];
   message?: string;
   proposalId?: number;
   documentUrl?: string;
@@ -147,7 +149,7 @@ function CancellationLetterPreview({
   reasons: string[];
   settings: CancellationFormSettings;
   formatting: CancellationLetterFormatting;
-  previewRef: RefObject<HTMLElement | null>;
+  previewRef: RefObject<HTMLDivElement | null>;
 }) {
   const blocks = buildCancellationLetterBlocks(draft, reasons);
   const visibleReasons = blocks.reasons;
@@ -161,7 +163,7 @@ function CancellationLetterPreview({
   const reasonRowHeight = settings.ReasonsRowHeight * (veryDense ? .72 : dense ? .82 : 1);
 
   return (
-    <article ref={previewRef} className={`${styles.letterSheet} ${dense ? styles.letterSheetDense : ""} ${veryDense ? styles.letterSheetVeryDense : ""}`} dir="rtl">
+    <div id="cancellation-letter-card" ref={previewRef} role="document" className={`${styles.letterSheet} ${dense ? styles.letterSheetDense : ""} ${veryDense ? styles.letterSheetVeryDense : ""}`} dir="rtl">
       <h3 data-format-block="title" style={{ fontFamily: cancellationFontFamily(settings.TitleFont), fontSize: settings.TitleFontSize, fontWeight: settings.TitleFontWeight, marginBottom: settings.TitleBottomSpacing }}>{formattedParts(blocks.title, formatting.title)}</h3>
       <div data-format-block="recipient" className={styles.letterRecipient} style={{ fontFamily: cancellationFontFamily(settings.RecipientFont), fontSize: settings.RecipientFontSize, fontWeight: settings.RecipientFontWeight, marginBottom: settings.RecipientBottomSpacing }}>{formattedParts(blocks.recipient, formatting.recipient)}</div>
       <p data-format-block="body" className={styles.letterBody} style={{ fontFamily: cancellationFontFamily(settings.BodyFont), fontSize: bodySize, fontWeight: settings.BodyFontWeight, lineHeight: bodyLineHeight, textIndent: settings.BodyFirstLineIndent }}>{formattedBodyParts(blocks.body, blocks.bodyFields, formatting.body)}</p>
@@ -179,45 +181,60 @@ function CancellationLetterPreview({
 
       <div data-format-block="signer" className={styles.letterSignature} style={{ fontFamily: cancellationFontFamily(settings.SignerFont), fontSize: settings.SignerFontSize, fontWeight: settings.SignerFontWeight }}>{formattedParts(blocks.signer, formatting.signer)}</div>
       <div data-format-block="copy" className={styles.letterCopy} style={{ fontFamily: cancellationFontFamily(settings.CopyFont), fontSize: settings.CopyFontSize, fontWeight: settings.CopyFontWeight }}>{formattedParts(blocks.copy, formatting.copy)}</div>
-    </article>
+    </div>
   );
 }
 
 async function downloadPng(documentUrl: string, fullName: string) {
   const response = await fetch(documentUrl, { cache: "no-store" });
   if (!response.ok) throw new Error("دریافت تصویر فرم انجام نشد.");
-  const svg = await response.text();
-  const sourceUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
-
+  const imageBlob = await response.blob();
+  if (!imageBlob.type.startsWith("image/")) throw new Error("فایل ذخیره‌شده تصویر معتبر نیست.");
+  const downloadUrl = URL.createObjectURL(imageBlob);
   try {
-    const image = new Image();
-    await new Promise<void>((resolve, reject) => {
-      image.onload = () => resolve();
-      image.onerror = () => reject(new Error("تبدیل تصویر فرم انجام نشد."));
-      image.src = sourceUrl;
-    });
-
-    const canvas = document.createElement("canvas");
-    canvas.width = 2480;
-    canvas.height = 3508;
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("امکان ایجاد تصویر وجود ندارد.");
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    const png = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("تولید فایل PNG انجام نشد.")), "image/png", 1);
-    });
-    const downloadUrl = URL.createObjectURL(png);
     const anchor = document.createElement("a");
     anchor.href = downloadUrl;
     anchor.download = `پیشنهاد-لغو-ابلاغ-${fullName || "شخص"}.png`;
     anchor.click();
-    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
   } finally {
-    URL.revokeObjectURL(sourceUrl);
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
   }
+}
+
+async function dataUrlToFile(dataUrl: string, fileName: string) {
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  return new File([blob], fileName, { type: blob.type || "image/png" });
+}
+
+async function exportNodeToPNGFile(nodeId: string, fileName: string) {
+  const node = document.getElementById(nodeId);
+  if (!node) return null;
+  await document.fonts?.ready;
+  const scale = 2;
+  const width = 794;
+  const height = 1123;
+  const dataUrl = await domtoimage.toPng(node, {
+    width: width * scale,
+    height: height * scale,
+    style: {
+      transform: `scale(${scale})`,
+      transformOrigin: "top left",
+      width: `${width}px`,
+      height: `${height}px`,
+      minWidth: `${width}px`,
+      minHeight: `${height}px`,
+      maxWidth: `${width}px`,
+      maxHeight: `${height}px`,
+      overflow: "hidden",
+      margin: "0",
+      boxShadow: "none",
+    },
+    bgcolor: "#ffffff",
+  });
+  const file = await dataUrlToFile(dataUrl, fileName);
+  const previewUrl = URL.createObjectURL(file);
+  return { file, previewUrl };
 }
 
 export default function CancellationProposalModal({ target, onClose, onSaved }: Props) {
@@ -238,7 +255,7 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
   const [selectedFont, setSelectedFont] = useState<CancellationFontName>("bnaznin");
   const [selectedFontSize, setSelectedFontSize] = useState(18);
   const [formatMessage, setFormatMessage] = useState("ابتدا بخشی از متن پیش‌نمایش را انتخاب کنید.");
-  const previewRef = useRef<HTMLElement | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
   const savedRangeRef = useRef<Range | null>(null);
 
   const fullName = draft?.FullName || target.FullName || "—";
@@ -248,6 +265,9 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
     let active = true;
     setLoading(true);
     setError("");
+    setSuccess("");
+    setReasons([""]);
+    setDocumentUrl("");
     void fetch(`/api/appointments/current/${target.EntesabId}/cancellation`, { cache: "no-store" })
       .then(responseJson)
       .then((data) => {
@@ -257,6 +277,8 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
           setCanEditSettings(Boolean(data.canEditSettings));
           setSettingsDirty(false);
           setFormatting({});
+          setReasons(data.reasons?.length ? data.reasons : [""]);
+          setDocumentUrl(data.documentUrl ?? "");
         }
       })
       .catch((reason) => {
@@ -388,16 +410,25 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
     setSaving(true);
     setError("");
     try {
-      const data = await responseJson(await fetch(`/api/appointments/current/${target.EntesabId}/cancellation`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reasons: validReasons, formatting }),
-      }));
-      setSuccess(data.message || "پیشنهاد لغو ابلاغ ثبت شد.");
+      const exported = await exportNodeToPNGFile("cancellation-letter-card", `cancellation-${target.EntesabId}.png`);
+      if (!exported) throw new Error("کادر فرم برای تبدیل به تصویر پیدا نشد.");
+      const formData = new FormData();
+      formData.append("reasons", JSON.stringify(validReasons));
+      formData.append("formImage", exported.file);
+      let data: ApiResult;
+      try {
+        data = await responseJson(await fetch(`/api/appointments/current/${target.EntesabId}/cancellation`, {
+          method: "POST",
+          body: formData,
+        }));
+      } finally {
+        URL.revokeObjectURL(exported.previewUrl);
+      }
+      setSuccess(data.message || "لغو ابلاغ، دلایل و پیوست نامه ثبت شد.");
       setDocumentUrl(data.documentUrl || "");
       onSaved();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "ثبت پیشنهاد انجام نشد.");
+      setError(reason instanceof Error ? reason.message : "ثبت لغو ابلاغ انجام نشد.");
     } finally {
       setSaving(false);
     }
@@ -513,14 +544,14 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
               {success ? <div className={styles.cancelSuccess}>{success}</div> : null}
 
               <div className={styles.cancelActions}>
-                {!documentUrl ? <button type="button" className={styles.submitCancellation} onClick={() => void submit()} disabled={saving || !validReasons.length || settingsDirty}>{saving ? "در حال ثبت..." : "ثبت پیشنهاد و تهیه تصویر"}</button> : null}
-                {documentUrl ? <button type="button" className={styles.downloadImageButton} onClick={() => void saveImage()} disabled={downloading}>{downloading ? "در حال تهیه PNG..." : "دریافت تصویر PNG"}</button> : null}
+                {!documentUrl ? <button type="button" className={styles.submitCancellation} onClick={() => void submit()} disabled={saving || !validReasons.length || settingsDirty}>{saving ? "در حال ثبت لغو ابلاغ..." : "ثبت لغو ابلاغ"}</button> : null}
+                {documentUrl ? <button type="button" className={styles.downloadImageButton} onClick={() => void saveImage()} disabled={downloading}>{downloading ? "در حال دریافت پیوست..." : "دریافت پیوست PNG"}</button> : null}
                 <button type="button" className={styles.closeCancellation} onClick={onClose} disabled={saving}>بستن</button>
               </div>
             </aside>
 
             <div className={styles.letterPreviewPane}>
-              <div className={styles.previewLabel}>{documentUrl ? "تصویر نهایی ثبت‌شده" : "پیش‌نمایش زنده فرم"}</div>
+              <div className={styles.previewLabel}>{documentUrl ? "نامه ثبت‌شده" : "پیش‌نمایش زنده فرم"}</div>
               {!documentUrl ? (
                 <div className={styles.wordToolbar} onMouseDown={(event) => {
                   if ((event.target as HTMLElement).tagName === "BUTTON") event.preventDefault();
@@ -539,7 +570,7 @@ export default function CancellationProposalModal({ target, onClose, onSaved }: 
                   <small>{formatMessage}</small>
                 </div>
               ) : null}
-              {documentUrl ? <img className={styles.finalDocumentImage} src={documentUrl} alt={`فرم پیشنهاد لغو ابلاغ ${fullName}`} /> : <CancellationLetterPreview draft={draft} reasons={reasons} settings={settings} formatting={formatting} previewRef={previewRef} />}
+              <CancellationLetterPreview draft={draft} reasons={reasons} settings={settings} formatting={formatting} previewRef={previewRef} />
             </div>
           </div>
         ) : null}

@@ -5,7 +5,7 @@ GO
     پیشنهاد لغو ابلاغ
     - تکمیل خودکار مشخصات از انتصاب جاری و اطلاعات شخص
     - ثبت دلایل به‌صورت ردیف‌های مستقل
-    - نگهداری تصویر نهایی فرم به‌صورت SVG خودکفا
+    - تبدیل کارت فرم به PNG در مرورگر و نگهداری فایل در DBBazresiFiles
     - عدم تغییر وضعیت انتصاب تا زمان فرایند تأیید نهایی
 */
 
@@ -41,12 +41,201 @@ IF COL_LENGTH(N'bz.LaghveEblagh', N'RegisteredAt') IS NULL
     ALTER TABLE [bz].[LaghveEblagh] ADD [RegisteredAt] DATETIME2(0) NULL;
 GO
 
+IF COL_LENGTH(N'bz.LaghveEblagh', N'DestinationPostId') IS NULL
+    ALTER TABLE [bz].[LaghveEblagh] ADD [DestinationPostId] BIGINT NULL;
+GO
+IF COL_LENGTH(N'bz.LaghveEblagh', N'DecisionCode') IS NULL
+    ALTER TABLE [bz].[LaghveEblagh] ADD [DecisionCode] INT NULL;
+GO
+IF COL_LENGTH(N'bz.LaghveEblagh', N'DecisionNote') IS NULL
+    ALTER TABLE [bz].[LaghveEblagh] ADD [DecisionNote] NVARCHAR(1000) NULL;
+GO
+IF COL_LENGTH(N'bz.LaghveEblagh', N'DecisionUserId') IS NULL
+    ALTER TABLE [bz].[LaghveEblagh] ADD [DecisionUserId] NVARCHAR(450) NULL;
+GO
+IF COL_LENGTH(N'bz.LaghveEblagh', N'DecisionAt') IS NULL
+    ALTER TABLE [bz].[LaghveEblagh] ADD [DecisionAt] DATETIME2(0) NULL;
+GO
+
+IF OBJECT_ID(N'bz.CancellationWorkflowHistory', N'U') IS NULL
+BEGIN
+    CREATE TABLE [bz].[CancellationWorkflowHistory]
+    (
+        [HistoryId] BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT [PK_CancellationWorkflowHistory] PRIMARY KEY,
+        [ProposalId] BIGINT NOT NULL,
+        [ActionCode] TINYINT NOT NULL,
+        [ActionTitle] NVARCHAR(100) NOT NULL,
+        [FromState] INT NULL,
+        [ToState] INT NOT NULL,
+        [Note] NVARCHAR(1000) NULL,
+        [ActorUserId] NVARCHAR(450) NOT NULL,
+        [ActorPostId] BIGINT NULL,
+        [CreateDateTime] DATETIME2(0) NOT NULL CONSTRAINT [DF_CancellationWorkflowHistory_CreateDateTime] DEFAULT (SYSDATETIME())
+    );
+END;
+GO
+
+CREATE OR ALTER PROCEDURE [bz].[SP_Appointments_CancellationWorkflow_List]
+    @ActorUserId NVARCHAR(450)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @ActorPostId BIGINT;
+    SELECT TOP (1) @ActorPostId = TRY_CONVERT(BIGINT, U.[Semat])
+    FROM [dbo].[AspNetUsers] U
+    WHERE U.[Id] = @ActorUserId
+      AND ISNULL(U.[IsDelete], 0) = 0
+      AND ISNULL(U.[IsActive], 1) = 1;
+
+    IF @ActorPostId IS NULL
+        THROW 51130, N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.', 1;
+
+    SELECT
+        L.[ID] AS [ProposalId], L.[EntesabId], L.[PersonId],
+        LTRIM(RTRIM(CONCAT(ISNULL(L.[FirstName], N''), N' ', ISNULL(L.[LastName], N'')))) AS [FullName],
+        L.[CodeMelli], COALESCE(NULLIF(L.[NoeMasuliyat_NameFarsi], N''), E.[PostOnvan]) AS [PostOnvan],
+        L.[TarikhShoro] AS [TarikhEblagh], L.[RequesterFullName], L.[RequesterPostTitle],
+        L.[CreateDateTime], L.[RecordState], L.[RecordState_NameFarsi] AS [RecordStateNameFarsi],
+        L.[DecisionCode], L.[DecisionNote], DU.[FullName] AS [DecisionByFullName], L.[DecisionAt],
+        CONVERT(BIT, CASE WHEN L.[RecordState] = 2 AND L.[CreateUserId] <> @ActorUserId
+          AND (L.[DestinationPostId] = @ActorPostId OR EXISTS
+          (SELECT 1 FROM [bz].[AppointmentPostAccess] A WHERE A.[ActorPostId] = @ActorPostId AND A.[TargetPostId] = E.[PostId] AND A.[IsActive] = 1))
+          THEN 1 ELSE 0 END) AS [CanDecide],
+        CONVERT(BIT, CASE WHEN L.[CreateUserId] = @ActorUserId OR L.[RequestingPostId] = @ActorPostId THEN 1 ELSE 0 END) AS [IsOwnRequest],
+        (SELECT COUNT(1) FROM [bz].[LaghveEblagh_Ellat] LE WHERE LE.[LaghveEblaghId] = L.[ID]) AS [ReasonsCount],
+        CONVERT(BIT, CASE WHEN EXISTS (SELECT 1 FROM [DBBazresiFiles].[filedb].[CancellationProposalForms] F WHERE F.[ProposalId] = L.[ID] AND F.[IsDelete] = 0) THEN 1 ELSE 0 END) AS [HasAttachment]
+    FROM [bz].[LaghveEblagh] L
+    INNER JOIN [bz].[Entesabat] E ON E.[EntesabId] = L.[EntesabId]
+    LEFT JOIN [dbo].[AspNetUsers] DU ON DU.[Id] = L.[DecisionUserId]
+    WHERE L.[CreateUserId] = @ActorUserId
+       OR L.[RequestingPostId] = @ActorPostId
+       OR L.[DestinationPostId] = @ActorPostId
+       OR EXISTS (SELECT 1 FROM [bz].[AppointmentPostAccess] A WHERE A.[ActorPostId] = @ActorPostId AND A.[TargetPostId] = E.[PostId] AND A.[IsActive] = 1)
+    ORDER BY L.[ID] DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE [bz].[SP_Appointments_CancellationWorkflow_Decide]
+    @ActorUserId NVARCHAR(450),
+    @ProposalId BIGINT,
+    @DecisionCode INT,
+    @DecisionNote NVARCHAR(1000) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    SET @DecisionNote = NULLIF(LTRIM(RTRIM(ISNULL(@DecisionNote, N''))), N'');
+    IF @DecisionCode NOT IN (3, 4)
+        THROW 51131, N'نتیجه بررسی معتبر نیست.', 1;
+    IF @DecisionCode = 3 AND @DecisionNote IS NULL
+        THROW 51132, N'درج توضیحات برای عدم تأیید الزامی است.', 1;
+
+    DECLARE @ActorPostId BIGINT;
+    SELECT TOP (1) @ActorPostId = TRY_CONVERT(BIGINT, U.[Semat])
+    FROM [dbo].[AspNetUsers] U
+    WHERE U.[Id] = @ActorUserId AND ISNULL(U.[IsDelete], 0) = 0 AND ISNULL(U.[IsActive], 1) = 1;
+    IF @ActorPostId IS NULL THROW 51133, N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.', 1;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        DECLARE @EntesabId BIGINT, @TargetPostId BIGINT, @CreatorUserId NVARCHAR(450), @DestinationPostId BIGINT, @CurrentState INT;
+        SELECT @EntesabId = L.[EntesabId], @TargetPostId = E.[PostId], @CreatorUserId = L.[CreateUserId],
+               @DestinationPostId = L.[DestinationPostId], @CurrentState = L.[RecordState]
+        FROM [bz].[LaghveEblagh] L WITH (UPDLOCK, HOLDLOCK)
+        INNER JOIN [bz].[Entesabat] E ON E.[EntesabId] = L.[EntesabId]
+        WHERE L.[ID] = @ProposalId;
+
+        IF @EntesabId IS NULL THROW 51134, N'درخواست لغو انتصاب پیدا نشد.', 1;
+        IF @CurrentState <> 2 THROW 51135, N'این درخواست قبلاً تعیین تکلیف شده است.', 1;
+        IF @CreatorUserId = @ActorUserId THROW 51136, N'ثبت‌کننده درخواست نمی‌تواند درخواست خود را بررسی کند.', 1;
+        IF @DestinationPostId <> @ActorPostId AND NOT EXISTS
+           (SELECT 1 FROM [bz].[AppointmentPostAccess] A WHERE A.[ActorPostId] = @ActorPostId AND A.[TargetPostId] = @TargetPostId AND A.[IsActive] = 1)
+            THROW 51137, N'مجوز بررسی این درخواست را ندارید.', 1;
+
+        DECLARE @NextState INT = CASE WHEN @DecisionCode = 4 THEN 12 ELSE 13 END;
+        DECLARE @StateTitle NVARCHAR(100) = CASE WHEN @DecisionCode = 4 THEN N'لغو انتصاب تأیید شد' ELSE N'لغو انتصاب تأیید نشد' END;
+
+        UPDATE [bz].[LaghveEblagh]
+        SET [RecordState] = @NextState, [RecordState_NameFarsi] = @StateTitle,
+            [DecisionCode] = @DecisionCode, [DecisionNote] = @DecisionNote,
+            [DecisionUserId] = @ActorUserId, [DecisionAt] = SYSDATETIME()
+        WHERE [ID] = @ProposalId;
+
+        INSERT INTO [bz].[CancellationWorkflowHistory]
+            ([ProposalId], [ActionCode], [ActionTitle], [FromState], [ToState], [Note], [ActorUserId], [ActorPostId])
+        VALUES (@ProposalId, @DecisionCode, @StateTitle, 2, @NextState, @DecisionNote, @ActorUserId, @ActorPostId);
+
+        IF @DecisionCode = 4
+            UPDATE [bz].[Entesabat]
+            SET [RecordState] = 12, [RecordState_NameFarsi] = N'لغو ابلاغ مسئولیت',
+                [TaeedOrAdamTaeed] = 4, [TaeedOrAdamTaeedNameFarsi] = N'تأیید لغو ابلاغ مسئولیت',
+                [IsEblagh] = 0, [EditUserId] = @ActorUserId, [EditDateTime] = CONVERT(NVARCHAR(19), GETDATE(), 120)
+            WHERE [EntesabId] = @EntesabId;
+
+        COMMIT TRANSACTION;
+        SELECT @ProposalId AS [ProposalId], @NextState AS [RecordState], @StateTitle AS [RecordStateNameFarsi];
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH;
+END;
+GO
+
 IF COL_LENGTH(N'bz.LaghveEblagh_Ellat', N'LaghveEblaghId') IS NULL
     ALTER TABLE [bz].[LaghveEblagh_Ellat] ADD [LaghveEblaghId] BIGINT NULL;
 GO
 
 IF COL_LENGTH(N'bz.LaghveEblagh_Ellat', N'SortOrder') IS NULL
     ALTER TABLE [bz].[LaghveEblagh_Ellat] ADD [SortOrder] TINYINT NULL;
+GO
+
+IF DB_ID(N'DBBazresiFiles') IS NULL
+    THROW 51109, N'دیتابیس DBBazresiFiles پیدا نشد.', 1;
+GO
+
+USE [DBBazresiFiles];
+GO
+
+IF SCHEMA_ID(N'filedb') IS NULL
+    EXEC(N'CREATE SCHEMA [filedb] AUTHORIZATION [dbo]');
+GO
+
+IF OBJECT_ID(N'filedb.CancellationProposalForms', N'U') IS NULL
+BEGIN
+    CREATE TABLE [filedb].[CancellationProposalForms]
+    (
+        [FormId] BIGINT IDENTITY(1,1) NOT NULL,
+        [ProposalId] BIGINT NOT NULL,
+        [EntesabId] BIGINT NOT NULL,
+        [PersonId] BIGINT NOT NULL,
+        [FileName] NVARCHAR(150) NOT NULL,
+        [ContentType] NVARCHAR(100) NOT NULL,
+        [FileSize] BIGINT NOT NULL,
+        [FileData] VARBINARY(MAX) NOT NULL,
+        [DocumentHash] NVARCHAR(64) NOT NULL,
+        [IsDelete] BIT NOT NULL CONSTRAINT [DF_CancellationProposalForms_IsDelete] DEFAULT (0),
+        [CreateUserId] NVARCHAR(450) NOT NULL,
+        [CreateDateTime] DATETIME2(0) NOT NULL CONSTRAINT [DF_CancellationProposalForms_CreateDateTime] DEFAULT (SYSDATETIME()),
+        CONSTRAINT [PK_CancellationProposalForms] PRIMARY KEY ([FormId])
+    );
+END;
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1 FROM sys.indexes
+    WHERE [name] = N'UX_CancellationProposalForms_Proposal_Active'
+      AND [object_id] = OBJECT_ID(N'filedb.CancellationProposalForms')
+)
+    CREATE UNIQUE INDEX [UX_CancellationProposalForms_Proposal_Active]
+        ON [filedb].[CancellationProposalForms]([ProposalId])
+        WHERE [IsDelete] = 0;
+GO
+
+USE [DBBazresi];
 GO
 
 IF OBJECT_ID(N'bz.CancellationFormSettings', N'U') IS NULL
@@ -105,10 +294,10 @@ IF COL_LENGTH(N'bz.CancellationFormSettings', N'CopyFontWeight') IS NULL
     ALTER TABLE [bz].[CancellationFormSettings] ADD [CopyFontWeight] SMALLINT NOT NULL CONSTRAINT [DF_CancellationFormSettings_CopyFontWeight] DEFAULT (700);
 GO
 IF COL_LENGTH(N'bz.CancellationFormSettings', N'DataFont') IS NULL
-    ALTER TABLE [bz].[CancellationFormSettings] ADD [DataFont] NVARCHAR(50) NOT NULL CONSTRAINT [DF_CancellationFormSettings_DataFont] DEFAULT (N'MitraBold');
+    ALTER TABLE [bz].[CancellationFormSettings] ADD [DataFont] NVARCHAR(50) NOT NULL CONSTRAINT [DF_CancellationFormSettings_DataFont] DEFAULT (N'bnaznin');
 GO
 IF COL_LENGTH(N'bz.CancellationFormSettings', N'DataFontSize') IS NULL
-    ALTER TABLE [bz].[CancellationFormSettings] ADD [DataFontSize] DECIMAL(5,2) NOT NULL CONSTRAINT [DF_CancellationFormSettings_DataFontSize] DEFAULT (14);
+    ALTER TABLE [bz].[CancellationFormSettings] ADD [DataFontSize] DECIMAL(5,2) NOT NULL CONSTRAINT [DF_CancellationFormSettings_DataFontSize] DEFAULT (15.5);
 GO
 IF COL_LENGTH(N'bz.CancellationFormSettings', N'DataFontWeight') IS NULL
     ALTER TABLE [bz].[CancellationFormSettings] ADD [DataFontWeight] SMALLINT NOT NULL CONSTRAINT [DF_CancellationFormSettings_DataFontWeight] DEFAULT (700);
@@ -159,9 +348,9 @@ SET [TitleFont] = N'IranNastaliq',
     [BodyFontSize] = 14,
     [BodyFontWeight] = 400,
     [BodyLineHeight] = 2.40,
-    [DataFont] = N'MitraBold',
-    [DataFontSize] = 14,
-    [DataFontWeight] = 700,
+    [DataFont] = N'bnaznin',
+    [DataFontSize] = 15.5,
+    [DataFontWeight] = 400,
     [TitleBottomSpacing] = 18,
     [RecipientBottomSpacing] = 24,
     [BodyFirstLineIndent] = 24,
@@ -431,12 +620,12 @@ BEGIN
             INNER JOIN [dbo].[Semats] AS S ON S.[ID] = E.[PostId]
             LEFT JOIN [bz].[Person] AS P ON P.[PersonId] = E.[PersonId]
             WHERE E.[EntesabId] = @EntesabId
-              AND E.[RecordState] = 10
-              AND E.[TaeedOrAdamTaeed] = 4
+              AND (E.[RecordState] = 10 OR EXISTS (SELECT 1 FROM [bz].[LaghveEblagh] L0 WHERE L0.[EntesabId] = E.[EntesabId]))
+              AND (E.[TaeedOrAdamTaeed] = 4 OR EXISTS (SELECT 1 FROM [bz].[LaghveEblagh] L0 WHERE L0.[EntesabId] = E.[EntesabId]))
               AND ISNULL(E.[KartablOthePost], 0) = 0
               AND ISNULL(E.[IsDelete], 0) = 0
-              AND ISNULL(E.[IsEblagh], 0) = 1
-              AND DATEADD(MONTH, E.[ModatEblagKhedmat], dbo.ShamsiToMiladi(E.[TarikhEblagh])) >= CONVERT(DATE, GETDATE())
+              AND (ISNULL(E.[IsEblagh], 0) = 1 OR EXISTS (SELECT 1 FROM [bz].[LaghveEblagh] L0 WHERE L0.[EntesabId] = E.[EntesabId]))
+              AND (DATEADD(MONTH, E.[ModatEblagKhedmat], dbo.ShamsiToMiladi(E.[TarikhEblagh])) >= CONVERT(DATE, GETDATE()) OR EXISTS (SELECT 1 FROM [bz].[LaghveEblagh] L0 WHERE L0.[EntesabId] = E.[EntesabId]))
               AND EXISTS
               (
                   SELECT 1
@@ -445,13 +634,6 @@ BEGIN
                     AND A.[TargetPostId] = E.[PostId]
                     AND A.[IsActive] = 1
               )
-              AND NOT EXISTS
-              (
-                  SELECT 1
-                  FROM [bz].[LaghveEblagh] AS L
-                  WHERE L.[EntesabId] = E.[EntesabId]
-                    AND L.[RecordState] = 10
-              )
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
         ),
         N'{}'
@@ -459,11 +641,77 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE [bz].[SP_Appointments_CancellationProposal_GetByEntesab]
+    @ActorUserId NVARCHAR(450),
+    @EntesabId BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @ActorPostId BIGINT;
+    DECLARE @ProposalId BIGINT;
+    DECLARE @DocumentHash NVARCHAR(64);
+    DECLARE @RecordState INT;
+    DECLARE @RecordStateNameFarsi NVARCHAR(100);
+    DECLARE @DecisionCode INT;
+    DECLARE @DecisionNote NVARCHAR(1000);
+
+    SELECT TOP (1) @ActorPostId = TRY_CONVERT(BIGINT, U.[Semat])
+    FROM [dbo].[AspNetUsers] AS U
+    WHERE U.[Id] = @ActorUserId
+      AND ISNULL(U.[IsDelete], 0) = 0
+      AND ISNULL(U.[IsActive], 1) = 1;
+
+    IF @ActorPostId IS NULL
+        THROW 51108, N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.', 1;
+
+    SELECT TOP (1)
+        @ProposalId = L.[ID],
+        @DocumentHash = L.[DocumentHash],
+        @RecordState = L.[RecordState],
+        @RecordStateNameFarsi = L.[RecordState_NameFarsi],
+        @DecisionCode = L.[DecisionCode],
+        @DecisionNote = L.[DecisionNote]
+    FROM [bz].[LaghveEblagh] AS L
+    INNER JOIN [bz].[Entesabat] AS E ON E.[EntesabId] = L.[EntesabId]
+    WHERE L.[EntesabId] = @EntesabId
+      AND
+      (
+          L.[CreateUserId] = @ActorUserId
+          OR L.[RequestingPostId] = @ActorPostId
+          OR EXISTS
+          (
+              SELECT 1
+              FROM [bz].[AppointmentPostAccess] AS A
+              WHERE A.[ActorPostId] = @ActorPostId
+                AND A.[TargetPostId] = E.[PostId]
+                AND A.[IsActive] = 1
+          )
+      )
+    ORDER BY L.[ID] DESC;
+
+    SELECT
+        @ProposalId AS [ProposalId],
+        @DocumentHash AS [DocumentHash],
+        @RecordState AS [RecordState],
+        @RecordStateNameFarsi AS [RecordStateNameFarsi],
+        @DecisionCode AS [DecisionCode],
+        @DecisionNote AS [DecisionNote];
+
+    SELECT LE.[Dalayel]
+    FROM [bz].[LaghveEblagh_Ellat] AS LE
+    WHERE LE.[LaghveEblaghId] = @ProposalId
+    ORDER BY ISNULL(LE.[SortOrder], 255), LE.[ID];
+END;
+GO
+
 CREATE OR ALTER PROCEDURE [bz].[SP_Appointments_CancellationProposal_Create]
     @ActorUserId NVARCHAR(450),
     @EntesabId BIGINT,
     @ReasonsJson NVARCHAR(MAX),
-    @DocumentSvg NVARCHAR(MAX),
+    @FormFileName NVARCHAR(150),
+    @FormContentType NVARCHAR(100),
+    @FormFileData VARBINARY(MAX),
     @DocumentHash NVARCHAR(64)
 AS
 BEGIN
@@ -473,8 +721,25 @@ BEGIN
     IF ISJSON(@ReasonsJson) <> 1
         THROW 51101, N'ساختار دلایل لغو ابلاغ معتبر نیست.', 1;
 
-    IF NULLIF(LTRIM(RTRIM(ISNULL(@DocumentSvg, N''))), N'') IS NULL
-        THROW 51102, N'تصویر فرم لغو ابلاغ تولید نشده است.', 1;
+    IF NULLIF(LTRIM(RTRIM(ISNULL(@FormFileName, N''))), N'') IS NULL
+       OR @FormFileName LIKE N'%/%'
+       OR @FormFileName LIKE N'%\%'
+       OR LEN(@FormFileName) > 150
+       OR @FormContentType <> N'image/png'
+       OR DATALENGTH(@FormFileData) < 100
+       OR DATALENGTH(@FormFileData) > 12582912
+       OR SUBSTRING(@FormFileData, 1, 8) <> 0x89504E470D0A1A0A
+        THROW 51102, N'تصویر PNG فرم لغو ابلاغ معتبر نیست یا بیش از ۱۲ مگابایت حجم دارد.', 1;
+
+    IF NOT EXISTS
+    (
+        SELECT 1
+        FROM [DBBazresiFiles].[sys].[tables] AS T
+        INNER JOIN [DBBazresiFiles].[sys].[schemas] AS S ON S.[schema_id] = T.[schema_id]
+        WHERE S.[name] = N'filedb'
+          AND T.[name] = N'CancellationProposalForms'
+    )
+        THROW 51109, N'جدول ذخیره فرم لغو ابلاغ در DBBazresiFiles ایجاد نشده است.', 1;
 
     DECLARE @ReasonCount INT =
     (
@@ -498,6 +763,7 @@ BEGIN
     DECLARE @RequesterFullName NVARCHAR(150);
     DECLARE @RequesterPostTitle NVARCHAR(250);
     DECLARE @SignaturePath NVARCHAR(500);
+    DECLARE @DestinationPostId BIGINT;
 
     SELECT TOP (1)
         @ActorPostId = TRY_CONVERT(BIGINT, U.[Semat]),
@@ -516,6 +782,11 @@ BEGIN
 
     IF @ActorPostId IS NULL
         THROW 51105, N'سمت سازمانی فعال برای کاربر جاری پیدا نشد.', 1;
+
+    SELECT @DestinationPostId = NULLIF(S.[PID], 0)
+    FROM [dbo].[Semats] S
+    WHERE S.[ID] = @ActorPostId;
+    SET @DestinationPostId = ISNULL(@DestinationPostId, @ActorPostId);
 
     DECLARE
         @PersonId BIGINT,
@@ -579,7 +850,6 @@ BEGIN
             SELECT 1
             FROM [bz].[LaghveEblagh] WITH (UPDLOCK, HOLDLOCK)
             WHERE [EntesabId] = @EntesabId
-              AND [RecordState] = 10
         )
             THROW 51107, N'برای این ابلاغ قبلاً پیشنهاد لغو ثبت شده است.', 1;
 
@@ -591,17 +861,17 @@ BEGIN
             [Ellat], [Ellat_NameFarsi], [RecordState], [RecordState_NameFarsi],
             [CreateUserId], [CreateDateTime], [EntesabId], [RequestingPostId],
             [RequesterFullName], [RequesterPostTitle], [SignaturePath],
-            [DocumentSvg], [DocumentHash], [RegisteredAt]
+            [DocumentSvg], [DocumentHash], [RegisteredAt], [DestinationPostId]
         )
         VALUES
         (
             @PersonId, @CodeMelli, @FirstName, @LastName, @FatherName,
             @TarikhTavalod, @ShomareShenasnameh, @PostOnvan, @TarikhEblagh,
             @ModatEblagKhedmat, @NoeMasuliyat, @PostOnvan, @TarikhPayan,
-            1, N'لغو ابلاغ', 10, N'پیشنهاد لغو ابلاغ',
+            1, N'لغو ابلاغ', 2, N'در انتظار بررسی لغو ابلاغ',
             @ActorUserId, CONVERT(NVARCHAR(19), GETDATE(), 120), @EntesabId, @ActorPostId,
             @RequesterFullName, @RequesterPostTitle, @SignaturePath,
-            @DocumentSvg, @DocumentHash, GETDATE()
+            NULL, @DocumentHash, GETDATE(), @DestinationPostId
         );
 
         DECLARE @LaghveEblaghId BIGINT = SCOPE_IDENTITY();
@@ -621,6 +891,33 @@ BEGIN
         FROM OPENJSON(@ReasonsJson)
         WHERE NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(1500), [value]))), N'') IS NOT NULL
           AND TRY_CONVERT(INT, [key]) BETWEEN 0 AND 9;
+
+        INSERT INTO [DBBazresiFiles].[filedb].[CancellationProposalForms]
+        (
+            [ProposalId], [EntesabId], [PersonId], [FileName], [ContentType],
+            [FileSize], [FileData], [DocumentHash], [CreateUserId]
+        )
+        VALUES
+        (
+            @LaghveEblaghId, @EntesabId, @PersonId, @FormFileName, @FormContentType,
+            DATALENGTH(@FormFileData), @FormFileData, @DocumentHash, @ActorUserId
+        );
+
+        INSERT INTO [bz].[Entesabat_Madarek]
+        (
+            [PersonId], [EntesabId], [FileName], [SanadId], [OnvanSanad],
+            [OrderId], [CreateUserId], [CreateDateTime]
+        )
+        VALUES
+        (
+            @PersonId, @EntesabId, @FormFileName, 4, N'درخواست لغو ابلاغ مسئولیت',
+            @LaghveEblaghId, @ActorUserId, CONVERT(NVARCHAR(19), GETDATE(), 120)
+        );
+
+        INSERT INTO [bz].[CancellationWorkflowHistory]
+            ([ProposalId], [ActionCode], [ActionTitle], [FromState], [ToState], [ActorUserId], [ActorPostId])
+        VALUES
+            (@LaghveEblaghId, 1, N'ثبت درخواست لغو انتصاب', NULL, 2, @ActorUserId, @ActorPostId);
 
         COMMIT TRANSACTION;
 
@@ -651,14 +948,21 @@ BEGIN
 
     SELECT TOP (1)
         L.[ID] AS [ProposalId],
+        F.[FileName],
+        F.[ContentType],
+        F.[FileSize],
+        F.[FileData],
         L.[DocumentSvg],
         L.[DocumentHash],
         L.[FirstName],
         L.[LastName]
     FROM [bz].[LaghveEblagh] AS L
     INNER JOIN [bz].[Entesabat] AS E ON E.[EntesabId] = L.[EntesabId]
+    LEFT JOIN [DBBazresiFiles].[filedb].[CancellationProposalForms] AS F
+        ON F.[ProposalId] = L.[ID]
+       AND F.[IsDelete] = 0
     WHERE L.[ID] = @ProposalId
-      AND L.[DocumentSvg] IS NOT NULL
+      AND (F.[FileData] IS NOT NULL OR L.[DocumentSvg] IS NOT NULL)
       AND
       (
           L.[CreateUserId] = @ActorUserId
@@ -712,6 +1016,12 @@ BEGIN
                 ) AS [DaysLeft],
                 E.[RecordState], E.[RecordState_NameFarsi], E.[TaeedOrAdamTaeed],
                 E.[TaeedOrAdamTaeedNameFarsi], E.[IsEblagh],
+                (
+                    SELECT TOP (1) L.[ID]
+                    FROM [bz].[LaghveEblagh] AS L
+                    WHERE L.[EntesabId] = E.[EntesabId]
+                    ORDER BY L.[ID] DESC
+                ) AS [CancellationProposalId],
                 CONVERT
                 (
                     BIT,
@@ -722,9 +1032,8 @@ BEGIN
                          AND NOT EXISTS
                          (
                              SELECT 1
-                             FROM [bz].[LaghveEblagh] AS L
-                             WHERE L.[EntesabId] = E.[EntesabId]
-                               AND L.[RecordState] = 10
+                            FROM [bz].[LaghveEblagh] AS L
+                            WHERE L.[EntesabId] = E.[EntesabId]
                          )
                             THEN 1
                         ELSE 0

@@ -303,6 +303,13 @@ BEGIN
                 E.[TaeedOrAdamTaeed],
                 E.[TaeedOrAdamTaeedNameFarsi],
                 E.[IsEblagh],
+                (
+                    SELECT TOP (1) L.[ID]
+                    FROM [bz].[LaghveEblagh] AS L
+                    WHERE L.[EntesabId] = E.[EntesabId]
+                      AND L.[RecordState] = 10
+                    ORDER BY L.[ID] DESC
+                ) AS [CancellationProposalId],
                 CONVERT
                 (
                     BIT,

@@ -23,6 +23,7 @@ type CurrentAppointmentRow = {
   RecordState: number | null;
   TaeedOrAdamTaeed: number | null;
   CanCancel: boolean;
+  CancellationProposalId: number | null;
   Madarek: AppointmentDocument[];
 };
 
@@ -44,6 +45,10 @@ function RefreshIcon() {
 
 function FileIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6V3Z" /><path d="M14 3v5h5M9 13h6M9 17h6" /></svg>;
+}
+
+function ViewLetterIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v18H6V3Z" /><path d="M14 3v5h5M8.5 15s1.4-2.2 3.5-2.2 3.5 2.2 3.5 2.2-1.4 2.2-3.5 2.2S8.5 15 8.5 15Z" /><circle cx="12" cy="15" r=".8" /></svg>;
 }
 
 async function readJson(response: Response) {
@@ -176,9 +181,14 @@ export default function CurrentAppointmentsClient() {
                     </span>
                   </td>
                   <td>
-                    {row.CanCancel && row.RecordState === 10 && row.TaeedOrAdamTaeed === 4 ? (
-                      <button type="button" className={styles.cancelAppointmentButton} onClick={() => setCancelTarget(row)}>
-                        لغو ابلاغ
+                    {(row.CancellationProposalId || (row.CanCancel && row.RecordState === 10 && row.TaeedOrAdamTaeed === 4)) ? (
+                      <button
+                        type="button"
+                        className={`${styles.cancelAppointmentButton} ${row.CancellationProposalId ? styles.viewCancellationLetterButton : ""}`}
+                        onClick={() => setCancelTarget(row)}
+                      >
+                        {row.CancellationProposalId ? <ViewLetterIcon /> : null}
+                        {row.CancellationProposalId ? "نمایش نامه" : "لغو ابلاغ"}
                       </button>
                     ) : <span className={styles.unavailableAction}>—</span>}
                   </td>
