@@ -34,10 +34,11 @@ function num(value:unknown){ if(value===null||value===undefined||value==="") ret
 export async function getAppointmentWorkflowLookups(actorUserId:string,search:string){
   const pool=await getDbPool();
   const result=await pool.request().input("ActorUserId",actorUserId).input("Search",sql.NVarChar(150),search||null).execute("bz.SP_Appointments_Workflow_Lookups");
+  const recordsets=(result.recordsets??[]) as unknown as Record<string,unknown>[][];
   return {
-    persons:((result.recordsets?.[0]??[]) as unknown as WorkflowPerson[]).slice(0,20),
-    posts:(result.recordsets?.[1]??[]) as unknown as WorkflowPost[],
-    context:(result.recordsets?.[2]?.[0]??null) as unknown as WorkflowContext|null,
+    persons:(recordsets[0]??[] as unknown as WorkflowPerson[]).slice(0,20) as unknown as WorkflowPerson[],
+    posts:(recordsets[1]??[]) as unknown as WorkflowPost[],
+    context:(recordsets[2]?.[0]??null) as unknown as WorkflowContext|null,
   };
 }
 
@@ -67,16 +68,17 @@ export async function getAppointmentWorkflow(actorUserId:string,entesabId:number
   const pool=await getDbPool();
   await pool.request().input("ActorUserId",actorUserId).input("EntesabId",entesabId).execute("bz.SP_Appointments_Workflow_Referral_MarkRead");
   const result=await pool.request().input("ActorUserId",actorUserId).input("EntesabId",entesabId).execute("bz.SP_Appointments_Workflow_Get");
-  const raw=(result.recordsets?.[0]?.[0]??null) as Record<string,unknown>|null; if(!raw)return null;
+  const recordsets=(result.recordsets??[]) as unknown as Record<string,unknown>[][];
+  const raw=(recordsets[0]?.[0]??null) as Record<string,unknown>|null; if(!raw)return null;
   const row=normalizeRow(raw) as WorkflowDetail;
   row.FirstName=text(raw.FirstName); row.LastName=text(raw.LastName); row.TarikhTavalod=text(raw.TarikhTavalod); row.ShomareShenasnameh=text(raw.ShomareShenasnameh); row.Shoghl=text(raw.Shoghl); row.TelHamrah=text(raw.TelHamrah); row.DestinationPostTitle=text(raw.DestinationPostTitle); row.DestinationFullName=text(raw.DestinationFullName);
-  const referrals=((result.recordsets?.[5]??[]) as Record<string,unknown>[]).map((item):WorkflowReferral=>({
+  const referrals=(recordsets[5]??[]).map((item):WorkflowReferral=>({
     ReferralId:Number(item.ReferralId??0),ParentReferralId:num(item.ParentReferralId),ReferralKind:Number(item.ReferralKind??1),FromPostId:Number(item.FromPostId??0),FromPostTitle:text(item.FromPostTitle),FromFullName:text(item.FromFullName),ToPostId:Number(item.ToPostId??0),ToPostTitle:text(item.ToPostTitle),ToFullName:text(item.ToFullName),Note:text(item.Note),StatusCode:Number(item.StatusCode??1),StatusTitle:text(item.StatusTitle),IsRead:bool(item.IsRead),ReadByFullName:text(item.ReadByFullName),ReadDateTime:text(item.ReadDateTime),IsRecalled:bool(item.IsRecalled),RecallDateTime:text(item.RecallDateTime),CreateByFullName:text(item.CreateByFullName),CreateDateTime:text(item.CreateDateTime),CanReply:bool(item.CanReply),CanRecall:bool(item.CanRecall),CanArchive:bool(item.CanArchive),IsArchivedForActor:bool(item.IsArchivedForActor),
   }));
-  const referralPosts=((result.recordsets?.[6]??[]) as Record<string,unknown>[]).map((item):WorkflowReferralPost=>({PostId:Number(item.PostId??0),PostTitle:text(item.PostTitle)??"—",ParentPostId:num(item.ParentPostId),Mahal:num(item.Mahal),AssigneeFullName:text(item.AssigneeFullName)}));
-  const rawContext=(result.recordsets?.[7]?.[0]??null) as Record<string,unknown>|null;
+  const referralPosts=(recordsets[6]??[]).map((item):WorkflowReferralPost=>({PostId:Number(item.PostId??0),PostTitle:text(item.PostTitle)??"—",ParentPostId:num(item.ParentPostId),Mahal:num(item.Mahal),AssigneeFullName:text(item.AssigneeFullName)}));
+  const rawContext=(recordsets[7]?.[0]??null) as Record<string,unknown>|null;
   const referralContext:WorkflowReferralContext|null=rawContext?{ActorPostId:Number(rawContext.ActorPostId??0),ActorFullName:text(rawContext.ActorFullName),ActorPostTitle:text(rawContext.ActorPostTitle),CanRefer:bool(rawContext.CanRefer)}:null;
-  return {row,reasons:((result.recordsets?.[1]??[]) as {ReasonText?:string}[]).map(x=>x.ReasonText?.trim()).filter((x):x is string=>Boolean(x)),interviews:(result.recordsets?.[2]??[]) as unknown as WorkflowInterview[],history:(result.recordsets?.[3]??[]) as unknown as WorkflowHistory[],files:(result.recordsets?.[4]??[]) as unknown as WorkflowFile[],referrals,referralPosts,referralContext};
+  return {row,reasons:(recordsets[1]??[]).map(x=>typeof x.ReasonText==="string"?x.ReasonText.trim():undefined).filter((x):x is string=>Boolean(x)),interviews:(recordsets[2]??[]) as unknown as WorkflowInterview[],history:(recordsets[3]??[]) as unknown as WorkflowHistory[],files:(recordsets[4]??[]) as unknown as WorkflowFile[],referrals,referralPosts,referralContext};
 }
 
 export async function appointmentReferralAction(input:{actorUserId:string;entesabId:number;action:"forward"|"reply"|"recall"|"archive"|"restore";referralId:number|null;destinationPostIds:number[];note:string|null}){

@@ -11,6 +11,7 @@ type AdminShellProps = {
   userName: string;
   sematTitle: string | null;
   isSystemAdmin: boolean;
+  evaluationAllowed: boolean;
 };
 
 function DashboardIcon() {
@@ -72,6 +73,16 @@ function AppointmentsIcon() {
   );
 }
 
+function EvaluationIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 4h12v16H6z" />
+      <path d="M9 2v4M15 2v4M9 10h6M9 14h3" />
+      <path d="m14 16 1.5 1.5L19 14" />
+    </svg>
+  );
+}
+
 function ChevronIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -118,6 +129,7 @@ const menuItems = [
   { href: "/Admin/Users", title: "فهرست کاربران", icon: UsersIcon },
   { href: "/Admin/Persons", title: "فهرست اشخاص", icon: PersonsIcon },
   { href: "/Admin/OrganizationStructure", title: "ساختار سازمانی", icon: OrganizationIcon },
+  { href: "/Admin/Evaluation", title: "ارزشیابی", icon: EvaluationIcon },
   { href: "/Admin/Settings", title: "تنظیمات", icon: SettingsIcon },
 ];
 
@@ -127,6 +139,7 @@ export default function AdminShell({
   userName,
   sematTitle,
   isSystemAdmin,
+  evaluationAllowed,
 }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -190,7 +203,10 @@ export default function AdminShell({
 
         <nav className={styles.navigation} aria-label="منوی عمومی">
           <span className={styles.menuTitle}>منوی عمومی</span>
-          {menuItems.filter((item) => item.href !== "/Admin/Settings" || isSystemAdmin).map((item) => {
+          {menuItems.filter((item) =>
+            (item.href !== "/Admin/Settings" || isSystemAdmin) &&
+            (item.href !== "/Admin/Evaluation" || evaluationAllowed || isSystemAdmin)
+          ).map((item) => {
             const Icon = item.icon;
             const active = pathname.startsWith(item.href);
             return (

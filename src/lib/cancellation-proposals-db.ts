@@ -165,11 +165,12 @@ export async function getCancellationProposalByEntesab(actorUserId: string, ente
     .input("EntesabId", entesabId)
     .execute("bz.SP_Appointments_CancellationProposal_GetByEntesab");
 
-  const proposal = (result.recordsets?.[0]?.[0] ?? null) as ExistingProposalRow | null;
+  const recordsets = (result.recordsets ?? []) as unknown as Record<string, unknown>[][];
+  const proposal = (recordsets[0]?.[0] ?? null) as ExistingProposalRow | null;
   const proposalId = Number(proposal?.ProposalId ?? 0);
   if (!Number.isSafeInteger(proposalId) || proposalId < 1) return null;
 
-  const reasonRows = (result.recordsets?.[1] ?? []) as ExistingReasonRow[];
+  const reasonRows = (recordsets[1] ?? []) as ExistingReasonRow[];
   const reasons = reasonRows
     .map((row) => optionalText(row.Dalayel))
     .filter((reason): reason is string => Boolean(reason))
