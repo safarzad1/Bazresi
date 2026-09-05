@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 import { getPersonCaseFileContent } from "@/lib/person-casefile-db";
 
 export const runtime = "nodejs";
@@ -10,6 +11,7 @@ const safeName = (value: string | null) => value && /^[0-9a-f-]{36}\.(png|jpg|we
 export async function GET(request: NextRequest) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 });
+  if (!sessionHasMenu(session, ACCESS_MENU.persons)) return NextResponse.json({ message: "دسترسی به بخش اشخاص برای شما فعال نیست." }, { status: 403 });
   const fileName = safeName(request.nextUrl.searchParams.get("file"));
   if (!fileName) return NextResponse.json({ message: "نام فایل معتبر نیست." }, { status: 400 });
   try {

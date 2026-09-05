@@ -6,7 +6,8 @@ import {
   getCancellationProposalByEntesab,
   getCancellationProposalDraft,
 } from "@/lib/cancellation-proposals-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,7 +61,7 @@ function errorMessage(error: unknown, fallback: string) {
 export async function GET(_request: NextRequest, context: RouteContext) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است؛ دوباره وارد شوید." }, { status: 401 });
-  if (!session.permissions.appointments && !session.isSystemAdmin) return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
+  if (!sessionHasMenu(session, ACCESS_MENU.appointmentsCurrent)) return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
 
   const entesabId = await entesabIdFrom(context);
   if (!entesabId) return NextResponse.json({ message: "شناسه انتصاب معتبر نیست." }, { status: 400 });
@@ -80,7 +81,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     return NextResponse.json({
       draft,
       settings,
-      canEditSettings: session.isSystemAdmin,
+      canEditSettings: sessionHasMenu(session, ACCESS_MENU.settings),
       reasons: existingProposal?.reasons ?? [],
       proposalId: existingProposal?.proposalId,
       documentUrl: existingProposal
@@ -99,7 +100,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 export async function POST(request: NextRequest, context: RouteContext) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است؛ دوباره وارد شوید." }, { status: 401 });
-  if (!session.permissions.appointments && !session.isSystemAdmin) return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
+  if (!sessionHasMenu(session, ACCESS_MENU.appointmentsCurrent)) return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
 
   const entesabId = await entesabIdFrom(context);
   if (!entesabId) return NextResponse.json({ message: "شناسه انتصاب معتبر نیست." }, { status: 400 });

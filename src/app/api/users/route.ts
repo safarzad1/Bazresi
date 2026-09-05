@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { hashAspNetIdentityPassword } from "@/lib/password";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 import {
   createUser,
   deleteUser,
@@ -92,6 +93,12 @@ async function requireSession() {
         { message: "نشست شما منقضی شده است؛ دوباره وارد شوید." },
         { status: 401 },
       ),
+    };
+  }
+  if (!sessionHasMenu(session, ACCESS_MENU.users)) {
+    return {
+      session: null,
+      response: NextResponse.json({ message: "دسترسی به مدیریت کاربران برای شما فعال نیست." }, { status: 403 }),
     };
   }
   return { session, response: null };

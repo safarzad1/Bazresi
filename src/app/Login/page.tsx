@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import LoginForm from "./LoginForm";
 import styles from "./Login.module.css";
 import { getCurrentSession } from "@/lib/session";
+import { firstAllowedAdminRoute } from "@/lib/access-menu";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ function LoginIcon() {
 
 export default async function LoginPage() {
   const session = await getCurrentSession();
-  if (session) redirect("/Admin/Dashboard");
+  if (session) redirect(firstAllowedAdminRoute(session.menuCodes, session.isSystemAdmin));
 
   return (
     <main className={styles.page}>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCancellationProposalDocument } from "@/lib/cancellation-proposals-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ type RouteContext = { params: Promise<{ proposalId: string }> };
 export async function GET(_request: NextRequest, context: RouteContext) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 });
-  if (!session.permissions.appointments && !session.isSystemAdmin) return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
+  if (!sessionHasMenu(session, ACCESS_MENU.appointmentsCancellations)) return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
 
   const params = await context.params;
   const proposalId = Number(params.proposalId);

@@ -5,6 +5,8 @@ import {
   registerLoginResult,
 } from "@/lib/auth-db";
 import { verifyAspNetIdentityPassword } from "@/lib/password";
+import { getUserMenuAccessContext } from "@/lib/access-db";
+import { ACCESS_MENU, firstAllowedAdminRoute } from "@/lib/access-menu";
 import {
   AUTH_COOKIE_NAME,
   createSessionToken,
@@ -98,6 +100,10 @@ export async function POST(request: NextRequest) {
 
     await registerLoginResult(user.UserId, true, formatLoginDate(new Date()));
 
+    const access = await getUserMenuAccessContext(user.UserId);
+    const menuCodes = access.menuCodes;
+    const isSystemAdmin = access.isSystemAdmin || dbBit(user.IsSystemAdmin);
+
     const token = createSessionToken({
       userId: user.UserId,
       userName: user.UserName,
@@ -106,19 +112,26 @@ export async function POST(request: NextRequest) {
       semat: user.Semat === null ? null : Number(user.Semat),
       sematTitle: user.OnvanSemat || null,
       mustChangePassword: dbBit(user.ChangePassword),
-      isSystemAdmin: dbBit(user.IsSystemAdmin),
+      isSystemAdmin,
+      accessGroupId: access.groupId,
+      accessGroupTitle: access.groupTitle,
+      menuCodes,
       permissions: {
-        dashboard: dbBit(user.TabDashboard),
-        evaluation: dbBit(user.TabArzeshyabi),
-        appointments: dbBit(user.TabEntesabat),
-        personnel: dbBit(user.TabPersonnel),
-        inquiries: dbBit(user.TabEstelam),
+        dashboard: isSystemAdmin || menuCodes.includes(ACCESS_MENU.dashboard),
+        evaluation: isSystemAdmin || menuCodes.includes(ACCESS_MENU.evaluation),
+        appointments:
+          isSystemAdmin ||
+          menuCodes.includes(ACCESS_MENU.appointmentsWorkflow) ||
+          menuCodes.includes(ACCESS_MENU.appointmentsCurrent) ||
+          menuCodes.includes(ACCESS_MENU.appointmentsCancellations),
+        personnel: isSystemAdmin || menuCodes.includes(ACCESS_MENU.persons),
+        inquiries: isSystemAdmin,
       },
     });
 
     const response = NextResponse.json({
       ok: true,
-      redirectTo: "/Admin/Dashboard",
+      redirectTo: firstAllowedAdminRoute(menuCodes, isSystemAdmin),
     });
     response.cookies.set(AUTH_COOKIE_NAME, token, {
       httpOnly: true,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { listAppointmentWorkflow } from "@/lib/appointment-workflow-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export async function GET() {
       { status: 401 },
     );
   }
-  if (!session.permissions.appointments && !session.isSystemAdmin) {
+  if (!sessionHasMenu(session, ACCESS_MENU.appointmentsWorkflow)) {
     return NextResponse.json(
       { message: "مجوز دسترسی به اعلان‌های انتصابات را ندارید." },
       { status: 403 },

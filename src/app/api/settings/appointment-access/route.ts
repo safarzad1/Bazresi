@@ -4,7 +4,8 @@ import {
   getAppointmentAccessSettings,
   saveAppointmentAccess,
 } from "@/lib/appointment-access-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,19 +21,19 @@ function errorMessage(error: unknown) {
     : "عملیات دسترسی انتصابات با خطا روبه‌رو شد.";
 }
 
-async function requireSystemAdmin() {
+async function requireSettingsAccess() {
   const session = await getCurrentSession();
   if (!session) {
     return { response: NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 }) };
   }
-  if (!session.isSystemAdmin) {
-    return { response: NextResponse.json({ message: "فقط مدیر سامانه به این بخش دسترسی دارد." }, { status: 403 }) };
+  if (!sessionHasMenu(session, ACCESS_MENU.settings)) {
+    return { response: NextResponse.json({ message: "دسترسی به تنظیمات سامانه برای شما فعال نیست." }, { status: 403 }) };
   }
   return { session };
 }
 
 export async function GET() {
-  const auth = await requireSystemAdmin();
+  const auth = await requireSettingsAccess();
   if ("response" in auth) return auth.response;
 
   try {
@@ -46,7 +47,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireSystemAdmin();
+  const auth = await requireSettingsAccess();
   if ("response" in auth) return auth.response;
 
   try {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const auth = await requireSystemAdmin();
+  const auth = await requireSettingsAccess();
   if ("response" in auth) return auth.response;
 
   try {

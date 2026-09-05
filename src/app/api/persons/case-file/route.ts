@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 import { createPersonCaseDocument, getPersonCaseFile } from "@/lib/person-casefile-db";
 
 export const runtime = "nodejs";
@@ -33,6 +34,7 @@ function dbMessage(error: unknown) {
 async function auth() {
   const session = await getCurrentSession();
   if (!session) return { session: null, response: NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 }) };
+  if (!sessionHasMenu(session, ACCESS_MENU.persons)) return { session: null, response: NextResponse.json({ message: "دسترسی به بخش اشخاص برای شما فعال نیست." }, { status: 403 }) };
   return { session, response: null };
 }
 

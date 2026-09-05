@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 import { deleteIsargari, getIsargari, saveIsargari } from "@/lib/isargari-db";
 
 export const runtime = "nodejs";
@@ -14,7 +15,9 @@ function message(error: unknown) { return error instanceof Error ? error.message
 
 async function sessionOrResponse() {
   const session = await getCurrentSession();
-  return session ? { session, response: null } : { session: null, response: NextResponse.json({ message: "نشست شما منقضی شده است؛ دوباره وارد شوید." }, { status: 401 }) };
+  if (!session) return { session: null, response: NextResponse.json({ message: "نشست شما منقضی شده است؛ دوباره وارد شوید." }, { status: 401 }) };
+  if (!sessionHasMenu(session, ACCESS_MENU.persons)) return { session: null, response: NextResponse.json({ message: "دسترسی به بخش اشخاص برای شما فعال نیست." }, { status: 403 }) };
+  return { session, response: null };
 }
 
 export async function GET(request: NextRequest) {

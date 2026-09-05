@@ -69,15 +69,26 @@ function ModuleIcon({name}:{name:ModuleKey}) {
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export default function DashboardClient({mustChangePassword,appointmentsAllowed}:{mustChangePassword:boolean;appointmentsAllowed:boolean}) {
-  const [active,setActive]=useState<ModuleKey>("persons");
+export default function DashboardClient({mustChangePassword,personsAllowed,workflowAllowed,cancellationsAllowed,evaluationAllowed}:{mustChangePassword:boolean;personsAllowed:boolean;workflowAllowed:boolean;cancellationsAllowed:boolean;evaluationAllowed:boolean}) {
+  const availableTabs=useMemo<ModuleKey[]>(()=>tabOrder.filter((key)=>{
+    if(key==="persons")return personsAllowed;
+    if(key==="appointments")return workflowAllowed;
+    if(key==="cancellations")return cancellationsAllowed;
+    if(key==="evaluation")return evaluationAllowed;
+    return true;
+  }),[personsAllowed,workflowAllowed,cancellationsAllowed,evaluationAllowed]);
+  const [active,setActive]=useState<ModuleKey>(()=>availableTabs[0]??"inspection");
   const [appointmentInbox,setAppointmentInbox]=useState<AppointmentInbox>({pendingCount:0,unreadCount:0,items:[]});
-  const [inboxLoading,setInboxLoading]=useState(appointmentsAllowed);
+  const [inboxLoading,setInboxLoading]=useState(workflowAllowed);
   const selected=modules[active];
   const maxChartValue=useMemo(()=>Math.max(...selected.chart.map(item=>item.value),1),[selected]);
 
   useEffect(()=>{
-    if(!appointmentsAllowed)return;
+    if(!availableTabs.includes(active))setActive(availableTabs[0]??"inspection");
+  },[active,availableTabs]);
+
+  useEffect(()=>{
+    if(!workflowAllowed)return;
     let activeRequest=true;
     async function loadInbox(){
       setInboxLoading(true);
@@ -93,17 +104,17 @@ export default function DashboardClient({mustChangePassword,appointmentsAllowed}
     void loadInbox();
     const timer=window.setInterval(()=>void loadInbox(),60_000);
     return()=>{activeRequest=false;window.clearInterval(timer);};
-  },[appointmentsAllowed]);
+  },[workflowAllowed]);
 
   return <main className={styles.page} dir="rtl">
     {mustChangePassword&&<div className={styles.notice}>برای افزایش امنیت حساب، لازم است رمز عبور خود را تغییر دهید.</div>}
-    {appointmentsAllowed&&<section className={styles.appointmentInbox} aria-label="درخواست‌های رسیده انتصابات">
+    {workflowAllowed&&<section className={styles.appointmentInbox} aria-label="درخواست‌های رسیده انتصابات">
       <header><div><span>کارتابل انتصابات</span><h2>درخواست‌های رسیده به شما</h2></div><div className={styles.inboxCounters}><span><b>{appointmentInbox.unreadCount.toLocaleString("fa-IR")}</b> جدید</span><span><b>{appointmentInbox.pendingCount.toLocaleString("fa-IR")}</b> در انتظار اقدام</span></div></header>
       <div className={styles.inboxRows}>{inboxLoading&&!appointmentInbox.items.length?<p>در حال دریافت کارتابل...</p>:appointmentInbox.items.length?appointmentInbox.items.slice(0,4).map(item=><Link href={`/Admin/Appointments/Workflow?request=${item.entesabId}`} key={item.entesabId} className={item.unread?styles.newInboxRow:""}><i/><span><strong>{item.fullName||"فرد پیشنهادی"}</strong><small>{item.postTitle||"پیشنهاد انتصاب"}{item.requesterFullName?` · از ${item.requesterFullName}`:""}</small></span><em>{item.unread?"جدید":"در انتظار"}</em></Link>):<p>درخواست جدیدی در کارتابل انتصابات شما نیست.</p>}</div>
       {appointmentInbox.pendingCount>0&&<Link className={styles.openInbox} href="/Admin/Appointments/Workflow">همه <b>←</b></Link>}
     </section>}
     <div className={styles.demoNotice}><span>نسخه نمایشی داشبورد</span> اعداد این صفحه فعلاً نمونه هستند و پس از تأیید ظاهر به اطلاعات واقعی متصل می‌شوند.</div>
-    <nav className={styles.moduleTabs} aria-label="بخش‌های داشبورد">{tabOrder.map(key=><button type="button" key={key} className={active===key?styles.activeTab:""} onClick={()=>setActive(key)}><span className={styles.tabIcon}><ModuleIcon name={key}/></span><span><strong>{modules[key].title}</strong><small>{modules[key].eyebrow}</small></span></button>)}</nav>
+    <nav className={styles.moduleTabs} aria-label="بخش‌های داشبورد">{availableTabs.map(key=><button type="button" key={key} className={active===key?styles.activeTab:""} onClick={()=>setActive(key)}><span className={styles.tabIcon}><ModuleIcon name={key}/></span><span><strong>{modules[key].title}</strong><small>{modules[key].eyebrow}</small></span></button>)}</nav>
     <section className={styles.moduleHeading}><div><span>{selected.eyebrow}</span><h2>{selected.title}</h2><p>{selected.description}</p></div>{selected.href?<Link href={selected.href}>{selected.action}<b>←</b></Link>:<span className={styles.disabledAction}>{selected.action}</span>}</section>
     <section className={styles.metrics}>{selected.metrics.map(metric=><article className={styles.metricCard} key={metric.label}><div className={`${styles.metricMark} ${styles[metric.tone]}`}/><div><span>{metric.label}</span><strong>{toFa(metric.value)}{metric.suffix}</strong><small>{metric.hint}</small></div></article>)}</section>
     <section className={styles.analyticsGrid}><article className={styles.chartCard}><header><div><h3>{selected.chartTitle}</h3><p>{selected.chartDescription}</p></div><span>نمایش آماری</span></header><div className={`${styles.barChart} ${selected.chart.length<=4?styles.wideBars:""}`}>{selected.chart.map(item=><div className={styles.barItem} key={item.label}><span className={styles.barValue}>{item.display}</span><div className={styles.barTrack}><i style={{height:`${Math.max(12,Math.round(item.value/maxChartValue*100))}%`}}/></div><small>{item.label}</small></div>)}</div></article>

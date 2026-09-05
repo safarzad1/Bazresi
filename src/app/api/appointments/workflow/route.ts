@@ -1,8 +1,9 @@
 import { NextRequest,NextResponse } from "next/server";
 import { createAppointmentWorkflow,getAppointmentWorkflowLookups,listAppointmentWorkflow } from "@/lib/appointment-workflow-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 export const runtime="nodejs"; export const dynamic="force-dynamic";
-async function auth(){const session=await getCurrentSession();if(!session)return{session:null,response:NextResponse.json({message:"نشست شما منقضی شده است؛ دوباره وارد شوید."},{status:401})};if(!session.permissions.appointments&&!session.isSystemAdmin)return{session:null,response:NextResponse.json({message:"مجوز دسترسی به فرایند انتصابات را ندارید."},{status:403})};return{session,response:null};}
+async function auth(){const session=await getCurrentSession();if(!session)return{session:null,response:NextResponse.json({message:"نشست شما منقضی شده است؛ دوباره وارد شوید."},{status:401})};if(!sessionHasMenu(session, ACCESS_MENU.appointmentsWorkflow))return{session:null,response:NextResponse.json({message:"مجوز دسترسی به فرایند انتصابات را ندارید."},{status:403})};return{session,response:null};}
 function id(value:FormDataEntryValue|null){const n=Number(value);return Number.isSafeInteger(n)&&n>0?n:0;}
 function message(error:unknown){return error instanceof Error&&error.message?error.message:"انجام عملیات انتصابات با خطا روبه‌رو شد.";}
 export async function GET(request:NextRequest){const a=await auth();if(!a.session)return a.response;try{if(request.nextUrl.searchParams.get("mode")==="lookups"){const search=(request.nextUrl.searchParams.get("search")||"").trim().slice(0,150);return NextResponse.json(await getAppointmentWorkflowLookups(a.session.userId,search));}return NextResponse.json({rows:await listAppointmentWorkflow(a.session.userId)});}catch(error){console.error("Appointment workflow GET failed",error);return NextResponse.json({message:message(error)},{status:500});}}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 import styles from "./Settings.module.css";
 
 const settingCards = [
@@ -12,11 +13,11 @@ const settingCards = [
     href: "/Admin/Settings/AppointmentAccess",
   },
   {
-    title: "کاربران و دسترسی‌ها",
-    text: "مدیریت کاربران، سمت‌ها و سطح دسترسی به بخش‌های سامانه",
+    title: "گروه‌ها و دسترسی‌ها",
+    text: "ایجاد گروه، تعیین دسترسی فرم‌ها و اتصال کاربران به گروه",
     tone: "teal",
-    icon: "ک",
-    href: null,
+    icon: "د",
+    href: "/Admin/AccessManagement",
   },
   {
     title: "تنظیمات پایه",
@@ -37,7 +38,7 @@ const settingCards = [
 export default async function SettingsPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/Login");
-  if (!session.isSystemAdmin) redirect("/Admin/Dashboard");
+  if (!sessionHasMenu(session, ACCESS_MENU.settings)) redirect("/Admin/Dashboard");
 
   return (
     <main className={styles.page}>
@@ -49,6 +50,7 @@ export default async function SettingsPage() {
 
       <div className={styles.grid}>
         {settingCards.map((item) => {
+          if (item.href === "/Admin/AccessManagement" && !sessionHasMenu(session, ACCESS_MENU.accessManagement)) return null;
           const content = (
           <article className={`${styles.card} ${item.href ? styles.cardActive : ""}`}>
             <span className={`${styles.icon} ${styles[item.tone]}`}>{item.icon}</span>

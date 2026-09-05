@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appointmentReferralAction } from "@/lib/appointment-workflow-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ function validId(value: unknown) {
 export async function POST(request: NextRequest, context: Context) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 });
-  if (!session.permissions.appointments && !session.isSystemAdmin) {
+  if (!sessionHasMenu(session, ACCESS_MENU.appointmentsWorkflow)) {
     return NextResponse.json({ message: "مجوز مدیریت ارجاعات انتصابات را ندارید." }, { status: 403 });
   }
 

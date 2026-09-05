@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listCurrentAppointments } from "@/lib/appointments-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
       { status: 401 },
     );
   }
-  if (!session.permissions.appointments && !session.isSystemAdmin) {
+  if (!sessionHasMenu(session, ACCESS_MENU.appointmentsCurrent)) {
     return NextResponse.json({ message: "مجوز دسترسی به انتصابات را ندارید." }, { status: 403 });
   }
 

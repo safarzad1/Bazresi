@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getOrganizationStructure } from "@/lib/organization-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,9 @@ export async function GET() {
       { message: "نشست شما منقضی شده است؛ دوباره وارد شوید." },
       { status: 401 },
     );
+  }
+  if (!sessionHasMenu(session, ACCESS_MENU.organization)) {
+    return NextResponse.json({ message: "دسترسی به ساختار سازمانی برای شما فعال نیست." }, { status: 403 });
   }
 
   try {

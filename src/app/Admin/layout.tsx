@@ -14,8 +14,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       userName={session.userName}
       sematTitle={session.sematTitle}
       isSystemAdmin={session.isSystemAdmin}
-      evaluationAllowed={session.permissions.evaluation}
-      appointmentsAllowed={session.permissions.appointments}
+      menuCodes={session.menuCodes ?? []}
     >
       {children}
     </AdminShell>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ACCESS_MENU, hasAccess, menuCodeForPath } from "@/lib/access-menu";
 import styles from "./AdminShell.module.css";
 
 type AdminShellProps = {
@@ -11,8 +12,7 @@ type AdminShellProps = {
   userName: string;
   sematTitle: string | null;
   isSystemAdmin: boolean;
-  evaluationAllowed: boolean;
-  appointmentsAllowed: boolean;
+  menuCodes: string[];
 };
 
 type AppointmentNotification = {
@@ -161,11 +161,23 @@ export default function AdminShell({
   userName,
   sematTitle,
   isSystemAdmin,
-  evaluationAllowed,
-  appointmentsAllowed,
+  menuCodes,
 }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const dashboardAllowed = hasAccess(menuCodes, ACCESS_MENU.dashboard, isSystemAdmin);
+  const personsAllowed = hasAccess(menuCodes, ACCESS_MENU.persons, isSystemAdmin);
+  const workflowAllowed = hasAccess(menuCodes, ACCESS_MENU.appointmentsWorkflow, isSystemAdmin);
+  const currentAppointmentsAllowed = hasAccess(menuCodes, ACCESS_MENU.appointmentsCurrent, isSystemAdmin);
+  const cancellationsAllowed = hasAccess(menuCodes, ACCESS_MENU.appointmentsCancellations, isSystemAdmin);
+  const appointmentsAllowed = workflowAllowed || currentAppointmentsAllowed || cancellationsAllowed;
+  const evaluationAllowed = hasAccess(menuCodes, ACCESS_MENU.evaluation, isSystemAdmin);
+  const organizationAllowed = hasAccess(menuCodes, ACCESS_MENU.organization, isSystemAdmin);
+  const usersAllowed = hasAccess(menuCodes, ACCESS_MENU.users, isSystemAdmin);
+  const accessManagementAllowed = hasAccess(menuCodes, ACCESS_MENU.accessManagement, isSystemAdmin);
+  const settingsAllowed = hasAccess(menuCodes, ACCESS_MENU.settings, isSystemAdmin);
+  const requiredMenuCode = menuCodeForPath(pathname);
+  const pageAllowed = !requiredMenuCode || hasAccess(menuCodes, requiredMenuCode, isSystemAdmin);
   const [menuOpen, setMenuOpen] = useState(false);
   const [appointmentsOpen, setAppointmentsOpen] = useState(pathname.startsWith("/Admin/Appointments"));
   const [loggingOut, setLoggingOut] = useState(false);
@@ -202,7 +214,7 @@ export default function AdminShell({
   }, []);
 
   useEffect(() => {
-    if (!appointmentsAllowed && !isSystemAdmin) return;
+    if (!workflowAllowed) return;
     let active = true;
 
     async function loadNotifications() {
@@ -235,7 +247,7 @@ export default function AdminShell({
       window.clearInterval(timer);
       window.removeEventListener("appointments:notifications-changed", loadNotifications);
     };
-  }, [appointmentsAllowed, isSystemAdmin, pathname]);
+  }, [workflowAllowed, pathname]);
 
   async function logout() {
     if (loggingOut) return;
@@ -267,40 +279,44 @@ export default function AdminShell({
         </div>
 
         <nav className={styles.navigation} aria-label="منوی سامانه">
-          <div className={styles.menuSection}>
-            <span className={styles.menuTitle}>اصلی</span>
-            <Link
-              className={`${styles.menuLink} ${pathname.startsWith(dashboardItem.href) ? styles.menuLinkActive : ""}`}
-              href={dashboardItem.href}
-            >
-              <span className={styles.menuIcon}><DashboardIcon /></span>
-              <span>{dashboardItem.title}</span>
-            </Link>
-          </div>
+          {dashboardAllowed && (
+            <div className={styles.menuSection}>
+              <span className={styles.menuTitle}>اصلی</span>
+              <Link
+                className={`${styles.menuLink} ${pathname.startsWith(dashboardItem.href) ? styles.menuLinkActive : ""}`}
+                href={dashboardItem.href}
+              >
+                <span className={styles.menuIcon}><DashboardIcon /></span>
+                <span>{dashboardItem.title}</span>
+              </Link>
+            </div>
+          )}
 
-          <div className={styles.menuSection}>
-            <span className={styles.menuTitle}>اشخاص و پرونده‌ها</span>
-            {personsItems.map((item) => {
-              const Icon = item.icon;
-              const active = pathname.startsWith(item.href);
-              return (
-                <Link
-                  className={`${styles.menuLink} ${active ? styles.menuLinkActive : ""}`}
-                  href={item.href}
-                  key={item.href}
-                >
-                  <span className={styles.menuIcon}><Icon /></span>
-                  <span>{item.title}</span>
-                </Link>
-              );
-            })}
-          </div>
+          {personsAllowed && (
+            <div className={styles.menuSection}>
+              <span className={styles.menuTitle}>اشخاص و پرونده‌ها</span>
+              {personsItems.map((item) => {
+                const Icon = item.icon;
+                const active = pathname.startsWith(item.href);
+                return (
+                  <Link
+                    className={`${styles.menuLink} ${active ? styles.menuLinkActive : ""}`}
+                    href={item.href}
+                    key={item.href}
+                  >
+                    <span className={styles.menuIcon}><Icon /></span>
+                    <span>{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
-          {(appointmentsAllowed || evaluationAllowed || isSystemAdmin) && (
+          {(appointmentsAllowed || evaluationAllowed) && (
             <div className={styles.menuSection}>
               <span className={styles.menuTitle}>فرآیندها</span>
 
-              {(appointmentsAllowed || isSystemAdmin) && (
+              {appointmentsAllowed && (
                 <div className={styles.menuGroup}>
                   <button
                     type="button"
@@ -315,33 +331,39 @@ export default function AdminShell({
 
                   {appointmentsOpen && (
                     <div className={styles.submenu}>
-                      <Link
-                        className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Workflow") ? styles.submenuLinkActive : ""}`}
-                        href="/Admin/Appointments/Workflow"
-                      >
-                        <span />
-                        فرایند انتصابات
-                      </Link>
-                      <Link
-                        className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Current") ? styles.submenuLinkActive : ""}`}
-                        href="/Admin/Appointments/Current"
-                      >
-                        <span />
-                        انتصاب‌های جاری
-                      </Link>
-                      <Link
-                        className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Cancellations") ? styles.submenuLinkActive : ""}`}
-                        href="/Admin/Appointments/Cancellations"
-                      >
-                        <span />
-                        لغو انتصاب
-                      </Link>
+                      {workflowAllowed && (
+                        <Link
+                          className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Workflow") ? styles.submenuLinkActive : ""}`}
+                          href="/Admin/Appointments/Workflow"
+                        >
+                          <span />
+                          فرایند انتصابات
+                        </Link>
+                      )}
+                      {currentAppointmentsAllowed && (
+                        <Link
+                          className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Current") ? styles.submenuLinkActive : ""}`}
+                          href="/Admin/Appointments/Current"
+                        >
+                          <span />
+                          انتصاب‌های جاری
+                        </Link>
+                      )}
+                      {cancellationsAllowed && (
+                        <Link
+                          className={`${styles.submenuLink} ${pathname.startsWith("/Admin/Appointments/Cancellations") ? styles.submenuLinkActive : ""}`}
+                          href="/Admin/Appointments/Cancellations"
+                        >
+                          <span />
+                          لغو انتصاب
+                        </Link>
+                      )}
                     </div>
                   )}
                 </div>
               )}
 
-              {(evaluationAllowed || isSystemAdmin) && (
+              {evaluationAllowed && (
                 <Link
                   className={`${styles.menuLink} ${pathname.startsWith("/Admin/Evaluation") ? styles.menuLinkActive : ""}`}
                   href="/Admin/Evaluation"
@@ -353,28 +375,10 @@ export default function AdminShell({
             </div>
           )}
 
-          <div className={styles.menuSection}>
-            <span className={styles.menuTitle}>ساختار سازمان</span>
-            {organizationItems.map((item) => {
-              const Icon = item.icon;
-              const active = pathname.startsWith(item.href);
-              return (
-                <Link
-                  className={`${styles.menuLink} ${active ? styles.menuLinkActive : ""}`}
-                  href={item.href}
-                  key={item.href}
-                >
-                  <span className={styles.menuIcon}><Icon /></span>
-                  <span>{item.title}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {isSystemAdmin && (
+          {organizationAllowed && (
             <div className={styles.menuSection}>
-              <span className={styles.menuTitle}>مدیریت سامانه</span>
-              {systemItems.map((item) => {
+              <span className={styles.menuTitle}>ساختار سازمان</span>
+              {organizationItems.map((item) => {
                 const Icon = item.icon;
                 const active = pathname.startsWith(item.href);
                 return (
@@ -388,6 +392,27 @@ export default function AdminShell({
                   </Link>
                 );
               })}
+            </div>
+          )}
+
+          {(usersAllowed || accessManagementAllowed || settingsAllowed) && (
+            <div className={styles.menuSection}>
+              <span className={styles.menuTitle}>مدیریت سامانه</span>
+              {usersAllowed && (
+                <Link className={`${styles.menuLink} ${pathname.startsWith("/Admin/Users") ? styles.menuLinkActive : ""}`} href="/Admin/Users">
+                  <span className={styles.menuIcon}><UsersIcon /></span><span>فهرست کاربران</span>
+                </Link>
+              )}
+              {accessManagementAllowed && (
+                <Link className={`${styles.menuLink} ${pathname.startsWith("/Admin/AccessManagement") ? styles.menuLinkActive : ""}`} href="/Admin/AccessManagement">
+                  <span className={styles.menuIcon}><SettingsIcon /></span><span>مدیریت دسترسی</span>
+                </Link>
+              )}
+              {settingsAllowed && (
+                <Link className={`${styles.menuLink} ${pathname.startsWith("/Admin/Settings") ? styles.menuLinkActive : ""}`} href="/Admin/Settings">
+                  <span className={styles.menuIcon}><SettingsIcon /></span><span>تنظیمات سامانه</span>
+                </Link>
+              )}
             </div>
           )}
         </nav>
@@ -440,6 +465,7 @@ export default function AdminShell({
               />
             </label>
 
+            {workflowAllowed && (
             <div className={styles.notificationWrap}>
               <button
                 className={styles.notificationButton}
@@ -505,6 +531,7 @@ export default function AdminShell({
                 </div>
               )}
             </div>
+            )}
 
             <div className={styles.headerProfileWrap}>
               <button
@@ -530,7 +557,7 @@ export default function AdminShell({
 
               {profileOpen && (
                 <div className={styles.profileMenu}>
-                  {isSystemAdmin && (
+                  {settingsAllowed && (
                     <Link className={styles.profileMenuItem} href="/Admin/Settings">
                       <SettingsIcon />
                       تنظیمات
@@ -551,7 +578,14 @@ export default function AdminShell({
           </div>
         </header>
 
-        <div className={styles.content}>{children}</div>
+        <div className={styles.content}>
+          {pageAllowed ? children : (
+            <section style={{maxWidth: 760, margin: "70px auto", padding: 32, textAlign: "center", background: "#fff", border: "1px solid #dbe5ea", borderRadius: 18}}>
+              <strong style={{display: "block", fontSize: 20, color: "#294b5a", marginBottom: 8}}>دسترسی به این بخش مجاز نیست</strong>
+              <span style={{fontSize: 13, color: "#718590"}}>سطح دسترسی حساب شما از طریق گروه دسترسی مدیریت می‌شود.</span>
+            </section>
+          )}
+        </div>
       </div>
     </div>
   );

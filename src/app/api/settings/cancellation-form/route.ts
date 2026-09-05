@@ -4,7 +4,8 @@ import {
   getCancellationFormSettings,
   saveCancellationFormSettings,
 } from "@/lib/cancellation-form-settings-db";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +20,9 @@ export async function GET() {
 
   try {
     const settings = await getCancellationFormSettings();
-    return NextResponse.json({ settings, canEdit: session.isSystemAdmin });
+    const canEdit = sessionHasMenu(session, ACCESS_MENU.settings);
+    if (!canEdit) return NextResponse.json({ message: "دسترسی به تنظیمات سامانه برای شما فعال نیست." }, { status: 403 });
+    return NextResponse.json({ settings, canEdit });
   } catch (error) {
     console.error("Cancellation form settings read failed:", error);
     return NextResponse.json({ message: message(error, "دریافت تنظیمات قالب انجام نشد.") }, { status: 500 });
@@ -29,7 +32,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست شما منقضی شده است." }, { status: 401 });
-  if (!session.isSystemAdmin) return NextResponse.json({ message: "فقط مدیر سامانه مجاز به تغییر تنظیمات فرم است." }, { status: 403 });
+  if (!sessionHasMenu(session, ACCESS_MENU.settings)) return NextResponse.json({ message: "دسترسی به تنظیمات سامانه برای شما فعال نیست." }, { status: 403 });
   try {
     const body = await request.json().catch(() => ({}));
     const settings = normalizeCancellationFormSettings(body);

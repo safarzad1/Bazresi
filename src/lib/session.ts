@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { getUserMenuAccessContext } from "@/lib/access-db";
+import { ACCESS_MENU } from "@/lib/access-menu";
 
 export const AUTH_COOKIE_NAME = "bazresi_session";
 export const SESSION_MAX_AGE_SECONDS = 8 * 60 * 60;
@@ -21,6 +23,9 @@ export type AuthSession = {
   sematTitle: string | null;
   mustChangePassword: boolean;
   isSystemAdmin: boolean;
+  accessGroupId: number | null;
+  accessGroupTitle: string | null;
+  menuCodes: string[];
   permissions: SessionPermissions;
   issuedAt: number;
   expiresAt: number;
@@ -100,7 +105,39 @@ export function verifySessionToken(token: string | undefined | null) {
 
 export async function getCurrentSession() {
   const cookieStore = await cookies();
-  return verifySessionToken(cookieStore.get(AUTH_COOKIE_NAME)?.value);
+  const session = verifySessionToken(cookieStore.get(AUTH_COOKIE_NAME)?.value);
+  if (!session) return null;
+
+  try {
+    const access = await getUserMenuAccessContext(session.userId);
+    const menuCodes = access.menuCodes;
+    const isSystemAdmin = access.isSystemAdmin;
+    return {
+      ...session,
+      isSystemAdmin,
+      accessGroupId: access.groupId,
+      accessGroupTitle: access.groupTitle,
+      menuCodes,
+      permissions: {
+        dashboard: isSystemAdmin || menuCodes.includes(ACCESS_MENU.dashboard),
+        evaluation: isSystemAdmin || menuCodes.includes(ACCESS_MENU.evaluation),
+        appointments:
+          isSystemAdmin ||
+          menuCodes.includes(ACCESS_MENU.appointmentsWorkflow) ||
+          menuCodes.includes(ACCESS_MENU.appointmentsCurrent) ||
+          menuCodes.includes(ACCESS_MENU.appointmentsCancellations),
+        personnel: isSystemAdmin || menuCodes.includes(ACCESS_MENU.persons),
+        inquiries: isSystemAdmin,
+      },
+    };
+  } catch (error) {
+    console.error("Refresh access context failed:", error);
+    return session;
+  }
+}
+
+export function sessionHasMenu(session: AuthSession, menuCode: string) {
+  return session.isSystemAdmin || Boolean(session.menuCodes?.includes(menuCode));
 }
 
 export function useSecureCookie() {

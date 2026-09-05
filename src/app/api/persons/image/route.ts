@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/session";
+import { getCurrentSession, sessionHasMenu } from "@/lib/session";
+import { ACCESS_MENU } from "@/lib/access-menu";
 import {
   getPersonFile,
   savePersonFile,
@@ -48,6 +49,7 @@ function uploadError(error: unknown) {
 export async function GET(request: NextRequest) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست منقضی شده است." }, { status: 401 });
+  if (!sessionHasMenu(session, ACCESS_MENU.persons)) return NextResponse.json({ message: "دسترسی به بخش اشخاص برای شما فعال نیست." }, { status: 403 });
 
   try {
     const fileName = safeFileName(request.nextUrl.searchParams.get("file"));
@@ -73,6 +75,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const session = await getCurrentSession();
   if (!session) return NextResponse.json({ message: "نشست منقضی شده است." }, { status: 401 });
+  if (!sessionHasMenu(session, ACCESS_MENU.persons)) return NextResponse.json({ message: "دسترسی به بخش اشخاص برای شما فعال نیست." }, { status: 403 });
 
   let savedFileName = "";
   try {
